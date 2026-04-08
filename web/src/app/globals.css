@@ -1,3 +1,59 @@
+@import "tailwindcss";
+
+@theme {
+  /* Typography */
+  --font-sans: var(--font-geist-sans), sans-serif;
+  --font-mono: var(--font-geist-mono), monospace;
+
+  /* Core semantic colors — Tailwind utility classes generated from these */
+  --color-background: #efe4d5;
+  --color-foreground: #1c1a17;
+  --color-primary: #18212b;
+  --color-primary-foreground: #f7f4ec;
+  --color-secondary: #f7f4ec;
+  --color-secondary-foreground: #1c1a17;
+  --color-accent: #0f766e;
+  --color-accent-foreground: #ffffff;
+  --color-muted: #f0ece4;
+  --color-muted-foreground: #4a5b68;
+  --color-card: rgba(255, 255, 255, 0.72);
+  --color-card-foreground: #1c1a17;
+  --color-border: rgba(28, 26, 23, 0.1);
+  --color-border-mid: rgba(28, 26, 23, 0.16);
+  --color-input: #fffdfa;
+  --color-destructive: #8c1f1f;
+  --color-destructive-subtle: rgba(163, 43, 43, 0.12);
+  --color-success: #1b6a3d;
+  --color-success-subtle: rgba(33, 122, 69, 0.12);
+  --color-warning: #8a5310;
+  --color-warning-subtle: rgba(183, 106, 18, 0.14);
+
+  /* Brand-specific extras */
+  --color-ink-dark: #18212b;
+  --color-teal: #0f766e;
+  --color-teal-hover: #0d6460;
+  --color-teal-subtle: rgba(15, 118, 110, 0.08);
+  --color-teal-border: rgba(15, 118, 110, 0.3);
+  --color-blue-info: #174f67;
+  --color-blue-subtle: rgba(17, 106, 138, 0.1);
+  --color-surface-warm: #fff9f3;
+  --color-surface-light: #f7f4ec;
+  --color-surface-panel: #faf8f4;
+  --color-amber: #925e2f;
+  --color-muted-warm: #5e554a;
+  --color-muted-mid: #6f6559;
+
+  /* Border radius */
+  --radius-sm: 0.75rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.5rem;
+  --radius-full: 999px;
+
+  /* Shadows */
+  --shadow-card: 0 18px 60px rgba(24, 33, 43, 0.08);
+  --shadow-card-hover: 0 24px 72px rgba(24, 33, 43, 0.13);
+}
+
 :root {
   /* Brand colors */
   --sf-ink: #1c1a17;
