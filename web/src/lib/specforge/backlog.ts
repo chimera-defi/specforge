@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 
@@ -16,10 +17,21 @@ import {
 
 import { logger } from "../logger";
 
-const tasksPath = path.resolve(process.cwd(), "..", "TASKS.md");
-const specPath = path.resolve(process.cwd(), "..", "SPEC.md");
-const architecturePath = path.resolve(process.cwd(), "..", "ARCHITECTURE_DECISIONS.md");
-const techStackPath = path.resolve(process.cwd(), "..", "TECH_STACK.md");
+const repoRoot = path.resolve(process.cwd(), "..");
+
+function resolveDocPath(filename: string) {
+  const specPath = path.resolve(repoRoot, "spec", filename);
+  if (existsSync(specPath)) {
+    return specPath;
+  }
+
+  return path.resolve(repoRoot, filename);
+}
+
+const tasksPath = resolveDocPath("TASKS.md");
+const specPath = resolveDocPath("SPEC.md");
+const architecturePath = resolveDocPath("ARCHITECTURE_DECISIONS.md");
+const techStackPath = resolveDocPath("TECH_STACK.md");
 const loopStatePath = path.resolve(
   process.cwd(),
   "..",

@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -9,10 +10,20 @@ const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 
 export const packRoot = path.resolve(scriptDir, "..", "..");
 export const worktreeRoot = path.resolve(packRoot, "..", "..");
-export const tasksPath = path.join(packRoot, "TASKS.md");
-export const specPath = path.join(packRoot, "SPEC.md");
-export const architecturePath = path.join(packRoot, "ARCHITECTURE_DECISIONS.md");
-export const techStackPath = path.join(packRoot, "TECH_STACK.md");
+
+function resolvePackDocPath(filename) {
+  const specDocPath = path.join(packRoot, "spec", filename);
+  if (existsSync(specDocPath)) {
+    return specDocPath;
+  }
+
+  return path.join(packRoot, filename);
+}
+
+export const tasksPath = resolvePackDocPath("TASKS.md");
+export const specPath = resolvePackDocPath("SPEC.md");
+export const architecturePath = resolvePackDocPath("ARCHITECTURE_DECISIONS.md");
+export const techStackPath = resolvePackDocPath("TECH_STACK.md");
 export const loopStatePath = path.join(
   worktreeRoot,
   ".cursor",
