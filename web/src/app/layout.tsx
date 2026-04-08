@@ -13,15 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SpecForge — Multiplayer Spec Authoring",
-  description:
-    "Collaborative spec IDE for teams that want governed agent work, attributable changes, and a cleaner path from idea to runnable product.",
-  openGraph: {
-    title: "SpecForge — Multiplayer Spec Authoring",
-    description:
-      "Humans edit live, agents propose patches, and every change is reviewable before it makes it into the canonical spec.",
-    type: "website",
-  },
+  title: "SpecForge MVP",
+  description: "Shared-canvas spec authoring with governed patch review.",
 };
 
 export default function RootLayout({
@@ -31,9 +24,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable}`}>
         {children}
       </body>
     </html>
