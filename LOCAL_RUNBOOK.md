@@ -27,6 +27,17 @@ bun run state:restore
 - The web image now ships `fixtures/` at `/fixtures`, which matches `SPECFORGE_FIXTURES_DIR` in the compose and production env examples.
 - The compose rehearsal also pins a shared `SPECFORGE_COLLAB_SECRET` so web-issued room tokens and collab auth stay aligned.
 - The web service defaults to `SPECFORGE_PERSISTENCE_BACKEND=postgres` in compose, so hosted persistence is exercised locally too.
+- Hosted security startup guardrails:
+  - If `NODE_ENV=production` and `SPECFORGE_ENFORCE_HOSTED_SECURITY=true`, startup validation now requires:
+    - `NEXT_PUBLIC_SKIP_AUTH_OVERRIDE=false`
+    - `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `SPECFORGE_GITHUB_REDIRECT_URI`
+    - `SPECFORGE_SESSION_SECRET` + `SPECFORGE_COLLAB_SECRET` when `SPECFORGE_REQUIRE_SECURE_SECRETS=true`
+  - Misconfiguration fails fast via Next startup config validation before serving traffic.
+- Session token guardrail:
+  - `SPECFORGE_SESSION_SECRET` is now mandatory in `NODE_ENV=production` (even if secure-secrets mode is not explicitly enabled).
+- Rate-limit backend options:
+  - `SPECFORGE_RATE_LIMIT_BACKEND=memory` keeps in-process limits (single instance/dev).
+  - `SPECFORGE_RATE_LIMIT_BACKEND=upstash` enables shared limits using Upstash REST (`SPECFORGE_REDIS_REST_URL`, `SPECFORGE_REDIS_REST_TOKEN`).
 
 ## Runtime Signals
 - Web app: editor toolbar status chip shows `connecting`, `live`, `saving`, `recovering`, `offline`, `stale`, or `error`.
@@ -36,6 +47,8 @@ bun run state:restore
   - web metrics: `GET /api/metrics`
   - workspace ops summary: `GET /api/ops/summary`
   - workspace incidents: `GET /api/ops/incidents`
+  - workspace billing: `GET /api/workspace/billing`
+  - stripe webhook receiver: `POST /api/billing/webhook`
   - workspace entitlements: `GET /api/workspace/entitlements`
   - collab server: `GET http://127.0.0.1:4322/health`
   - collab metrics: `GET http://127.0.0.1:4322/metrics`

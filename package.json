@@ -41,6 +41,8 @@
     "parity:run:batch": "bun --filter specforge-web parity:run:batch",
     "dev:desktop": "cd desktop && bun run dev",
     "launch": "bash desktop/scripts/launch.sh",
-    "desktop:build": "bun run build:desktop"
+    "desktop:build": "bun run build:desktop",
+    "preflight:release": "bun run contracts:validate && bun run lint && bun run test && bun run test:acceptance && bun run build:web && bun run test:cli && bun run test:e2e",
+    "smoke:live": "bash ./tools/smoke-live.sh"
   }
 }
