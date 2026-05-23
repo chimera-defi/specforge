@@ -1,3 +1,135 @@
+.workspaceNav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 24px;
+  height: 52px;
+  border-bottom: 1px solid var(--sf-border);
+  background: rgba(247, 240, 231, 0.88);
+  backdrop-filter: blur(14px);
+  margin: -32px -32px 24px;
+  width: calc(100% + 64px);
+}
+
+.workspaceNavBrand {
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: var(--sf-ink);
+  text-decoration: none;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+}
+
+.workspaceNavBrand:hover {
+  opacity: 0.65;
+}
+
+.workspaceNavCenter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+  justify-content: center;
+}
+
+.workspaceNavDoc {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--sf-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 28ch;
+}
+
+.workspaceNavStage {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--sf-teal);
+  background: var(--sf-teal-subtle);
+  border: 1px solid var(--sf-teal-border);
+  border-radius: 999px;
+  padding: 2px 8px;
+  flex-shrink: 0;
+}
+
+.workspaceNavLinks {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.workspaceNavLink {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.84rem;
+  color: var(--sf-muted-warm);
+  text-decoration: none;
+  transition: color 0.15s, background 0.15s;
+}
+
+.workspaceNavLink:hover {
+  color: var(--sf-ink);
+  background: rgba(28, 26, 23, 0.06);
+}
+
+.workspaceNavLinkAccent {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--sf-surface-warm);
+  background: var(--sf-ink);
+  text-decoration: none;
+  transition: opacity 0.15s;
+  margin-left: 6px;
+}
+
+.workspaceNavLinkAccent:hover {
+  opacity: 0.85;
+}
+
+@media (max-width: 920px) {
+  .workspaceNav {
+    margin: -20px -20px 20px;
+    width: calc(100% + 40px);
+    padding: 0 16px;
+  }
+
+  .workspaceNavCenter {
+    display: none;
+  }
+
+  .workspaceNavLink {
+    display: none;
+  }
+
+  .workspaceNavLink:last-child {
+    display: inline-flex;
+  }
+}
+
+@media (max-width: 640px) {
+  .workspaceNav {
+    margin: -14px -14px 16px;
+    width: calc(100% + 28px);
+    padding: 0 12px;
+  }
+}
+
 .shell {
   min-height: 100vh;
   padding: 32px;
@@ -32,6 +164,53 @@
   margin-top: 10px;
   color: var(--sf-muted-warm);
   font-size: 0.95rem;
+}
+
+.authGateBackdrop {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(15, 118, 110, 0.2), transparent 36%),
+    radial-gradient(circle at 82% 18%, rgba(17, 106, 138, 0.22), transparent 34%),
+    linear-gradient(180deg, rgba(247, 240, 231, 0.72), rgba(239, 228, 213, 0.92));
+}
+
+.authGateCard {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 16px;
+  max-width: 720px;
+  margin: 12vh auto 0;
+  padding: 28px;
+  border: 1px solid rgba(28, 26, 23, 0.12);
+  border-radius: 28px;
+  background: rgba(255, 252, 247, 0.86);
+  box-shadow: 0 24px 64px rgba(38, 29, 22, 0.16);
+  backdrop-filter: blur(10px);
+}
+
+.authGateCard h1 {
+  font-size: clamp(2rem, 4.4vw, 3.5rem);
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.authGateEyebrow {
+  font-size: 0.74rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--sf-amber);
+}
+
+.authGateList {
+  list-style: disc;
+  padding-left: 1.2rem;
+  color: var(--sf-muted-warm);
+  display: grid;
+  gap: 8px;
 }
 
 .hero {
@@ -543,6 +722,29 @@
   display: flex;
 }
 
+.inlineActionButton,
+.inlineActionButtonPrimary {
+  border: 1px solid rgba(28, 26, 23, 0.14);
+  border-radius: 999px;
+  padding: 9px 14px;
+  background: rgba(255, 255, 255, 0.55);
+  color: var(--sf-ink);
+  font: inherit;
+  font-size: 0.84rem;
+  cursor: pointer;
+}
+
+.inlineActionButtonPrimary {
+  border-color: transparent;
+  background: var(--sf-ink);
+  color: var(--sf-surface-warm);
+}
+
+.inlineActionButton:hover,
+.inlineActionButtonPrimary:hover {
+  opacity: 0.92;
+}
+
 .showcaseList {
   display: grid;
   gap: 14px;
@@ -797,6 +999,10 @@
   .diffGrid {
     grid-template-columns: 1fr;
   }
+
+  .authGateCard {
+    margin-top: 8vh;
+  }
 }
 
 @media (max-width: 640px) {
@@ -849,7 +1055,9 @@
   .patchActions button,
   .shareRow button,
   .exportLink,
-  .secondaryLink {
+  .secondaryLink,
+  .inlineActionButton,
+  .inlineActionButtonPrimary {
     width: 100%;
     justify-content: center;
   }
@@ -862,5 +1070,11 @@
   .editorPanel :global(.editorToolbar) {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .authGateCard {
+    margin-top: 6vh;
+    padding: 20px;
+    border-radius: 20px;
   }
 }

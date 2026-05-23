@@ -9,6 +9,8 @@ import {
   CheckCircle2,
   FileText,
   Zap,
+  Workflow,
+  Rocket,
 } from "lucide-react";
 import { heroVariantOrder, heroVariants, type HeroVariant } from "@/lib/specforge/marketing";
 
@@ -16,33 +18,38 @@ type Props = {
   searchParams?: Promise<{ variant?: string }>;
 };
 
-// ── Shared nav component ────────────────────────────────────────────────────
 function Nav() {
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/90 backdrop-blur-sm">
-      <div className="mx-auto flex w-full max-w-[1100px] items-center justify-between px-4 py-3">
+    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-xl">
+      <div className="mx-auto flex w-full max-w-[1180px] items-center justify-between px-4 py-3">
         <Link
           href="/"
-          className="text-[0.8rem] font-bold uppercase tracking-[0.2em] text-foreground hover:opacity-70 transition-opacity"
+          className="text-[0.8rem] font-black uppercase tracking-[0.24em] text-foreground transition-opacity hover:opacity-70"
         >
           SpecForge
         </Link>
         <nav className="flex items-center gap-1">
           <Link
             href="/download"
-            className="rounded-full px-3 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors min-h-[2.75rem] inline-flex items-center"
+            className="inline-flex min-h-[2.7rem] items-center rounded-full px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             Download
           </Link>
           <Link
             href="/pricing"
-            className="rounded-full px-3 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors min-h-[2.75rem] inline-flex items-center"
+            className="inline-flex min-h-[2.7rem] items-center rounded-full px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             Pricing
           </Link>
           <Link
+            href="/pilot-access"
+            className="inline-flex min-h-[2.7rem] items-center rounded-full px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Pilot access
+          </Link>
+          <Link
             href="/workspace"
-            className="ml-2 inline-flex min-h-[2.75rem] items-center rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 active:scale-[0.98]"
+            className="ml-2 inline-flex min-h-[2.8rem] items-center rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground shadow-[var(--shadow-accent)] transition hover:-translate-y-[1px] hover:shadow-[var(--shadow-accent-hover)] active:scale-[0.98]"
           >
             Open workspace
           </Link>
@@ -52,23 +59,23 @@ function Nav() {
   );
 }
 
-// ── Patch review mockup — hero visual ──────────────────────────────────────
 function PatchMockup() {
   return (
-    <div className="rounded-2xl border border-border bg-card shadow-[var(--shadow-card)] overflow-hidden">
-      {/* Window chrome */}
-      <div className="flex items-center gap-1.5 border-b border-border bg-surface-light/60 px-4 py-3">
-        <span className="h-3 w-3 rounded-full bg-destructive/40" />
-        <span className="h-3 w-3 rounded-full bg-warning/40" />
-        <span className="h-3 w-3 rounded-full bg-success/40" />
+    <div className="group relative overflow-hidden rounded-[var(--radius-xl)] border border-border-mid bg-card shadow-[var(--shadow-card)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-card-hover)]">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-accent/16 to-transparent" />
+
+      <div className="flex items-center gap-1.5 border-b border-border bg-surface-light/65 px-4 py-3">
+        <span className="h-3 w-3 rounded-full bg-destructive/45" />
+        <span className="h-3 w-3 rounded-full bg-warning/45" />
+        <span className="h-3 w-3 rounded-full bg-success/45" />
         <span className="ml-3 text-xs text-muted-foreground font-mono">patch-queue · 3 pending</span>
+        <span className="ml-auto inline-flex h-2 w-2 animate-pulse rounded-full bg-accent" />
       </div>
 
-      {/* Patch card */}
-      <div className="p-5 space-y-4">
+      <div className="space-y-4 p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center rounded-full bg-blue-subtle px-2.5 py-0.5 text-[0.7rem] font-semibold uppercase tracking-wider text-blue-info border border-blue-subtle">
+            <span className="inline-flex items-center rounded-full border border-teal-border bg-teal-subtle px-2.5 py-0.5 text-[0.7rem] font-semibold uppercase tracking-wider text-accent">
               Agent patch
             </span>
             <span className="text-xs text-muted-foreground">Claude Code · 2m ago</span>
@@ -80,32 +87,29 @@ function PatchMockup() {
           Add structured error handling to the authentication flow for token expiry edge cases.
         </p>
 
-        {/* Diff preview */}
-        <div className="rounded-lg border border-success-subtle bg-success-subtle/60 p-3 font-mono text-xs leading-relaxed text-success space-y-0.5">
+        <div className="space-y-0.5 rounded-lg border border-success-subtle bg-success-subtle/55 p-3 font-mono text-xs leading-relaxed text-success">
           <div>+ try-catch around token refresh calls</div>
           <div>+ return 401 with &quot;refresh_required&quot; hint</div>
           <div>+ add expiry timestamp to JWT decode check</div>
         </div>
 
-        {/* Actions */}
         <div className="flex items-center gap-2 pt-1">
-          <button className="inline-flex min-h-[2rem] items-center rounded-full bg-success px-4 py-1 text-xs font-semibold text-white gap-1.5 hover:opacity-90 transition-opacity">
+          <button className="inline-flex min-h-[2rem] items-center gap-1.5 rounded-full bg-success px-4 py-1 text-xs font-semibold text-white transition-opacity hover:opacity-90">
             <CheckCircle2 size={12} />
             Accept
           </button>
-          <button className="inline-flex min-h-[2rem] items-center rounded-full border border-border bg-card px-4 py-1 text-xs font-semibold text-muted-foreground gap-1.5 hover:bg-muted transition-colors">
+          <button className="inline-flex min-h-[2rem] items-center rounded-full border border-border bg-card px-4 py-1 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted">
             Reject
           </button>
-          <button className="inline-flex min-h-[2rem] items-center rounded-full border border-border bg-card px-4 py-1 text-xs font-semibold text-muted-foreground hover:bg-muted transition-colors">
+          <button className="inline-flex min-h-[2rem] items-center rounded-full border border-border bg-card px-4 py-1 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted">
             Cherry-pick
           </button>
         </div>
       </div>
 
-      {/* Queue footer */}
-      <div className="border-t border-border bg-surface-light/40 px-5 py-3 flex items-center justify-between">
+      <div className="flex items-center justify-between border-t border-border bg-surface-light/45 px-5 py-3">
         <div className="flex items-center gap-1.5">
-          <span className="h-2 w-2 rounded-full bg-accent animate-pulse" />
+          <span className="h-2 w-2 animate-pulse rounded-full bg-accent" />
           <span className="text-xs text-muted-foreground">2 more patches in queue</span>
         </div>
         <span className="text-xs text-muted-foreground">Spec v4 · 3 contributors</span>
@@ -124,181 +128,147 @@ export default async function LandingPage({ searchParams }: Props) {
   const heroCopy = heroVariants[heroVariant];
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
+      <div className="pointer-events-none absolute -top-24 left-1/2 h-[26rem] w-[26rem] -translate-x-1/2 rounded-full bg-teal-subtle blur-3xl" />
+      <div className="pointer-events-none absolute right-[-8rem] top-[16rem] h-[22rem] w-[22rem] rounded-full bg-blue-subtle blur-3xl" />
+
       <Nav />
 
-      {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="mx-auto w-full max-w-[1100px] px-4 pt-12 pb-16 grid grid-cols-1 gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-start">
-        <div className="flex flex-col gap-6">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-accent">
-            {heroCopy.eyebrow}
-          </p>
-          <h1 className="text-[clamp(2.5rem,5vw,4.4rem)] font-extrabold leading-[1.0] text-balance max-w-[14ch]">
+      <section className="mx-auto grid w-full max-w-[1180px] grid-cols-1 gap-10 px-4 pb-16 pt-14 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
+        <div className="space-y-6 animate-fade-up">
+          <p className="text-xs font-black uppercase tracking-[0.22em] text-accent">{heroCopy.eyebrow}</p>
+          <h1 className="max-w-[13ch] text-balance text-[clamp(2.2rem,8vw,5.5rem)] font-black leading-[1.04] tracking-tight">
             {heroCopy.headline}
           </h1>
-          <p className="text-[1.05rem] leading-[1.7] max-w-[58ch] text-muted-foreground">
-            {heroCopy.subhead}
-          </p>
+          <p className="max-w-[58ch] text-[1.05rem] leading-[1.75] text-muted-foreground">{heroCopy.subhead}</p>
+
           <div className="flex flex-wrap gap-3">
             <Link
               href="/workspace"
-              className="inline-flex min-h-[2.9rem] items-center gap-2 rounded-full bg-primary px-5 py-3 font-semibold text-primary-foreground border border-primary transition-opacity hover:opacity-90 active:scale-[0.98]"
+              className="inline-flex min-h-[2.95rem] items-center gap-2 rounded-full bg-accent px-5 py-3 font-semibold text-accent-foreground shadow-[var(--shadow-accent)] transition hover:-translate-y-[1px] hover:shadow-[var(--shadow-accent-hover)] active:scale-[0.98]"
             >
               Launch workspace
               <ArrowRight size={16} />
             </Link>
             <Link
-              href="/download"
-              className="inline-flex min-h-[2.9rem] items-center rounded-full border border-border bg-card px-5 py-3 font-semibold text-foreground transition-colors hover:bg-surface-light active:scale-[0.98]"
+              href="/pilot-access?source=landing_hero"
+              className="inline-flex min-h-[2.95rem] items-center rounded-full border border-border-mid bg-card px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-surface-light active:scale-[0.98]"
             >
-              Get the alpha
+              Request pilot access
             </Link>
           </div>
-          {/* Status badge — replacing the disclaimer callout box */}
-          <div className="inline-flex items-center gap-2">
-            <span className="flex h-2 w-2 rounded-full bg-accent" />
-            <span className="text-sm text-muted-foreground">
-              Local multiplayer alpha · desktop packaging next
-            </span>
+
+          <div className="inline-flex items-center gap-2 rounded-full border border-border-mid bg-card px-3 py-1.5">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-accent" />
+            <span className="text-xs text-muted-foreground">Design partner pilot · realtime collaboration</span>
           </div>
-        </div>
 
-        <div className="lg:sticky lg:top-24">
-          <PatchMockup />
-        </div>
-      </section>
-
-      {/* ── Role table ────────────────────────────────────────────────────── */}
-      <section className="mx-auto w-full max-w-[1100px] px-4 pb-14">
-        <h2 className="text-xl font-bold text-balance mb-2">
-          Safe multiplayer, not collaborative chaos
-        </h2>
-        <p className="text-muted-foreground leading-relaxed max-w-[60ch] mb-6">
-          Every editor sees changes in real time. Agent suggestions arrive as patch proposals —
-          not direct edits. You stay in control of what makes it into the canonical spec.
-        </p>
-        <ol className="border-t border-border">
-          {[
-            {
-              icon: <Users size={16} />,
-              label: "Human editing",
-              desc: "Humans edit the shared document directly with realtime presence and conflict recovery.",
-            },
-            {
-              icon: <Zap size={16} />,
-              label: "Agent coauthoring",
-              desc: "Agents propose structural or requirement changes against stable blocks and versions.",
-            },
-            {
-              icon: <ShieldCheck size={16} />,
-              label: "Review gates",
-              desc: "Humans accept, reject, or cherry-pick patches before the canonical spec changes.",
-            },
-          ].map(({ icon, label, desc }) => (
-            <li
-              key={label}
-              className="grid grid-cols-1 sm:grid-cols-[11rem_1fr] gap-x-6 gap-y-1 items-baseline border-b border-border py-4"
-            >
-              <span className="flex items-center gap-2 font-bold text-[0.9rem] text-foreground">
-                <span className="text-accent">{icon}</span>
-                {label}
-              </span>
-              <p className="text-muted-foreground leading-relaxed text-sm">{desc}</p>
-            </li>
-          ))}
-        </ol>
-      </section>
-
-      {/* ── Dark section: Connect your AI ─────────────────────────────────── */}
-      <section className="mx-auto w-full max-w-[1100px] px-4 pb-14">
-        <div className="rounded-2xl bg-ink-dark text-primary-foreground px-6 pt-8 pb-10">
-          <h2 className="text-xl font-bold text-balance mb-2">Connect your AI agent</h2>
-          <p className="text-sm text-primary-foreground/60 leading-relaxed max-w-[55ch] mb-8">
-            Bring your own keys or use hosted credentials — either way, agents can only propose.
-            No direct writes to the canonical spec.
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {[
-              {
-                icon: <Terminal size={18} />,
-                title: "Your own keys",
-                desc: "Bring your Claude or Codex API key. Credentials stay server-side — never exposed to the browser.",
-              },
-              {
-                icon: <ShieldCheck size={18} />,
-                title: "Managed credentials",
-                desc: "On hosted plans, keys are stored encrypted and scoped to your workspace — no shared tokens.",
-              },
-              {
-                icon: <GitMerge size={18} />,
-                title: "Propose-only agents",
-                desc: "No agent can rewrite the spec directly. Every suggestion goes through the patch queue first.",
-              },
-            ].map(({ icon, title, desc }) => (
+              { label: "Human in the loop", value: "Always" },
+              { label: "Patch decisions", value: "Full audit" },
+              { label: "Runs", value: "Local · Hosted" },
+            ].map((item, idx) => (
               <div
-                key={title}
-                className="rounded-xl border border-white/10 bg-white/6 p-4 space-y-2"
+                key={item.label}
+                className="rounded-[var(--radius-md)] border border-border-mid bg-card px-4 py-3 shadow-[var(--shadow-card)] animate-fade-up"
+                style={{ animationDelay: `${0.12 * (idx + 1)}s` }}
               >
-                <div className="flex items-center gap-2 text-primary-foreground/80">
-                  {icon}
-                  <strong className="text-[0.95rem] font-semibold">{title}</strong>
-                </div>
-                <p className="text-sm text-primary-foreground/55 leading-relaxed">{desc}</p>
+                <div className="text-[0.72rem] uppercase tracking-[0.18em] text-muted-mid">{item.label}</div>
+                <div className="mt-1 text-xl font-black text-foreground">{item.value}</div>
               </div>
             ))}
           </div>
         </div>
+
+        <div className="animate-fade-up [animation-delay:120ms] lg:sticky lg:top-24">
+          <PatchMockup />
+        </div>
       </section>
 
-      {/* ── How to ship — numbered steps ──────────────────────────────────── */}
-      <section className="mx-auto w-full max-w-[1100px] px-4 pb-14">
-        <h2 className="text-xl font-bold text-balance mb-2">Start with the product that ships</h2>
-        <p className="text-muted-foreground leading-relaxed max-w-[55ch] mb-8">
-          Three stages from blank canvas to a launch packet a coding agent can actually use.
+      <section className="mx-auto w-full max-w-[1180px] px-4 pb-14">
+        <div className="rounded-[var(--radius-xl)] border border-border-mid bg-ink-dark px-6 py-7 text-primary-foreground shadow-[var(--shadow-card)] animate-fade-up [animation-delay:180ms]">
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-[0.8fr_1.2fr] md:items-start">
+            <div>
+              <h2 className="text-[1.35rem] font-black tracking-tight">Safe multiplayer, not collaborative chaos</h2>
+              <p className="mt-2 text-sm leading-relaxed text-primary-foreground/78">
+                Humans edit in real time. Agents only submit reviewable patches. The canonical spec moves forward when humans decide.
+              </p>
+            </div>
+            <ol className="grid gap-4 sm:grid-cols-3 md:grid-cols-1">
+              {[
+                {
+                  icon: <Users size={16} />,
+                  label: "Human editing",
+                  desc: "Shared presence, conflict recovery, and section-level ownership.",
+                },
+                {
+                  icon: <Zap size={16} />,
+                  label: "Agent proposals",
+                  desc: "Patches target stable blocks and carry provenance metadata.",
+                },
+                {
+                  icon: <ShieldCheck size={16} />,
+                  label: "Governed decisions",
+                  desc: "Accept, reject, or cherry-pick before canonical state changes.",
+                },
+              ].map((item) => (
+                <li key={item.label} className="rounded-[var(--radius-md)] border border-white/15 bg-[#232d38] px-4 py-3">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-primary-foreground/92">
+                    <span className="text-accent">{item.icon}</span>
+                    {item.label}
+                  </div>
+                  <p className="mt-1 text-sm leading-relaxed text-primary-foreground/78">{item.desc}</p>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto w-full max-w-[1180px] px-4 pb-14">
+        <h2 className="mb-2 text-xl font-black text-balance">One workflow, three decisive passes</h2>
+        <p className="mb-8 max-w-[56ch] text-muted-foreground leading-relaxed">
+          Move from rough idea to launch packet with one source of truth that survives handoff.
         </p>
-        <ol className="grid grid-cols-1 sm:grid-cols-3">
+
+        <ol className="grid grid-cols-1 gap-4 md:grid-cols-[1.2fr_0.8fr_1fr]">
           {[
             {
               num: "01",
               icon: <FileText size={16} />,
               title: "Shape the spec",
-              bullets: ["Guided creation", "Comments and clarifications", "Readiness scoring"],
+              bullets: ["Guided creation", "Clarifications and readiness", "UX pack coverage"],
             },
             {
               num: "02",
               icon: <GitMerge size={16} />,
               title: "Review agent work",
-              bullets: ["Patch queue", "Diff and attribution", "Audit trail"],
+              bullets: ["Patch queue", "Diff and provenance", "Audit-friendly decisions"],
             },
             {
               num: "03",
               icon: <Package size={16} />,
               title: "Launch the handoff",
-              bullets: [
-                "Deterministic export bundle",
-                "Starter template output",
-                "Execution brief + launch packet",
-              ],
+              bullets: ["Deterministic export", "Starter handoff", "Execution + launch packet"],
             },
-          ].map(({ num, icon, title, bullets }, i, arr) => (
+          ].map((item, idx) => (
             <li
-              key={num}
-              className={`py-6 px-6 space-y-4 border-border ${
-                i < arr.length - 1 ? "sm:border-r" : ""
-              } ${i === 0 ? "pl-0" : ""} ${i === arr.length - 1 ? "pr-0" : ""}`}
+              key={item.num}
+              className="relative rounded-[var(--radius-card)] border border-border-mid bg-card px-5 py-6 shadow-[var(--shadow-card)] animate-fade-up"
+              style={{ animationDelay: `${0.08 * (idx + 2)}s` }}
             >
-              <span className="block text-[2.5rem] font-extrabold leading-none tracking-tight text-accent">
-                {num}
-              </span>
-              <strong className="flex items-center gap-2 text-[0.95rem] font-semibold text-foreground">
-                <span className="text-muted-foreground">{icon}</span>
-                {title}
+              <div className="absolute right-4 top-4 text-[0.7rem] font-black uppercase tracking-[0.2em] text-muted-mid">Pass</div>
+              <span className="block text-[2.6rem] font-black leading-none tracking-tight text-accent">{item.num}</span>
+              <strong className="mt-2 flex items-center gap-2 text-[0.95rem] font-semibold text-foreground">
+                <span className="text-accent">{item.icon}</span>
+                {item.title}
               </strong>
-              <ul className="space-y-1.5">
-                {bullets.map((b) => (
-                  <li key={b} className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <span className="text-accent shrink-0">–</span>
-                    {b}
+              <ul className="mt-3 space-y-1.5">
+                {item.bullets.map((bullet) => (
+                  <li key={bullet} className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <span className="shrink-0 text-accent">•</span>
+                    {bullet}
                   </li>
                 ))}
               </ul>
@@ -307,26 +277,57 @@ export default async function LandingPage({ searchParams }: Props) {
         </ol>
       </section>
 
-      {/* ── Footer ───────────────────────────────────────────────────────── */}
+      <section className="mx-auto w-full max-w-[1180px] px-4 pb-16">
+        <div className="grid grid-cols-1 gap-4 rounded-[var(--radius-lg)] border border-border-mid bg-card p-6 shadow-[var(--shadow-card)] md:grid-cols-[1fr_auto] md:items-center">
+          <div>
+            <h2 className="text-xl font-black tracking-tight">Ship specs your engineers will actually build from.</h2>
+            <p className="mt-2 max-w-[56ch] text-sm leading-relaxed text-muted-foreground">
+              Start in the workspace today. Desktop packaging and hosted pilots ready when you are.
+            </p>
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-[0.78rem] uppercase tracking-[0.18em] text-muted-mid">
+              <span className="inline-flex items-center gap-1"><Workflow size={14} /> governed flow</span>
+              <span className="inline-flex items-center gap-1"><Rocket size={14} /> launch packet ready</span>
+              <span className="inline-flex items-center gap-1"><Terminal size={14} /> byoa cli assist</span>
+            </div>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Link
+              href="/pilot-access?source=landing_footer"
+              className="inline-flex min-h-[3rem] items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 font-semibold text-primary-foreground transition hover:-translate-y-[1px] hover:shadow-[var(--shadow-ink)] active:scale-[0.98]"
+            >
+              Request pilot access
+              <ArrowRight size={16} />
+            </Link>
+            <Link
+              href="/workspace"
+              className="inline-flex min-h-[2.7rem] items-center justify-center rounded-full border border-border-mid bg-card px-6 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-surface-light active:scale-[0.98]"
+            >
+              Open workspace now
+            </Link>
+          </div>
+        </div>
+      </section>
+
       <footer className="border-t border-border">
-        <div className="mx-auto flex w-full max-w-[1100px] flex-wrap items-center justify-between gap-4 px-4 py-6">
-          <span className="text-[0.8rem] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-            SpecForge
+        <div className="mx-auto flex w-full max-w-[1180px] flex-wrap items-center justify-between gap-4 px-4 py-6">
+          <span className="text-[0.76rem] font-black uppercase tracking-[0.24em] text-muted-foreground">
+            SpecForge Studio
           </span>
           <nav className="flex flex-wrap items-center gap-6">
-            <Link href="/download" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <Link href="/download" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
               Download
             </Link>
-            <Link href="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <Link href="/pricing" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
               Pricing
             </Link>
-            <Link href="/workspace" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <Link href="/pilot-access" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+              Pilot access
+            </Link>
+            <Link href="/workspace" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
               Workspace
             </Link>
           </nav>
-          <p className="text-sm text-muted-foreground">
-            &copy; {new Date().getFullYear()} SpecForge
-          </p>
+          <p className="text-sm text-muted-foreground">&copy; {new Date().getFullYear()} SpecForge</p>
         </div>
       </footer>
     </div>
