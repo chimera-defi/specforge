@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import {
+  consumeGitHubOAuthNextPath,
   isGitHubAuthConfigured,
   setGitHubWorkspaceSession,
   verifyGitHubOAuthState,
@@ -107,5 +108,6 @@ export async function GET(request: Request) {
     role: undefined, // resolved from membership data
   });
 
-  return NextResponse.redirect(new URL("/workspace", request.url));
+  const nextPath = await consumeGitHubOAuthNextPath("/workspace");
+  return NextResponse.redirect(new URL(nextPath, request.url));
 }

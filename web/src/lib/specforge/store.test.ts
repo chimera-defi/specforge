@@ -10,6 +10,7 @@ import {
   createClarification,
   createDocument,
   createWorkspaceMembership,
+  createPilotAccessRequest,
   deleteWorkspaceMembership,
   decidePatch,
   createPatchProposal,
@@ -25,6 +26,7 @@ import {
   listWorkspaceMemberships,
   listWorkspaceRecords,
   listPatches,
+  listPilotAccessRequests,
   recordWorkspaceEvent,
   resetStoreCacheForTests,
   resetWorkspaceDocuments,
@@ -32,6 +34,7 @@ import {
   updateWorkspaceMembershipRole,
   updateWorkspacePlan,
   updateDocument,
+  reviewPilotAccessRequest,
 } from "./store";
 
 async function makeOptions() {
@@ -135,6 +138,108 @@ describe("specforge store", () => {
     expect(workspaces.find((workspace) => workspace.workspace_id === "ws_demo")?.plan).toBe(
       "pilot",
     );
+  });
+
+  it("creates and lists pilot access requests", async () => {
+    const options = await makeOptions();
+    const created = await createPilotAccessRequest(
+      {
+        workspace_id: "ws_demo",
+        github_login: "@pilot-user",
+        requested_name: "Pilot User",
+        requested_email: "pilot@example.com",
+        note: "Requesting pilot access for hosted testing.",
+      },
+      options,
+    );
+    const requests = await listPilotAccessRequests("ws_demo", options);
+
+    expect(created.status).toBe("pending");
+    expect(created.github_login).toBe("pilot-user");
+    expect(
+      requests.some(
+        (request) =>
+          request.request_id === created.request_id && request.requested_email === "pilot@example.com",
+      ),
+    ).toBe(true);
+  });
+
+  it("approves pilot access requests and creates a workspace membership", async () => {
+    const options = await makeOptions();
+    const created = await createPilotAccessRequest(
+      {
+        workspace_id: "ws_demo",
+        github_login: "approved-user",
+        requested_name: "Approved User",
+      },
+      options,
+    );
+
+    const reviewed = await reviewPilotAccessRequest(
+      {
+        request_id: created.request_id,
+        decision: "approve",
+        reviewed_by: { actor_type: "human", actor_id: "workspace_owner" },
+        decision_reason: "Approved for pilot onboarding.",
+        membership: { role: "Engineer" },
+      },
+      options,
+    );
+    const members = await listWorkspaceMemberships("ws_demo", options);
+
+    expect(reviewed.request.status).toBe("approved");
+    expect(reviewed.membership?.github_login).toBe("approved-user");
+    expect(reviewed.membership?.role).toBe("Engineer");
+    expect(reviewed.request.approved_membership_id).toBe(reviewed.membership?.membership_id);
+    expect(
+      members.some((member) => member.membership_id === reviewed.request.approved_membership_id),
+    ).toBe(true);
+  });
+
+  it("rejects pilot access requests without creating a membership", async () => {
+    const options = await makeOptions();
+    const created = await createPilotAccessRequest(
+      {
+        workspace_id: "ws_demo",
+        github_login: "rejected-user",
+        requested_name: "Rejected User",
+      },
+      options,
+    );
+
+    const reviewed = await reviewPilotAccessRequest(
+      {
+        request_id: created.request_id,
+        decision: "reject",
+        reviewed_by: { actor_type: "human", actor_id: "workspace_owner" },
+        decision_reason: "Pilot is currently full.",
+      },
+      options,
+    );
+    const members = await listWorkspaceMemberships("ws_demo", options);
+
+    expect(reviewed.request.status).toBe("rejected");
+    expect(reviewed.membership).toBeNull();
+    expect(reviewed.request.approved_membership_id).toBeUndefined();
+    expect(members.some((member) => member.github_login === "rejected-user")).toBe(false);
+  });
+
+  it("rehydrates pilot access requests from the snapshot-backed local store", async () => {
+    const options = await makeOptions();
+    await createPilotAccessRequest(
+      {
+        workspace_id: "ws_demo",
+        github_login: "rehydrate-user",
+        requested_name: "Rehydrate User",
+        note: "Snapshot should preserve this request.",
+      },
+      options,
+    );
+
+    await resetStoreCacheForTests();
+    const requests = await listPilotAccessRequests("ws_demo", options);
+
+    expect(requests.some((request) => request.github_login === "rehydrate-user")).toBe(true);
   });
 
   it("records workspace usage events for future billing and instrumentation", async () => {

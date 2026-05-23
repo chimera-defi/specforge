@@ -6,20 +6,20 @@
   --font-mono: var(--font-geist-mono), monospace;
 
   /* Core semantic colors — Tailwind utility classes generated from these */
-  --color-background: #efe4d5;
-  --color-foreground: #1c1a17;
-  --color-primary: #18212b;
-  --color-primary-foreground: #f7f4ec;
-  --color-secondary: #f7f4ec;
-  --color-secondary-foreground: #1c1a17;
+  --color-background: #ece2d3;
+  --color-foreground: #191714;
+  --color-primary: #14202b;
+  --color-primary-foreground: #f7f3ea;
+  --color-secondary: #f5efe4;
+  --color-secondary-foreground: #191714;
   --color-accent: #0f766e;
   --color-accent-foreground: #ffffff;
-  --color-muted: #f0ece4;
-  --color-muted-foreground: #4a5b68;
-  --color-card: rgba(255, 255, 255, 0.72);
-  --color-card-foreground: #1c1a17;
-  --color-border: rgba(28, 26, 23, 0.1);
-  --color-border-mid: rgba(28, 26, 23, 0.16);
+  --color-muted: #efe8dc;
+  --color-muted-foreground: #465664;
+  --color-card: rgba(255, 255, 255, 0.76);
+  --color-card-foreground: #191714;
+  --color-border: rgba(25, 23, 20, 0.11);
+  --color-border-mid: rgba(25, 23, 20, 0.19);
   --color-input: #fffdfa;
   --color-destructive: #8c1f1f;
   --color-destructive-subtle: rgba(163, 43, 43, 0.12);
@@ -29,13 +29,13 @@
   --color-warning-subtle: rgba(183, 106, 18, 0.14);
 
   /* Brand-specific extras */
-  --color-ink-dark: #18212b;
+  --color-ink-dark: #16222e;
   --color-teal: #0f766e;
   --color-teal-hover: #0d6460;
   --color-teal-subtle: rgba(15, 118, 110, 0.08);
   --color-teal-border: rgba(15, 118, 110, 0.3);
-  --color-blue-info: #174f67;
-  --color-blue-subtle: rgba(17, 106, 138, 0.1);
+  --color-blue-info: #18536d;
+  --color-blue-subtle: rgba(24, 83, 109, 0.12);
   --color-surface-warm: #fff9f3;
   --color-surface-light: #f7f4ec;
   --color-surface-panel: #faf8f4;
@@ -46,22 +46,28 @@
   /* Border radius */
   --radius-sm: 0.75rem;
   --radius-md: 1rem;
+  --radius-panel: 1.2rem;
+  --radius-card: 1.35rem;
   --radius-lg: 1.5rem;
+  --radius-xl: 1.6rem;
   --radius-full: 999px;
 
   /* Shadows */
-  --shadow-card: 0 18px 60px rgba(24, 33, 43, 0.08);
-  --shadow-card-hover: 0 24px 72px rgba(24, 33, 43, 0.13);
+  --shadow-card: 0 22px 62px rgba(20, 32, 43, 0.1);
+  --shadow-card-hover: 0 30px 78px rgba(20, 32, 43, 0.16);
+  --shadow-accent: 0 12px 30px rgba(15, 118, 110, 0.3);
+  --shadow-accent-hover: 0 16px 38px rgba(15, 118, 110, 0.36);
+  --shadow-ink: 0 14px 30px rgba(24, 33, 43, 0.28);
 }
 
 :root {
   /* Brand colors */
-  --sf-ink: #1c1a17;
-  --sf-ink-dark: #18212b;
-  --sf-surface: #efe4d5;
-  --sf-surface-light: #f7f4ec;
-  --sf-surface-warm: #fff9f3;
-  --sf-surface-card: rgba(255, 255, 255, 0.72);
+  --sf-ink: #191714;
+  --sf-ink-dark: #16222e;
+  --sf-surface: #ece2d3;
+  --sf-surface-light: #f5efe4;
+  --sf-surface-warm: #fff8f0;
+  --sf-surface-card: rgba(255, 255, 255, 0.76);
 
   /* Accent */
   --sf-teal: #0f766e;
@@ -70,9 +76,9 @@
   --sf-teal-border: rgba(15, 118, 110, 0.3);
 
   /* Info / provenance */
-  --sf-blue: #174f67;
-  --sf-blue-subtle: rgba(17, 106, 138, 0.1);
-  --sf-blue-border: rgba(17, 106, 138, 0.18);
+  --sf-blue: #18536d;
+  --sf-blue-subtle: rgba(24, 83, 109, 0.12);
+  --sf-blue-border: rgba(24, 83, 109, 0.2);
 
   /* Semantic */
   --sf-success: #1b6a3d;
@@ -89,7 +95,7 @@
   --sf-design-subtle: rgba(109, 40, 168, 0.12);
 
   /* Muted text */
-  --sf-muted: #4a5b68;
+  --sf-muted: #465664;
   --sf-muted-warm: #5e554a;
   --sf-muted-mid: #6f6559;
   --sf-muted-light: #7a6d5e;
@@ -106,9 +112,9 @@
   --sf-amber: #925e2f;
 
   /* Borders */
-  --sf-border: rgba(28, 26, 23, 0.1);
-  --sf-border-mid: rgba(28, 26, 23, 0.16);
-  --sf-border-faint: rgba(28, 26, 23, 0.08);
+  --sf-border: rgba(25, 23, 20, 0.11);
+  --sf-border-mid: rgba(25, 23, 20, 0.19);
+  --sf-border-faint: rgba(25, 23, 20, 0.09);
 
   /* Surfaces */
   --sf-surface-panel: #faf8f4;  /* sidebar / panel background */
@@ -131,7 +137,10 @@ body {
 
 body {
   color: var(--sf-ink);
-  background: var(--sf-surface);
+  background:
+    radial-gradient(circle at 12% 12%, rgba(15, 118, 110, 0.09), transparent 30%),
+    radial-gradient(circle at 92% 25%, rgba(24, 83, 109, 0.07), transparent 24%),
+    var(--sf-surface);
   font-family: var(--font-geist-sans), sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -317,4 +326,19 @@ input {
   .editorToolbar__actions {
     justify-content: flex-start;
   }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
 }

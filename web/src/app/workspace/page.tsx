@@ -10,6 +10,7 @@ import {
   createWorkspaceMemberAction,
   createPatchAction,
   decidePatchAction,
+  reviewPilotAccessRequestAction,
   resolveCommentThreadAction,
   setAssistRuntimePreferenceAction,
   setWorkspacePlanAction,
@@ -24,6 +25,7 @@ import { ExportStage } from "./export-stage";
 import { ReviewStage } from "./review-stage";
 import { RuntimeStatusPanel } from "./runtime-status-panel";
 import { OpsStatusPanel } from "./ops-status-panel";
+import { BillingStatusPanel } from "./billing-status-panel";
 import styles from "../page.module.css";
 import { getAgentAssistToolStatuses } from "@/lib/specforge/agent-assist";
 import { readBacklogState } from "@/lib/specforge/backlog";
@@ -50,6 +52,10 @@ import { SprintPlanningPanel } from "@/components/specforge/SprintPlanningPanel"
 import { AcceptanceTestSection } from "@/components/specforge/AcceptanceTestSection";
 import { getTestMatrix } from "@/lib/specforge/acceptance-tests";
 import { getAcceptanceTestDb } from "@/lib/specforge/acceptance-test-db";
+import {
+  listPilotAccessRequests,
+  type PilotAccessRequestRecord,
+} from "@/lib/specforge/store";
 
 export const dynamic = "force-dynamic";
 
@@ -62,10 +68,53 @@ type Props = {
     variant?: string;
     template?: string;
     membership_error?: string;
+    triage_status?: string;
   }>;
 };
 
 const stageOrder: Stage[] = ["start", "plan", "draft", "review", "decide", "export"];
+
+function formatPilotAccessDate(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return date.toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function canTriagePilotAccessRole(role: string) {
+  const normalizedRole = role.trim().toLowerCase();
+  return (
+    normalizedRole === "workspace owner" ||
+    normalizedRole === "owner" ||
+    normalizedRole === "founder" ||
+    normalizedRole === "admin"
+  );
+}
+
+async function loadPilotAccessRequests(workspaceId: string) {
+  try {
+    const requests = await listPilotAccessRequests(workspaceId, { limit: 50 });
+
+    return {
+      available: true,
+      requests,
+      error: null as string | null,
+    };
+  } catch {
+    return {
+      available: true,
+      requests: [] as PilotAccessRequestRecord[],
+      error: "Unable to load pilot access requests right now.",
+    };
+  }
+}
 
 function getPatchRiskLabel(patchType: string) {
   switch (patchType) {
@@ -141,6 +190,35 @@ function buildTemplateHref(documentId: string | null, stage: Stage, templateId: 
   return `/workspace?${params.toString()}`;
 }
 
+function buildWorkspaceHref(searchParams: {
+  document?: string;
+  stage?: string;
+  variant?: string;
+  template?: string;
+  membership_error?: string;
+  triage_status?: string;
+}) {
+  const params = new URLSearchParams();
+  const keys: Array<keyof typeof searchParams> = [
+    "document",
+    "stage",
+    "variant",
+    "template",
+    "membership_error",
+    "triage_status",
+  ];
+
+  for (const key of keys) {
+    const value = searchParams[key];
+    if (value) {
+      params.set(key, value);
+    }
+  }
+
+  const query = params.toString();
+  return query ? `/workspace?${query}` : "/workspace";
+}
+
 function getAppOrigin(headerList: Headers) {
   const configuredOrigin = process.env.NEXT_PUBLIC_APP_URL?.trim();
   if (configuredOrigin) {
@@ -192,6 +270,57 @@ function getStageMeta(stage: Stage) {
   }
 }
 
+function HostedAuthGate({
+  heroCopy,
+  membershipError,
+  signInHref,
+}: {
+  heroCopy: {
+    eyebrow: string;
+    headline: string;
+    subhead: string;
+  };
+  membershipError: string | null;
+  signInHref: string;
+}) {
+  return (
+    <div className={styles.shell}>
+      <div className={styles.authGateBackdrop} />
+      <section className={styles.authGateCard}>
+        <span className={styles.brandMark}>SpecForge</span>
+        <p className={styles.authGateEyebrow}>Pilot workspace access</p>
+        <h1>{heroCopy.headline}</h1>
+        <p className={styles.subhead}>
+          This hosted workspace is locked behind GitHub sign-in so membership, audit trail, and
+          patch decisions stay attributable.
+        </p>
+        {membershipError ? (
+          <div className={styles.actorCard}>
+            <strong>Membership limit reached</strong>
+            <span>{membershipError}</span>
+          </div>
+        ) : null}
+        <div className={styles.inlineActions}>
+          <Link href={signInHref} className={styles.exportLink}>
+            Sign in with GitHub
+          </Link>
+          <Link href="/pricing" className={styles.secondaryLink}>
+            View pilot plans
+          </Link>
+          <Link href="/download" className={styles.secondaryLink}>
+            Run local alpha
+          </Link>
+        </div>
+        <ul className={styles.authGateList}>
+          <li>Signed workspace session token with expiration</li>
+          <li>Rate-limited API boundary and cross-site mutation protection</li>
+          <li>Workspace membership and actor identity are resolved server-side</li>
+        </ul>
+      </section>
+    </div>
+  );
+}
+
 export default async function Home({ searchParams }: Props) {
   const headerList = await headers();
   const resolvedSearchParams = (await searchParams) ?? {};
@@ -214,23 +343,58 @@ export default async function Home({ searchParams }: Props) {
     resolvedSearchParams.membership_error === "limit"
       ? "This workspace has reached its current member limit."
       : null;
+  const triageStatus =
+    typeof resolvedSearchParams.triage_status === "string"
+      ? resolvedSearchParams.triage_status
+      : null;
   const availableTemplates = listTemplates();
   const selectedTemplateId = resolveStarterTemplateId(
     typeof resolvedSearchParams.template === "string"
       ? resolvedSearchParams.template
       : undefined,
   );
-  const workspaceActors = await listWorkspaceActors();
   const activeWorkspaceSession = await getCurrentWorkspaceSession();
+  const githubAuthConfigured = isGitHubAuthConfigured();
+  const signInHref = `/api/auth/login?next=${encodeURIComponent(
+    buildWorkspaceHref({
+      document: requestedDocumentId,
+      stage: requestedStage,
+      variant:
+        typeof resolvedSearchParams.variant === "string" ? resolvedSearchParams.variant : undefined,
+      template:
+        typeof resolvedSearchParams.template === "string"
+          ? resolvedSearchParams.template
+          : undefined,
+      membership_error:
+        typeof resolvedSearchParams.membership_error === "string"
+          ? resolvedSearchParams.membership_error
+          : undefined,
+    }),
+  )}`;
+
+  if (githubAuthConfigured && activeWorkspaceSession.authMode === "unauthenticated") {
+    return (
+      <HostedAuthGate
+        heroCopy={heroCopy}
+        membershipError={membershipError}
+        signInHref={signInHref}
+      />
+    );
+  }
+
+  const workspaceActors = await listWorkspaceActors();
   const preferredAssistTool = await getPreferredAssistTool();
   const activeWorkspaceActor = activeWorkspaceSession.actor;
-  const githubAuthConfigured = isGitHubAuthConfigured();
   const backlogState = await readBacklogState();
   const [workspaceSummary, assistToolStatuses] =
     await Promise.all([
       loadWorkspaceSummary(activeWorkspaceActor.workspace_id),
       getAgentAssistToolStatuses(),
     ]);
+  const pilotAccessState = await loadPilotAccessRequests(activeWorkspaceActor.workspace_id);
+  const pendingPilotRequests = pilotAccessState.requests.filter(
+    (request) => request.status === "pending",
+  ).length;
   const {
     workspaceRecords,
     activeWorkspace,
@@ -282,6 +446,7 @@ export default async function Home({ searchParams }: Props) {
   });
   const activeStage =
     requestedStage ?? (activeDocument ? "draft" : "start");
+  const canTriagePilotAccess = canTriagePilotAccessRole(activeWorkspaceActor.role);
   const stageMeta = getStageMeta(activeStage);
   const actorReturnTo = buildStageHref(activeDocument?.document_id ?? null, activeStage);
   const sharePath = buildStageHref(activeDocument?.document_id ?? null, activeDocument ? activeStage : "start");
@@ -307,34 +472,72 @@ export default async function Home({ searchParams }: Props) {
 
   return (
     <div className={styles.shell}>
-      <div className={styles.brandBar}>
-        <div>
-          <span className={styles.brandMark}>SpecForge</span>
-          <p className={styles.brandTagline}>{heroCopy.tagline ?? heroCopy.eyebrow}</p>
+      <header className={styles.workspaceNav}>
+        <Link href="/" className={styles.workspaceNavBrand}>SpecForge</Link>
+        <div className={styles.workspaceNavCenter}>
+          <span className={styles.workspaceNavDoc}>
+            {activeDocument ? activeDocument.title : "No active document"}
+          </span>
+          {activeDocument && (
+            <span className={styles.workspaceNavStage}>{stageMeta.title}</span>
+          )}
         </div>
-      </div>
-
-      <header className={styles.hero}>
-        <div>
-          <p className={styles.eyebrow}>{heroCopy.eyebrow}</p>
-          <h1>{heroCopy.headline}</h1>
-          <p className={styles.subhead}>{heroCopy.subhead}</p>
-        </div>
-        <div className={styles.stats}>
-          <div>
-            <strong>{documents.length}</strong>
-            <span>documents</span>
-          </div>
-          <div>
-            <strong>{patches.length}</strong>
-            <span>patches</span>
-          </div>
-        </div>
+        <nav className={styles.workspaceNavLinks}>
+          <Link href="/" className={styles.workspaceNavLink}>Home</Link>
+          <Link href="/pricing" className={styles.workspaceNavLink}>Pricing</Link>
+          <Link href="/download" className={styles.workspaceNavLink}>Download</Link>
+          <Link href="/pilot-access" className={styles.workspaceNavLinkAccent}>Pilot access</Link>
+        </nav>
       </header>
 
       <main className={styles.focusLayout}>
         <aside className={styles.focusSidebar}>
           <details className={styles.panel} open>
+            <summary className={styles.disclosureSummary}>
+              <span>Workflow</span>
+              <span>Guided path</span>
+            </summary>
+            <div className={styles.disclosureBody}>
+              <nav className={styles.stepGrid}>
+                {guidedSteps.map((step, index) => (
+                  <Link
+                    key={step.id}
+                    href={buildStageHref(activeDocument?.document_id ?? null, step.stage)}
+                    className={`${styles.stepCard} ${styles[step.status]}`}
+                  >
+                    <span className={styles.stepNumber}>Step {index + 1}</span>
+                    <strong>{step.title}</strong>
+                    <p>{step.description}</p>
+                  </Link>
+                ))}
+              </nav>
+            </div>
+          </details>
+
+          <details className={styles.panel} open>
+            <summary className={styles.disclosureSummary}>
+              <span>Document library</span>
+              <span>{documents.length} total</span>
+            </summary>
+            <div className={styles.disclosureBody}>
+              <ul className={styles.documentList} data-testid="document-list">
+                {documents.map((document) => (
+                  <li key={document.document_id} className={styles.documentItem}>
+                    <Link
+                      href={buildStageHref(document.document_id, activeStage)}
+                      className={styles.documentLink}
+                    >
+                      <strong>{document.title}</strong>
+                      <span>{document.document_id}</span>
+                      <span>v{document.version}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </details>
+
+          <details className={styles.panel}>
             <summary className={styles.disclosureSummary}>
               <span>Workspace session</span>
               <span>
@@ -593,8 +796,135 @@ export default async function Home({ searchParams }: Props) {
             activeDocumentId={activeDocument?.document_id ?? null}
           />
 
+          <details className={styles.panel}>
+            <summary className={styles.disclosureSummary}>
+              <span>Pilot access triage</span>
+              <span>{pendingPilotRequests} pending</span>
+            </summary>
+            <div className={styles.disclosureBody}>
+              <p className={styles.context}>
+                Review incoming pilot requests and approve or reject without leaving the workspace.
+              </p>
+              {triageStatus === "saved" ? (
+                <div className={styles.actorCard}>
+                  <strong>Triage updated</strong>
+                  <span>The pilot access decision was saved.</span>
+                </div>
+              ) : null}
+              {triageStatus === "invalid" ? (
+                <div className={styles.actorCard}>
+                  <strong>Missing triage input</strong>
+                  <span>Specify a valid request and decision before submitting.</span>
+                </div>
+              ) : null}
+              {triageStatus === "unavailable" ? (
+                <div className={styles.actorCard}>
+                  <strong>Triage API unavailable</strong>
+                  <span>Pilot triage is unavailable in this environment right now.</span>
+                </div>
+              ) : null}
+              {triageStatus === "error" ? (
+                <div className={styles.actorCard}>
+                  <strong>Triage failed</strong>
+                  <span>The decision could not be saved. Retry in a moment.</span>
+                </div>
+              ) : null}
+              {triageStatus === "forbidden" ? (
+                <div className={styles.actorCard}>
+                  <strong>Insufficient permissions</strong>
+                  <span>Only workspace admins can approve or reject pilot access requests.</span>
+                </div>
+              ) : null}
+              {pilotAccessState.available && !canTriagePilotAccess ? (
+                <div className={styles.actorCard}>
+                  <strong>Read-only triage view</strong>
+                  <span>
+                    Your current role is <strong>{activeWorkspaceActor.role}</strong>. Switch to an
+                    admin role to review requests.
+                  </span>
+                </div>
+              ) : null}
+              {pilotAccessState.error ? (
+                <div className={styles.actorCard}>
+                  <strong>Triage load error</strong>
+                  <span>{pilotAccessState.error}</span>
+                </div>
+              ) : null}
+              {pilotAccessState.available && pilotAccessState.requests.length === 0 ? (
+                <p className={styles.empty}>No pilot requests yet.</p>
+              ) : null}
+              {pilotAccessState.available && pilotAccessState.requests.length > 0 ? (
+                <ul className={styles.documentList}>
+                  {pilotAccessState.requests.map((request) => (
+                    <li key={request.request_id} className={styles.documentItem}>
+                      <div className={styles.patchHeader}>
+                        <span>
+                          <strong>{request.requested_name}</strong>{" "}
+                          <span
+                            className={`${styles.badge} ${
+                              request.status === "approved"
+                                ? styles.success
+                                : request.status === "rejected"
+                                  ? styles.warning
+                                  : styles.neutral
+                            }`}
+                          >
+                            {request.status}
+                          </span>
+                        </span>
+                        <span>{formatPilotAccessDate(request.created_at)}</span>
+                      </div>
+                      <span>{request.github_login}</span>
+                      {request.requested_email ? (
+                        <span>{request.requested_email}</span>
+                      ) : null}
+                      {request.note ? <p className={styles.context}>{request.note}</p> : null}
+                      {request.reviewed_at ? (
+                        <span>
+                          Reviewed {formatPilotAccessDate(request.reviewed_at)}
+                          {request.reviewed_by?.actor_id ? ` by ${request.reviewed_by.actor_id}` : ""}
+                        </span>
+                      ) : null}
+                      {request.status === "pending" && canTriagePilotAccess ? (
+                        <div className={styles.inlineActions}>
+                          <form action={reviewPilotAccessRequestAction} className={styles.inlineForm}>
+                            <input type="hidden" name="request_id" value={request.request_id} />
+                            <input type="hidden" name="decision" value="approve" />
+                            <input
+                              type="hidden"
+                              name="review_notes"
+                              value="Approved from workspace pilot triage panel."
+                            />
+                            <input type="hidden" name="return_to" value={actorReturnTo} />
+                            <button type="submit" className={styles.inlineActionButtonPrimary}>
+                              Approve
+                            </button>
+                          </form>
+                          <form action={reviewPilotAccessRequestAction} className={styles.inlineForm}>
+                            <input type="hidden" name="request_id" value={request.request_id} />
+                            <input type="hidden" name="decision" value="reject" />
+                            <input
+                              type="hidden"
+                              name="review_notes"
+                              value="Rejected from workspace pilot triage panel."
+                            />
+                            <input type="hidden" name="return_to" value={actorReturnTo} />
+                            <button type="submit" className={styles.inlineActionButton}>
+                              Reject
+                            </button>
+                          </form>
+                        </div>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          </details>
+
           <RuntimeStatusPanel />
           <OpsStatusPanel />
+          <BillingStatusPanel />
 
           <details className={styles.panel}>
             <summary className={styles.disclosureSummary}>
@@ -654,28 +984,6 @@ export default async function Home({ searchParams }: Props) {
                   <span>launch packets</span>
                 </div>
               </div>
-            </div>
-          </details>
-
-          <details className={styles.panel} open>
-            <summary className={styles.disclosureSummary}>
-              <span>Workflow</span>
-              <span>Guided path</span>
-            </summary>
-            <div className={styles.disclosureBody}>
-              <nav className={styles.stepGrid}>
-                {guidedSteps.map((step, index) => (
-                  <Link
-                    key={step.id}
-                    href={buildStageHref(activeDocument?.document_id ?? null, step.stage)}
-                    className={`${styles.stepCard} ${styles[step.status]}`}
-                  >
-                    <span className={styles.stepNumber}>Step {index + 1}</span>
-                    <strong>{step.title}</strong>
-                    <p>{step.description}</p>
-                  </Link>
-                ))}
-              </nav>
             </div>
           </details>
 
@@ -806,29 +1114,6 @@ export default async function Home({ searchParams }: Props) {
                 Bring your own Claude or Codex API key, or use a hosted plan where credentials
                 are stored encrypted server-side.
               </p>
-            </div>
-          </details>
-
-          <details className={styles.panel}>
-            <summary className={styles.disclosureSummary}>
-              <span>Document library</span>
-              <span>{documents.length} total</span>
-            </summary>
-            <div className={styles.disclosureBody}>
-              <ul className={styles.documentList} data-testid="document-list">
-                {documents.map((document) => (
-                  <li key={document.document_id} className={styles.documentItem}>
-                    <Link
-                      href={buildStageHref(document.document_id, activeStage)}
-                      className={styles.documentLink}
-                    >
-                      <strong>{document.title}</strong>
-                      <span>{document.document_id}</span>
-                      <span>v{document.version}</span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
             </div>
           </details>
 

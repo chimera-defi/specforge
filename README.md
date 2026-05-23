@@ -30,16 +30,18 @@ Collaborative editors already exist. The wedge is not generic editing; it is a s
 6. `TASKS.md`
 7. `web/README.md`
 8. `LOCAL_RUNBOOK.md`
-9. `DESIGN_PARTNER_TRIAL_PROMPT.md`
-10. `WIREFRAMES.md`
-11. `DESIGN_AGENT_HANDOFF_PROMPT.md`
-12. `TAURI_DESKTOP_PLAN.md`
-13. `CLAUDE_BUILDOUT_PLAN.md`
-14. `LOCAL_FIRST_SPEC_SYSTEM_PLAN.md`
+9. `GO_LIVE_RUNBOOK.md`
+10. `DESIGN_PARTNER_TRIAL_PROMPT.md`
+11. `WIREFRAMES.md`
+12. `DESIGN_AGENT_HANDOFF_PROMPT.md`
+13. `TAURI_DESKTOP_PLAN.md`
+14. `CLAUDE_BUILDOUT_PLAN.md`
+15. `LOCAL_FIRST_SPEC_SYSTEM_PLAN.md`
+16. `BILLING_SETUP.md`
 
 ### Full Pack (Grouped)
 - Product and strategy: `EXECUTIVE_SUMMARY`, `PRD`, `SPEC`
-- Architecture and runtime: `ARCHITECTURE_DECISIONS`, `TECH_STACK`, `LOCAL_RUNBOOK`, `EVENT_MODEL`
+- Architecture and runtime: `ARCHITECTURE_DECISIONS`, `TECH_STACK`, `LOCAL_RUNBOOK`, `GO_LIVE_RUNBOOK`, `BILLING_SETUP`, `EVENT_MODEL`
 - UX and flow: `VISION_AND_FLOW`, `UX_PRINCIPLES`, `USER_FLOWS`
 - Validation and economics: `VALIDATION_PLAN`, `GO_NO_GO_SCORECARD`, `PILOT_SCORECARD_TEMPLATE`, `FINANCIAL_MODEL`, `RISK_REGISTER`
 - Build surface: `web/`, `collab-server/`, `contracts/`, `fixtures/`, `FIRST_60_MINUTES.md`, `ACCEPTANCE_TEST_MATRIX.md`
@@ -109,7 +111,7 @@ Primary references and links are consolidated in `RESEARCH_NOTES.md` to avoid du
 1. Run design-partner validation on the hosted rehearsal path.
 2. Decide hosted SaaS only vs self-hosted OSS + hosted SaaS.
 3. Add deeper commercial onboarding and conversion instrumentation on top of the current landing/pricing surfaces.
-4. Add billing, metering, backup/restore, and stronger operational dashboards.
+4. Complete Stripe billing beyond the current checkout skeleton (webhooks, subscription sync, and plan automation), plus stronger operational dashboards.
 5. Expand starter generation only after design-partner usage proves the next templates.
 6. Validate whether an external design-skill integration is worth productizing, instead of hardwiring one prematurely.
 7. Package the local product for desktop distribution so design partners can trial SpecForge without a manual multi-process setup.

@@ -153,6 +153,24 @@ export type WorkspaceMembershipRecord = {
   created_at: string;
 };
 
+export type PilotAccessRequestRecord = {
+  request_id: string;
+  workspace_id: string;
+  github_login: string;
+  requested_name: string;
+  requested_email?: string;
+  note?: string;
+  status: "pending" | "approved" | "rejected";
+  reviewed_by?: {
+    actor_type: "human" | "agent";
+    actor_id: string;
+  };
+  reviewed_at?: string;
+  decision_reason?: string;
+  approved_membership_id?: string;
+  created_at: string;
+};
+
 export type WorkspaceActivityMetrics = {
   workspace_id: string;
   document_count: number;
@@ -192,6 +210,22 @@ type CommentThreadRow = {
   resolved_by_actor_id: string | null;
   created_at: string;
   resolved_at: string | null;
+};
+
+type PilotAccessRequestRow = {
+  request_id: string;
+  workspace_id: string;
+  github_login: string;
+  requested_name: string;
+  requested_email: string | null;
+  note: string | null;
+  status: "pending" | "approved" | "rejected";
+  reviewed_by_actor_type: "human" | "agent" | null;
+  reviewed_by_actor_id: string | null;
+  reviewed_at: string | null;
+  decision_reason: string | null;
+  approved_membership_id: string | null;
+  created_at: string;
 };
 
 export type CommentThreadRecord = {
@@ -334,6 +368,7 @@ async function readJson<T>(filePath: string): Promise<T> {
 type StoreSnapshot = {
   workspaces: WorkspaceRow[];
   workspace_members: WorkspaceMemberRow[];
+  pilot_access_requests: PilotAccessRequestRow[];
   users: UserRow[];
   documents: DocumentRow[];
   document_snapshots: DocumentSnapshotRow[];
@@ -364,6 +399,7 @@ async function dumpSnapshot(database: QuerySession): Promise<StoreSnapshot> {
   const [
     workspaces,
     workspaceMembers,
+    pilotAccessRequests,
     users,
     documents,
     documentSnapshots,
@@ -390,6 +426,24 @@ async function dumpSnapshot(database: QuerySession): Promise<StoreSnapshot> {
           github_login,
           created_at
         FROM workspace_members
+        ORDER BY created_at ASC`,
+      ),
+      database.query<PilotAccessRequestRow>(
+        `SELECT
+          request_id,
+          workspace_id,
+          github_login,
+          requested_name,
+          requested_email,
+          note,
+          status,
+          reviewed_by_actor_type,
+          reviewed_by_actor_id,
+          reviewed_at,
+          decision_reason,
+          approved_membership_id,
+          created_at
+        FROM pilot_access_requests
         ORDER BY created_at ASC`,
       ),
       database.query<UserRow>(
@@ -502,6 +556,7 @@ async function dumpSnapshot(database: QuerySession): Promise<StoreSnapshot> {
   return {
     workspaces: workspaces.rows,
     workspace_members: workspaceMembers.rows,
+    pilot_access_requests: pilotAccessRequests.rows,
     users: users.rows,
     documents: documents.rows,
     document_snapshots: documentSnapshots.rows,
@@ -529,6 +584,7 @@ async function hydrateSnapshot(database: QuerySession, snapshot: StoreSnapshot) 
     DELETE FROM audit_events;
     DELETE FROM patches;
     DELETE FROM documents;
+    DELETE FROM pilot_access_requests;
     DELETE FROM workspace_members;
     DELETE FROM workspaces;
     DELETE FROM users;
@@ -568,6 +624,41 @@ async function hydrateSnapshot(database: QuerySession, snapshot: StoreSnapshot) 
         row.role,
         row.color,
         row.github_login ?? null,
+        row.created_at,
+      ],
+    );
+  }
+
+  for (const row of snapshot.pilot_access_requests ?? []) {
+    await database.query(
+      `INSERT INTO pilot_access_requests (
+        request_id,
+        workspace_id,
+        github_login,
+        requested_name,
+        requested_email,
+        note,
+        status,
+        reviewed_by_actor_type,
+        reviewed_by_actor_id,
+        reviewed_at,
+        decision_reason,
+        approved_membership_id,
+        created_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+      [
+        row.request_id,
+        row.workspace_id,
+        row.github_login,
+        row.requested_name,
+        row.requested_email ?? null,
+        row.note ?? null,
+        row.status,
+        row.reviewed_by_actor_type ?? null,
+        row.reviewed_by_actor_id ?? null,
+        row.reviewed_at ?? null,
+        row.decision_reason ?? null,
+        row.approved_membership_id ?? null,
         row.created_at,
       ],
     );
@@ -898,6 +989,22 @@ async function createSchema(database: QuerySession) {
       role TEXT NOT NULL,
       color TEXT NOT NULL,
       github_login TEXT,
+      created_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS pilot_access_requests (
+      request_id TEXT PRIMARY KEY,
+      workspace_id TEXT NOT NULL REFERENCES workspaces(workspace_id) ON DELETE CASCADE,
+      github_login TEXT NOT NULL,
+      requested_name TEXT NOT NULL,
+      requested_email TEXT,
+      note TEXT,
+      status TEXT NOT NULL DEFAULT 'pending',
+      reviewed_by_actor_type TEXT,
+      reviewed_by_actor_id TEXT,
+      reviewed_at TEXT,
+      decision_reason TEXT,
+      approved_membership_id TEXT REFERENCES workspace_members(membership_id) ON DELETE SET NULL,
       created_at TEXT NOT NULL
     );
 
@@ -1583,6 +1690,14 @@ export {
 } from "./store-memberships";
 
 /* Membership functions extracted to ./store-memberships.ts */
+
+export {
+  createPilotAccessRequest,
+  listPilotAccessRequests,
+  reviewPilotAccessRequest,
+} from "./store-pilot-access";
+
+/* Pilot access functions extracted to ./store-pilot-access.ts */
 
 export {
   getWorkspaceActivityMetrics,

@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import {
@@ -8,11 +9,13 @@ import {
   createCommentThread,
   createClarification,
   createDocument,
+  createPilotAccessRequest,
   createWorkspaceMembership,
   getDocument,
   createPatchProposal,
   decidePatch,
   listPatches,
+  reviewPilotAccessRequest,
   listWorkspaceMemberships,
   listWorkspaceRecords,
   resetWorkspaceDocuments,
@@ -43,6 +46,94 @@ async function getActionActorRef() {
       actor_id: currentActor.actor_id,
     },
   };
+}
+
+type PilotAccessDecision = "approve" | "reject";
+
+function normalizeReturnPath(rawReturnTo: string, fallback: string) {
+  if (rawReturnTo.startsWith("/") && !rawReturnTo.startsWith("//")) {
+    return rawReturnTo;
+  }
+
+  return fallback;
+}
+
+const PILOT_REQUEST_WINDOW_MS = 60 * 60 * 1000;
+const PILOT_REQUEST_LIMIT = 3;
+const pilotRequestRateLimiter = new Map<string, { count: number; windowStartMs: number }>();
+
+function getRequestClientKey(headerList: Headers) {
+  const forwardedFor = headerList.get("x-forwarded-for");
+  const realIp = headerList.get("x-real-ip");
+  const firstForwarded = forwardedFor?.split(",")[0]?.trim();
+  return firstForwarded || realIp || "unknown_client";
+}
+
+function consumePilotRequestRateLimit(key: string, nowMs: number = Date.now()) {
+  const existing = pilotRequestRateLimiter.get(key);
+
+  if (!existing || nowMs - existing.windowStartMs >= PILOT_REQUEST_WINDOW_MS) {
+    pilotRequestRateLimiter.set(key, { count: 1, windowStartMs: nowMs });
+    return { allowed: true, remaining: PILOT_REQUEST_LIMIT - 1 };
+  }
+
+  if (existing.count >= PILOT_REQUEST_LIMIT) {
+    return { allowed: false, remaining: 0 };
+  }
+
+  existing.count += 1;
+  pilotRequestRateLimiter.set(key, existing);
+  return { allowed: true, remaining: PILOT_REQUEST_LIMIT - existing.count };
+}
+
+function buildRedirectPath(pathWithQuery: string, params: Record<string, string | undefined | null>) {
+  const [pathname, query = ""] = pathWithQuery.split("?");
+  const searchParams = new URLSearchParams(query);
+
+  for (const [key, value] of Object.entries(params)) {
+    if (!value) {
+      searchParams.delete(key);
+      continue;
+    }
+
+    searchParams.set(key, value);
+  }
+
+  const resolvedQuery = searchParams.toString();
+  return resolvedQuery ? `${pathname}?${resolvedQuery}` : pathname;
+}
+
+function normalizeText(value: FormDataEntryValue | null, maxLength: number) {
+  const resolved = String(value ?? "").trim();
+  return resolved.slice(0, maxLength);
+}
+
+function parseTeamSize(value: FormDataEntryValue | null) {
+  const raw = String(value ?? "").trim();
+  if (!raw) {
+    return null;
+  }
+
+  const parsed = Number(raw);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return null;
+  }
+
+  return Math.min(Math.round(parsed), 500);
+}
+
+function isValidEmail(email: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function canTriagePilotAccess(role: string) {
+  const normalizedRole = role.trim().toLowerCase();
+  return (
+    normalizedRole === "workspace owner" ||
+    normalizedRole === "owner" ||
+    normalizedRole === "founder" ||
+    normalizedRole === "admin"
+  );
 }
 
 export async function createDocumentAction(formData: FormData) {
@@ -339,4 +430,100 @@ export async function createWorkspaceMemberAction(formData: FormData) {
 
   revalidatePath("/workspace");
   redirect(returnTo || "/workspace");
+}
+
+export async function requestPilotAccessAction(formData: FormData) {
+  const headerList = await headers();
+  const returnTo = normalizeReturnPath(
+    String(formData.get("return_to") ?? "/pilot-access"),
+    "/pilot-access",
+  );
+  const trapValue = normalizeText(formData.get("website"), 200);
+  const fullName = normalizeText(formData.get("full_name"), 80);
+  const email = normalizeText(formData.get("email"), 140).toLowerCase();
+  const githubLogin = normalizeText(formData.get("github_login"), 64).toLowerCase();
+  const workspaceId = "ws_demo";
+  const company = normalizeText(formData.get("company"), 120);
+  const role = normalizeText(formData.get("role"), 120);
+  const teamSize = parseTeamSize(formData.get("team_size"));
+  const useCase = normalizeText(formData.get("use_case"), 1000);
+  const notes = normalizeText(formData.get("notes"), 1000);
+  const source = normalizeText(formData.get("source"), 64);
+
+  if (trapValue) {
+    redirect(buildRedirectPath(returnTo, { status: "submitted" }));
+  }
+
+  if (!fullName || !email || !githubLogin || !useCase || !isValidEmail(email)) {
+    redirect(buildRedirectPath(returnTo, { status: "invalid" }));
+  }
+
+  const clientKey = getRequestClientKey(headerList);
+  const limiter = consumePilotRequestRateLimit(`${clientKey}:${email}:${githubLogin}`);
+  if (!limiter.allowed) {
+    redirect(buildRedirectPath(returnTo, { status: "rate_limited" }));
+  }
+
+  const noteSections = [
+    useCase ? `Use case:\n${useCase}` : "",
+    company ? `Company: ${company}` : "",
+    role ? `Role: ${role}` : "",
+    teamSize ? `Team size: ${teamSize}` : "",
+    source ? `Source: ${source}` : "",
+    notes ? `Notes:\n${notes}` : "",
+  ].filter(Boolean);
+
+  try {
+    await createPilotAccessRequest({
+      workspace_id: workspaceId,
+      github_login: githubLogin,
+      requested_name: fullName,
+      requested_email: email,
+      note: noteSections.join("\n\n") || undefined,
+    });
+  } catch {
+    redirect(buildRedirectPath(returnTo, { status: "error" }));
+  }
+
+  revalidatePath("/pilot-access");
+  revalidatePath("/workspace");
+  redirect(buildRedirectPath(returnTo, { status: "submitted" }));
+}
+
+export async function reviewPilotAccessRequestAction(formData: FormData) {
+  const { actorRef, currentActor } = await getActionActorRef();
+  const returnTo = normalizeReturnPath(
+    String(formData.get("return_to") ?? "/workspace"),
+    "/workspace",
+  );
+  const requestId = normalizeText(formData.get("request_id"), 120);
+  const decisionRaw = normalizeText(formData.get("decision"), 16);
+  const reviewNotes = normalizeText(formData.get("review_notes"), 500);
+  const decision: PilotAccessDecision | null =
+    decisionRaw === "approve" || decisionRaw === "reject"
+      ? (decisionRaw as PilotAccessDecision)
+      : null;
+
+  if (!requestId || !decision) {
+    redirect(buildRedirectPath(returnTo, { triage_status: "invalid" }));
+  }
+
+  if (!canTriagePilotAccess(currentActor.role)) {
+    redirect(buildRedirectPath(returnTo, { triage_status: "forbidden" }));
+  }
+
+  try {
+    await reviewPilotAccessRequest({
+      request_id: requestId,
+      decision,
+      reviewed_by: actorRef,
+      decision_reason: reviewNotes || undefined,
+    });
+  } catch {
+    redirect(buildRedirectPath(returnTo, { triage_status: "error" }));
+  }
+
+  revalidatePath("/workspace");
+  revalidatePath("/pilot-access");
+  redirect(buildRedirectPath(returnTo, { triage_status: "saved" }));
 }
