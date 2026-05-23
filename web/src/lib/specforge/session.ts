@@ -1,5 +1,3 @@
-import crypto from "node:crypto";
-
 import { cookies } from "next/headers";
 
 import { logger } from "../logger";
@@ -11,6 +9,16 @@ import {
   listWorkspaceMemberships,
 } from "./store";
 import { DEFAULT_WORKSPACE_RECORD, WORKSPACE_MEMBERS_SEED } from "./workspace-seed-data";
+import {
+  createWorkspaceSessionToken,
+  verifyWorkspaceSessionToken,
+  WORKSPACE_SESSION_MAX_AGE_SECONDS,
+} from "./session-token";
+export {
+  createWorkspaceSessionToken,
+  verifyWorkspaceSessionToken,
+  type StoredWorkspaceSession,
+} from "./session-token";
 
 export type WorkspaceActor = {
   actor_id: string;
@@ -37,8 +45,8 @@ export type WorkspaceRecord = {
 const WORKSPACE_ACTOR_COOKIE = "specforge_actor_id";
 const WORKSPACE_SESSION_COOKIE = "specforge_session";
 const GITHUB_OAUTH_STATE_COOKIE = "specforge_github_oauth_state";
+const GITHUB_OAUTH_NEXT_COOKIE = "specforge_github_oauth_next";
 const ASSIST_TOOL_COOKIE = "specforge_assist_tool";
-const DEFAULT_SESSION_SECRET = "specforge-local-session-secret";
 
 export type PreferredAssistTool = "auto" | "codex_cli" | "claude_cli" | "heuristic";
 
@@ -52,49 +60,10 @@ const workspaceMembers = WORKSPACE_MEMBERS_SEED.map((member) => ({
   githubLogin: member.github_login,
 }));
 
-type StoredWorkspaceSession = {
-  actor_id: string;
-  workspace_id: string;
-  role: string;
-  githubLogin: string;
-  githubUrl?: string;
-  issuedAt: number;
-};
-
-function getSessionSecret() {
-  const configuredSecret = process.env.SPECFORGE_SESSION_SECRET?.trim();
-
-  if (process.env.SPECFORGE_REQUIRE_SECURE_SECRETS === "true" && !configuredSecret) {
-    throw new Error("SPECFORGE_SESSION_SECRET must be configured outside local demo mode");
-  }
-
-  return configuredSecret || DEFAULT_SESSION_SECRET;
-}
-
 function isSecureCookie() {
   return (
     process.env.NODE_ENV === "production" ||
     process.env.SPECFORGE_SECURE_COOKIES === "true"
-  );
-}
-
-function base64UrlEncode(value: string | Buffer) {
-  return Buffer.from(value)
-    .toString("base64")
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/g, "");
-}
-
-function base64UrlDecode(value: string) {
-  const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
-  const padding = normalized.length % 4 === 0 ? "" : "=".repeat(4 - (normalized.length % 4));
-  return Buffer.from(`${normalized}${padding}`, "base64").toString("utf8");
-}
-
-function signPayload(payload: string) {
-  return base64UrlEncode(
-    crypto.createHmac("sha256", getSessionSecret()).update(payload).digest(),
   );
 }
 
@@ -182,33 +151,6 @@ export async function resolveWorkspaceMemberForGitHubLogin(
   }
 }
 
-export function createWorkspaceSessionToken(session: StoredWorkspaceSession) {
-  const payload = base64UrlEncode(JSON.stringify(session));
-  const signature = signPayload(payload);
-  return `${payload}.${signature}`;
-}
-
-export function verifyWorkspaceSessionToken(token: string) {
-  const [payload, signature] = String(token ?? "").split(".");
-
-  if (!payload || !signature) {
-    throw new Error("Malformed workspace session");
-  }
-
-  const expectedSignature = signPayload(payload);
-  const actualBuffer = Buffer.from(signature);
-  const expectedBuffer = Buffer.from(expectedSignature);
-
-  if (
-    actualBuffer.length !== expectedBuffer.length ||
-    !crypto.timingSafeEqual(actualBuffer, expectedBuffer)
-  ) {
-    throw new Error("Invalid workspace session signature");
-  }
-
-  return JSON.parse(base64UrlDecode(payload)) as StoredWorkspaceSession;
-}
-
 function actorToSession(actor: WorkspaceActor, authMode: "local" | "github" | "unauthenticated", details?: {
   githubLogin?: string;
   githubUrl?: string;
@@ -234,29 +176,45 @@ export async function getCurrentWorkspaceSession() {
     if (rawSession) {
       try {
         const verified = verifyWorkspaceSessionToken(rawSession);
-        const actor =
-          (await resolveWorkspaceActor(verified.actor_id)) ??
-          (await resolveWorkspaceMemberForGitHubLogin(
-            verified.githubLogin,
-            verified.workspace_id ?? "ws_demo",
-          ));
+        const workspaceId = verified.workspace_id ?? "ws_demo";
 
-        if (actor) {
-          const resolvedActor = verified.workspace_id
-            ? { ...actor, workspace_id: verified.workspace_id, role: verified.role ?? actor.role }
-            : actor;
-          return actorToSession(resolvedActor, "github", {
+        if (!verified.githubLogin) {
+          throw new Error("Missing GitHub login in workspace session token");
+        }
+
+        const member = await resolveWorkspaceMemberForGitHubLogin(
+          verified.githubLogin,
+          workspaceId,
+        );
+
+        if (!member) {
+          throw new Error(
+            `GitHub user @${verified.githubLogin} no longer has membership in ${workspaceId}`,
+          );
+        }
+
+        if (member.actor_id !== verified.actor_id) {
+          throw new Error("Workspace session actor mismatch");
+        }
+
+        return actorToSession(
+          { ...member, workspace_id: workspaceId, role: member.role },
+          "github",
+          {
             githubLogin: verified.githubLogin,
             githubUrl: verified.githubUrl,
-          });
-        }
+          },
+        );
       } catch (error) {
-        // Session verification failed - likely due to signature mismatch or malformed token
-        // Delete the invalid session cookie to force re-authentication
+        // Session verification or membership resolution failed.
+        // Delete the invalid session cookie to force re-authentication.
         logger.error(
           "Failed to verify workspace session token",
           error instanceof Error ? error : new Error(String(error)),
-          { reason: "Possible: signature mismatch, malformed token, or expired session" }
+          {
+            reason:
+              "Possible: signature mismatch, malformed token, expired session, or membership drift",
+          },
         );
         cookieStore.delete(WORKSPACE_SESSION_COOKIE);
       }
@@ -375,7 +333,7 @@ export async function setGitHubWorkspaceSession(input: {
       sameSite: "lax",
       secure: isSecureCookie(),
       path: "/",
-      maxAge: 60 * 60 * 24 * 7,
+      maxAge: WORKSPACE_SESSION_MAX_AGE_SECONDS,
     },
   );
   return actorToSession(actor, "github", input);
@@ -397,6 +355,58 @@ export async function createGitHubOAuthState() {
     maxAge: 60 * 10,
   });
   return state;
+}
+
+export function sanitizePostAuthRedirectPath(path: string | null | undefined) {
+  if (!path) {
+    return null;
+  }
+
+  if (path.length > 2048) {
+    return null;
+  }
+
+  try {
+    const parsed = new URL(path, "http://localhost");
+
+    if (parsed.origin !== "http://localhost") {
+      return null;
+    }
+
+    if (parsed.pathname.startsWith("/api/auth/")) {
+      return null;
+    }
+
+    return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+  } catch {
+    return null;
+  }
+}
+
+export async function setGitHubOAuthNextPath(path: string | null | undefined) {
+  const cookieStore = await cookies();
+  const safePath = sanitizePostAuthRedirectPath(path);
+
+  if (!safePath) {
+    cookieStore.delete(GITHUB_OAUTH_NEXT_COOKIE);
+    return;
+  }
+
+  cookieStore.set(GITHUB_OAUTH_NEXT_COOKIE, safePath, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: isSecureCookie(),
+    path: "/",
+    maxAge: 60 * 10,
+  });
+}
+
+export async function consumeGitHubOAuthNextPath(defaultPath: string = "/workspace") {
+  const cookieStore = await cookies();
+  const rawPath = cookieStore.get(GITHUB_OAUTH_NEXT_COOKIE)?.value;
+  cookieStore.delete(GITHUB_OAUTH_NEXT_COOKIE);
+
+  return sanitizePostAuthRedirectPath(rawPath) ?? defaultPath;
 }
 
 export async function verifyGitHubOAuthState(state: string | null) {

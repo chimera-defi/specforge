@@ -13,8 +13,8 @@ test("renders the integrated SpecForge demo and captures a screenshot", async ({
     }),
   ).toBeVisible();
   await expect(page.getByRole("link", { name: "Launch workspace" })).toBeVisible();
-  await expect(page.getByText("Current release candidate")).toBeVisible();
-  await expect(page.getByRole("link", { name: "Get the alpha" })).toBeVisible();
+  await expect(page.getByText("Release candidate")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Run local alpha" })).toBeVisible();
 
   await page.screenshot({
     path: "artifacts/screenshots/specforge-demo-home.png",
@@ -313,7 +313,7 @@ test("renders the guided flow on a mobile viewport", async ({ page }) => {
 
   await expect(page.getByText("SpecForge", { exact: true })).toBeVisible();
   await expect(page.getByRole("link", { name: "Launch workspace" })).toBeVisible();
-  await expect(page.getByText("Current release candidate")).toBeVisible();
+  await expect(page.getByText("Release candidate")).toBeVisible();
 
   await page.screenshot({
     path: "artifacts/screenshots/specforge-demo-mobile.png",
@@ -391,5 +391,5 @@ test("renders the download page", async ({ page }) => {
   ).toBeVisible();
   await expect(page.getByText("Current alpha truth", { exact: true })).toBeVisible();
   await expect(page.getByText("Desktop app next", { exact: true })).toBeVisible();
-  await expect(page.getByText("bun run dev")).toBeVisible();
+  await expect(page.locator("pre").filter({ hasText: "bun run dev:web" }).first()).toBeVisible();
 });
