@@ -28,6 +28,13 @@
   --color-warning: #8a5310;
   --color-warning-subtle: rgba(183, 106, 18, 0.14);
 
+  /* Landing dark surface elevations */
+  --color-surface-elevated: rgba(255, 255, 255, 0.045);
+  --color-surface-raised: rgba(255, 255, 255, 0.07);
+  --color-border-dark: rgba(255, 255, 255, 0.09);
+  --color-border-dark-mid: rgba(255, 255, 255, 0.14);
+  --color-border-dark-strong: rgba(255, 255, 255, 0.13);
+
   /* Brand-specific extras */
   --color-ink-dark: #18212b;
   --color-teal: #0f766e;
