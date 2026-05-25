@@ -1,18 +1,9 @@
+import Image from "next/image";
 import Link from "next/link";
-import {
-  GitMerge,
-  Users,
-  ShieldCheck,
-  Package,
-  Terminal,
-  ArrowRight,
-  CheckCircle2,
-  FileText,
-  Zap,
-  Workflow,
-  Rocket,
-} from "lucide-react";
+import { ArrowRight, GitMerge, Package, Users } from "lucide-react";
 import { heroVariantOrder, heroVariants, type HeroVariant } from "@/lib/specforge/marketing";
+
+const GITHUB_URL = "https://github.com/chimera-defi/specforge";
 
 type Props = {
   searchParams?: Promise<{ variant?: string }>;
@@ -20,38 +11,40 @@ type Props = {
 
 function Nav() {
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-xl">
-      <div className="mx-auto flex w-full max-w-[1180px] items-center justify-between px-4 py-3">
+    <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-primary/95 backdrop-blur-xl">
+      <div className="mx-auto flex min-h-[3.75rem] w-full max-w-[1100px] items-center justify-between px-5">
         <Link
           href="/"
-          className="text-[0.8rem] font-black uppercase tracking-[0.24em] text-foreground transition-opacity hover:opacity-70"
+          className="text-[0.72rem] font-black uppercase tracking-[0.24em] text-primary-foreground/90 transition-opacity hover:opacity-60"
         >
           SpecForge
         </Link>
         <nav className="flex items-center gap-1">
           <Link
-            href="/download"
-            className="inline-flex min-h-[2.7rem] items-center rounded-full px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Download
-          </Link>
-          <Link
             href="/pricing"
-            className="inline-flex min-h-[2.7rem] items-center rounded-full px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+            className="hidden min-h-[2.5rem] items-center px-3 text-[0.82rem] text-primary-foreground/55 transition-colors hover:text-primary-foreground/90 sm:inline-flex"
           >
             Pricing
           </Link>
           <Link
-            href="/pilot-access"
-            className="inline-flex min-h-[2.7rem] items-center rounded-full px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+            href="/download"
+            className="hidden min-h-[2.5rem] items-center px-3 text-[0.82rem] text-primary-foreground/55 transition-colors hover:text-primary-foreground/90 md:inline-flex"
           >
-            Pilot access
+            Download
           </Link>
-          <Link
-            href="/workspace"
-            className="ml-2 inline-flex min-h-[2.8rem] items-center rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground shadow-[var(--shadow-accent)] transition hover:-translate-y-[1px] hover:shadow-[var(--shadow-accent-hover)] active:scale-[0.98]"
+          <a
+            href={GITHUB_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="hidden min-h-[2.5rem] items-center px-3 text-[0.82rem] text-primary-foreground/55 transition-colors hover:text-primary-foreground/90 lg:inline-flex"
           >
-            Open workspace
+            GitHub
+          </a>
+          <Link
+            href="/pilot-access?source=landing_nav"
+            className="ml-2 inline-flex min-h-[2.25rem] items-center rounded-full bg-accent px-4 text-[0.82rem] font-semibold text-accent-foreground transition hover:bg-teal-hover active:scale-[0.97]"
+          >
+            Request access
           </Link>
         </nav>
       </div>
@@ -59,64 +52,13 @@ function Nav() {
   );
 }
 
-function PatchMockup() {
-  return (
-    <div className="group relative overflow-hidden rounded-[var(--radius-xl)] border border-border-mid bg-card shadow-[var(--shadow-card)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-card-hover)]">
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-accent/16 to-transparent" />
-
-      <div className="flex items-center gap-1.5 border-b border-border bg-surface-light/65 px-4 py-3">
-        <span className="h-3 w-3 rounded-full bg-destructive/45" />
-        <span className="h-3 w-3 rounded-full bg-warning/45" />
-        <span className="h-3 w-3 rounded-full bg-success/45" />
-        <span className="ml-3 text-xs text-muted-foreground font-mono">patch-queue · 3 pending</span>
-        <span className="ml-auto inline-flex h-2 w-2 animate-pulse rounded-full bg-accent" />
-      </div>
-
-      <div className="space-y-4 p-5">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center rounded-full border border-teal-border bg-teal-subtle px-2.5 py-0.5 text-[0.7rem] font-semibold uppercase tracking-wider text-accent">
-              Agent patch
-            </span>
-            <span className="text-xs text-muted-foreground">Claude Code · 2m ago</span>
-          </div>
-          <span className="text-xs text-muted-foreground">Auth section</span>
-        </div>
-
-        <p className="text-sm font-medium leading-snug text-foreground">
-          Add structured error handling to the authentication flow for token expiry edge cases.
-        </p>
-
-        <div className="space-y-0.5 rounded-lg border border-success-subtle bg-success-subtle/55 p-3 font-mono text-xs leading-relaxed text-success">
-          <div>+ try-catch around token refresh calls</div>
-          <div>+ return 401 with &quot;refresh_required&quot; hint</div>
-          <div>+ add expiry timestamp to JWT decode check</div>
-        </div>
-
-        <div className="flex items-center gap-2 pt-1">
-          <button className="inline-flex min-h-[2rem] items-center gap-1.5 rounded-full bg-success px-4 py-1 text-xs font-semibold text-white transition-opacity hover:opacity-90">
-            <CheckCircle2 size={12} />
-            Accept
-          </button>
-          <button className="inline-flex min-h-[2rem] items-center rounded-full border border-border bg-card px-4 py-1 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted">
-            Reject
-          </button>
-          <button className="inline-flex min-h-[2rem] items-center rounded-full border border-border bg-card px-4 py-1 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted">
-            Cherry-pick
-          </button>
-        </div>
-      </div>
-
-      <div className="flex items-center justify-between border-t border-border bg-surface-light/45 px-5 py-3">
-        <div className="flex items-center gap-1.5">
-          <span className="h-2 w-2 animate-pulse rounded-full bg-accent" />
-          <span className="text-xs text-muted-foreground">2 more patches in queue</span>
-        </div>
-        <span className="text-xs text-muted-foreground">Spec v4 · 3 contributors</span>
-      </div>
-    </div>
-  );
-}
+const stages = [
+  { n: "01", label: "Problem" },
+  { n: "02", label: "Strategy" },
+  { n: "03", label: "Engineering" },
+  { n: "04", label: "Design" },
+  { n: "05", label: "Security" },
+];
 
 export default async function LandingPage({ searchParams }: Props) {
   const resolvedSearchParams = (await searchParams) ?? {};
@@ -125,209 +67,305 @@ export default async function LandingPage({ searchParams }: Props) {
     heroVariantOrder.includes(resolvedSearchParams.variant as HeroVariant)
       ? (resolvedSearchParams.variant as HeroVariant)
       : "handoff";
-  const heroCopy = heroVariants[heroVariant];
+  const copy = heroVariants[heroVariant];
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
-      <div className="pointer-events-none absolute -top-24 left-1/2 h-[26rem] w-[26rem] -translate-x-1/2 rounded-full bg-teal-subtle blur-3xl" />
-      <div className="pointer-events-none absolute right-[-8rem] top-[16rem] h-[22rem] w-[22rem] rounded-full bg-blue-subtle blur-3xl" />
-
+    <div className="min-h-screen bg-primary text-primary-foreground">
       <Nav />
 
-      <section className="mx-auto grid w-full max-w-[1180px] grid-cols-1 gap-10 px-4 pb-16 pt-14 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
-        <div className="space-y-6 animate-fade-up">
-          <p className="text-xs font-black uppercase tracking-[0.22em] text-accent">{heroCopy.eyebrow}</p>
-          <h1 className="max-w-[13ch] text-balance text-[clamp(2.2rem,8vw,5.5rem)] font-black leading-[1.04] tracking-tight">
-            {heroCopy.headline}
-          </h1>
-          <p className="max-w-[58ch] text-[1.05rem] leading-[1.75] text-muted-foreground">{heroCopy.subhead}</p>
+      {/* ── Hero ─────────────────────────────────────────────────── */}
+      <section className="mx-auto flex w-full max-w-[780px] flex-col items-center px-5 pb-14 pt-16 text-center md:pt-24">
+        <span className="mb-6 inline-flex items-center rounded-full border border-white/10 bg-white/6 px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-primary-foreground/55">
+          {copy.eyebrow}
+        </span>
 
-          <div className="flex flex-wrap gap-3">
-            <Link
-              href="/workspace"
-              className="inline-flex min-h-[2.95rem] items-center gap-2 rounded-full bg-accent px-5 py-3 font-semibold text-accent-foreground shadow-[var(--shadow-accent)] transition hover:-translate-y-[1px] hover:shadow-[var(--shadow-accent-hover)] active:scale-[0.98]"
-            >
-              Launch workspace
-              <ArrowRight size={16} />
-            </Link>
-            <Link
-              href="/pilot-access?source=landing_hero"
-              className="inline-flex min-h-[2.95rem] items-center rounded-full border border-border-mid bg-card px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-surface-light active:scale-[0.98]"
-            >
-              Request pilot access
-            </Link>
-          </div>
+        <h1 className="text-balance text-[clamp(2.8rem,8vw,5.2rem)] font-black leading-[0.98] tracking-tight">
+          {copy.headline}
+        </h1>
 
-          <div className="inline-flex items-center gap-2 rounded-full border border-border-mid bg-card px-3 py-1.5">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-accent" />
-            <span className="text-xs text-muted-foreground">Design partner pilot · realtime collaboration</span>
-          </div>
+        <p className="mt-5 max-w-[52ch] text-[1.05rem] leading-[1.65] text-primary-foreground/60">
+          {copy.subhead}
+        </p>
 
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {[
-              { label: "Human in the loop", value: "Always" },
-              { label: "Patch decisions", value: "Full audit" },
-              { label: "Runs", value: "Local · Hosted" },
-            ].map((item, idx) => (
-              <div
-                key={item.label}
-                className="rounded-[var(--radius-md)] border border-border-mid bg-card px-4 py-3 shadow-[var(--shadow-card)] animate-fade-up"
-                style={{ animationDelay: `${0.12 * (idx + 1)}s` }}
-              >
-                <div className="text-[0.72rem] uppercase tracking-[0.18em] text-muted-mid">{item.label}</div>
-                <div className="mt-1 text-xl font-black text-foreground">{item.value}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="animate-fade-up [animation-delay:120ms] lg:sticky lg:top-24">
-          <PatchMockup />
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <Link
+            href="/pilot-access?source=landing_hero"
+            className="inline-flex min-h-[2.85rem] items-center gap-2 rounded-full bg-accent px-5 text-[0.9rem] font-semibold text-accent-foreground shadow-[var(--shadow-accent)] transition hover:-translate-y-[1px] hover:bg-teal-hover hover:shadow-[var(--shadow-accent-hover)] active:scale-[0.97]"
+          >
+            Request pilot access
+            <ArrowRight size={15} />
+          </Link>
+          <Link
+            href="/workspace?source=landing_hero"
+            className="inline-flex min-h-[2.85rem] items-center rounded-full border border-white/15 px-5 text-[0.9rem] font-semibold text-primary-foreground/80 transition hover:border-white/30 hover:text-primary-foreground active:scale-[0.97]"
+          >
+            Try demo workspace
+          </Link>
         </div>
       </section>
 
-      <section className="mx-auto w-full max-w-[1180px] px-4 pb-14">
-        <div className="rounded-[var(--radius-xl)] border border-border-mid bg-ink-dark px-6 py-7 text-primary-foreground shadow-[var(--shadow-card)] animate-fade-up [animation-delay:180ms]">
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-[0.8fr_1.2fr] md:items-start">
-            <div>
-              <h2 className="text-[1.35rem] font-black tracking-tight">Safe multiplayer, not collaborative chaos</h2>
-              <p className="mt-2 text-sm leading-relaxed text-primary-foreground/78">
-                Humans edit in real time. Agents only submit reviewable patches. The canonical spec moves forward when humans decide.
-              </p>
-            </div>
-            <ol className="grid gap-4 sm:grid-cols-3 md:grid-cols-1">
-              {[
-                {
-                  icon: <Users size={16} />,
-                  label: "Human editing",
-                  desc: "Shared presence, conflict recovery, and section-level ownership.",
-                },
-                {
-                  icon: <Zap size={16} />,
-                  label: "Agent proposals",
-                  desc: "Patches target stable blocks and carry provenance metadata.",
-                },
-                {
-                  icon: <ShieldCheck size={16} />,
-                  label: "Governed decisions",
-                  desc: "Accept, reject, or cherry-pick before canonical state changes.",
-                },
-              ].map((item) => (
-                <li key={item.label} className="rounded-[var(--radius-md)] border border-white/15 bg-[#232d38] px-4 py-3">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-primary-foreground/92">
-                    <span className="text-accent">{item.icon}</span>
-                    {item.label}
-                  </div>
-                  <p className="mt-1 text-sm leading-relaxed text-primary-foreground/78">{item.desc}</p>
+      {/* ── Product screenshot ───────────────────────────────────── */}
+      <div className="relative mx-auto w-full max-w-[1060px] px-4 pb-0">
+        <figure className="overflow-hidden rounded-t-[var(--radius-xl)] border border-b-0 border-white/10 bg-primary shadow-[0_40px_120px_rgba(0,0,0,0.6)]">
+          <div className="flex min-h-[2.5rem] items-center gap-2 border-b border-white/8 bg-white/4 px-4">
+            <span className="h-2 w-2 rounded-full bg-white/18" />
+            <span className="h-2 w-2 rounded-full bg-white/18" />
+            <span className="h-2 w-2 rounded-full bg-white/18" />
+            <span className="ml-3 font-mono text-[0.68rem] text-primary-foreground/35">
+              specforge · workspace
+            </span>
+            <span className="ml-auto inline-flex items-center gap-1 text-[0.68rem] font-semibold text-accent/70">
+              <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+              Live
+            </span>
+          </div>
+          <Image
+            src="/marketing/specforge-workspace-preview.png"
+            alt="SpecForge workspace — shared specification with review queue and export panels"
+            width={1360}
+            height={850}
+            priority
+            sizes="(min-width: 1100px) 1060px, calc(100vw - 2rem)"
+            className="aspect-[16/10] w-full object-cover object-top"
+          />
+        </figure>
+      </div>
+
+      {/* ── Content sections (parchment) ─────────────────────────── */}
+      <div className="bg-background text-foreground">
+
+        {/* Stage strip */}
+        <section className="mx-auto w-full max-w-[1100px] px-5 py-12">
+          <div className="flex flex-col gap-5 border-b border-border-mid pb-12 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-[0.75rem] font-black uppercase tracking-[0.18em] text-amber">
+              5-stage idea audit — built in
+            </p>
+            <ol className="flex flex-wrap items-center gap-x-0 gap-y-2 text-[0.82rem] font-semibold text-muted-foreground">
+              {stages.map((s, i) => (
+                <li key={s.n} className="flex items-center">
+                  <span className="text-foreground">{s.n}</span>
+                  <span className="ml-1.5">{s.label}</span>
+                  {i < stages.length - 1 && (
+                    <span className="mx-3 text-border-mid select-none">·</span>
+                  )}
                 </li>
               ))}
             </ol>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="mx-auto w-full max-w-[1180px] px-4 pb-14">
-        <h2 className="mb-2 text-xl font-black text-balance">One workflow, three decisive passes</h2>
-        <p className="mb-8 max-w-[56ch] text-muted-foreground leading-relaxed">
-          Move from rough idea to launch packet with one source of truth that survives handoff.
-        </p>
-
-        <ol className="grid grid-cols-1 gap-4 md:grid-cols-[1.2fr_0.8fr_1fr]">
-          {[
-            {
-              num: "01",
-              icon: <FileText size={16} />,
-              title: "Shape the spec",
-              bullets: ["Guided creation", "Clarifications and readiness", "UX pack coverage"],
-            },
-            {
-              num: "02",
-              icon: <GitMerge size={16} />,
-              title: "Review agent work",
-              bullets: ["Patch queue", "Diff and provenance", "Audit-friendly decisions"],
-            },
-            {
-              num: "03",
-              icon: <Package size={16} />,
-              title: "Launch the handoff",
-              bullets: ["Deterministic export", "Starter handoff", "Execution + launch packet"],
-            },
-          ].map((item, idx) => (
-            <li
-              key={item.num}
-              className="relative rounded-[var(--radius-card)] border border-border-mid bg-card px-5 py-6 shadow-[var(--shadow-card)] animate-fade-up"
-              style={{ animationDelay: `${0.08 * (idx + 2)}s` }}
-            >
-              <div className="absolute right-4 top-4 text-[0.7rem] font-black uppercase tracking-[0.2em] text-muted-mid">Pass</div>
-              <span className="block text-[2.6rem] font-black leading-none tracking-tight text-accent">{item.num}</span>
-              <strong className="mt-2 flex items-center gap-2 text-[0.95rem] font-semibold text-foreground">
-                <span className="text-accent">{item.icon}</span>
-                {item.title}
-              </strong>
-              <ul className="mt-3 space-y-1.5">
-                {item.bullets.map((bullet) => (
-                  <li key={bullet} className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <span className="shrink-0 text-accent">•</span>
-                    {bullet}
-                  </li>
+        {/* Feature 1 — no silent rewrites */}
+        <section className="mx-auto w-full max-w-[1100px] px-5 pb-20">
+          <div className="grid gap-12 lg:grid-cols-2 lg:items-center lg:gap-20">
+            <div>
+              <p className="text-[0.72rem] font-black uppercase tracking-[0.18em] text-amber">
+                Patch governance
+              </p>
+              <h2 className="mt-4 text-balance text-[clamp(2rem,4vw,3rem)] font-black leading-[1.05] tracking-tight">
+                Every AI edit is a proposal. Humans decide what merges.
+              </h2>
+              <p className="mt-4 max-w-[46ch] leading-[1.7] text-muted-foreground">
+                Agent contributions land as block-level patches with rationale, confidence, and decision history. Nothing rewrites your document silently.
+              </p>
+              <Link
+                href="/workspace?source=feature1"
+                className="mt-6 inline-flex items-center gap-1.5 text-[0.85rem] font-semibold text-accent hover:underline"
+              >
+                See the workspace <ArrowRight size={13} />
+              </Link>
+            </div>
+            <div className="rounded-[var(--radius-lg)] border border-border bg-card p-1 shadow-[var(--shadow-card)]">
+              <div className="rounded-[var(--radius-panel)] border border-border bg-surface-light p-4">
+                {/* Patch proposal mockup */}
+                <div className="mb-3 flex items-center justify-between">
+                  <span className="text-[0.7rem] font-black uppercase tracking-[0.14em] text-muted-mid">
+                    Review queue · 3 proposals
+                  </span>
+                  <span className="rounded-full bg-success-subtle px-2 py-0.5 text-[0.65rem] font-semibold text-success">
+                    1 accepted
+                  </span>
+                </div>
+                {[
+                  { block: "§ Problem Statement", type: "structural_edit", status: "pending" },
+                  { block: "§ Success Metrics", type: "content_addition", status: "pending" },
+                  { block: "§ Architecture", type: "task_export_change", status: "accepted" },
+                ].map((p) => (
+                  <div
+                    key={p.block}
+                    className="mb-2 last:mb-0 flex items-center justify-between rounded-[var(--radius-sm)] border border-border bg-card px-3 py-2.5"
+                  >
+                    <div>
+                      <p className="text-[0.78rem] font-semibold text-foreground">{p.block}</p>
+                      <p className="text-[0.68rem] text-muted-foreground">{p.type}</p>
+                    </div>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-[0.65rem] font-semibold ${
+                        p.status === "accepted"
+                          ? "bg-success-subtle text-success"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {p.status}
+                    </span>
+                  </div>
                 ))}
-              </ul>
-            </li>
-          ))}
-        </ol>
-      </section>
-
-      <section className="mx-auto w-full max-w-[1180px] px-4 pb-16">
-        <div className="grid grid-cols-1 gap-4 rounded-[var(--radius-lg)] border border-border-mid bg-card p-6 shadow-[var(--shadow-card)] md:grid-cols-[1fr_auto] md:items-center">
-          <div>
-            <h2 className="text-xl font-black tracking-tight">Ship specs your engineers will actually build from.</h2>
-            <p className="mt-2 max-w-[56ch] text-sm leading-relaxed text-muted-foreground">
-              Start in the workspace today. Desktop packaging and hosted pilots ready when you are.
-            </p>
-            <div className="mt-3 flex flex-wrap items-center gap-2 text-[0.78rem] uppercase tracking-[0.18em] text-muted-mid">
-              <span className="inline-flex items-center gap-1"><Workflow size={14} /> governed flow</span>
-              <span className="inline-flex items-center gap-1"><Rocket size={14} /> launch packet ready</span>
-              <span className="inline-flex items-center gap-1"><Terminal size={14} /> byoa cli assist</span>
+              </div>
             </div>
           </div>
-          <div className="flex flex-col gap-2">
-            <Link
-              href="/pilot-access?source=landing_footer"
-              className="inline-flex min-h-[3rem] items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 font-semibold text-primary-foreground transition hover:-translate-y-[1px] hover:shadow-[var(--shadow-ink)] active:scale-[0.98]"
-            >
-              Request pilot access
-              <ArrowRight size={16} />
-            </Link>
-            <Link
-              href="/workspace"
-              className="inline-flex min-h-[2.7rem] items-center justify-center rounded-full border border-border-mid bg-card px-6 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-surface-light active:scale-[0.98]"
-            >
-              Open workspace now
-            </Link>
-          </div>
-        </div>
-      </section>
+        </section>
 
-      <footer className="border-t border-border">
-        <div className="mx-auto flex w-full max-w-[1180px] flex-wrap items-center justify-between gap-4 px-4 py-6">
-          <span className="text-[0.76rem] font-black uppercase tracking-[0.24em] text-muted-foreground">
+        {/* Feature 2 — dark section — idea audit */}
+        <section className="bg-primary text-primary-foreground">
+          <div className="mx-auto w-full max-w-[1100px] px-5 py-20">
+            <div className="grid gap-12 lg:grid-cols-2 lg:items-center lg:gap-20">
+              <div className="order-2 lg:order-1">
+                <ol className="space-y-4">
+                  {[
+                    { n: "01", title: "Problem framing", sub: "Six forcing questions. Product thesis, kill criteria, competitors." },
+                    { n: "02", title: "CEO review", sub: "10-star vision, scope decisions, financial model, non-goals." },
+                    { n: "03", title: "Engineering review", sub: "Architecture, failure modes, implementation brief." },
+                    { n: "04", title: "Design review", sub: "Design system constraints, interaction model, UX pack." },
+                    { n: "05", title: "Security review", sub: "OWASP threat model, trust boundaries, risk register." },
+                  ].map((s) => (
+                    <li key={s.n} className="flex gap-4">
+                      <span className="mt-0.5 shrink-0 text-[0.72rem] font-black text-accent/70">{s.n}</span>
+                      <div>
+                        <p className="text-[0.88rem] font-semibold text-primary-foreground">{s.title}</p>
+                        <p className="text-[0.8rem] leading-relaxed text-primary-foreground/50">{s.sub}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+              <div className="order-1 lg:order-2">
+                <p className="text-[0.72rem] font-black uppercase tracking-[0.18em] text-accent/70">
+                  Idea audit
+                </p>
+                <h2 className="mt-4 text-balance text-[clamp(2rem,4vw,3rem)] font-black leading-[1.05] tracking-tight">
+                  Pressure-test the idea before you write a line of spec.
+                </h2>
+                <p className="mt-4 max-w-[44ch] leading-[1.7] text-primary-foreground/55">
+                  G-Stack-inspired planning stages run before any spec authoring. Each stage produces a governed patch proposal — nothing auto-applies.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Feature 3 — launch packet */}
+        <section className="mx-auto w-full max-w-[1100px] px-5 py-20">
+          <div className="grid gap-12 lg:grid-cols-2 lg:items-center lg:gap-20">
+            <div>
+              <p className="text-[0.72rem] font-black uppercase tracking-[0.18em] text-amber">
+                Handoff
+              </p>
+              <h2 className="mt-4 text-balance text-[clamp(2rem,4vw,3rem)] font-black leading-[1.05] tracking-tight">
+                One packet. PRD, SPEC, TASKS, and agent brief.
+              </h2>
+              <p className="mt-4 max-w-[46ch] leading-[1.7] text-muted-foreground">
+                Export a single governed bundle that downstream builders consume without reconstructing context from chat history.
+              </p>
+              <div className="mt-6 flex flex-wrap gap-3 text-[0.82rem] text-muted-foreground">
+                <span className="inline-flex items-center gap-1.5">
+                  <Users size={13} className="text-accent" /> Multiplayer canvas
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <GitMerge size={13} className="text-accent" /> Patch approvals
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Package size={13} className="text-accent" /> Export bundle
+                </span>
+              </div>
+            </div>
+            <div className="rounded-[var(--radius-lg)] border border-border bg-card p-1 shadow-[var(--shadow-card)]">
+              <div className="rounded-[var(--radius-panel)] border border-border bg-surface-light p-4">
+                <p className="mb-3 text-[0.7rem] font-black uppercase tracking-[0.14em] text-muted-mid">
+                  handoff.json
+                </p>
+                <div className="space-y-2">
+                  {["PRD.md", "SPEC.md", "TASKS.md", "agent_spec.json", "execution_brief.json"].map(
+                    (f) => (
+                      <div
+                        key={f}
+                        className="flex items-center justify-between rounded-[var(--radius-sm)] border border-border bg-card px-3 py-2"
+                      >
+                        <span className="font-mono text-[0.75rem] text-foreground">{f}</span>
+                        <span className="text-[0.65rem] text-success">✓ ready</span>
+                      </div>
+                    )
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* CTA */}
+        <section className="border-t border-border-mid bg-secondary">
+          <div className="mx-auto flex w-full max-w-[1100px] flex-col items-center px-5 py-20 text-center">
+            <h2 className="text-balance text-[clamp(2rem,4vw,3rem)] font-black leading-tight tracking-tight">
+              Apply for hosted pilot access.
+            </h2>
+            <p className="mt-3 max-w-[44ch] text-[1rem] leading-relaxed text-muted-foreground">
+              Demo workspace is open now. Hosted team access is reviewed from the intake queue.
+            </p>
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+              <Link
+                href="/pilot-access?source=landing_cta"
+                className="inline-flex min-h-[2.85rem] items-center gap-2 rounded-full bg-accent px-6 text-[0.9rem] font-semibold text-accent-foreground shadow-[var(--shadow-accent)] transition hover:-translate-y-[1px] hover:bg-teal-hover hover:shadow-[var(--shadow-accent-hover)] active:scale-[0.97]"
+              >
+                Request pilot access
+                <ArrowRight size={15} />
+              </Link>
+              <Link
+                href="/workspace?source=landing_cta"
+                className="inline-flex min-h-[2.85rem] items-center rounded-full border border-border-mid bg-card px-6 text-[0.9rem] font-semibold text-foreground transition-colors hover:bg-background active:scale-[0.97]"
+              >
+                Try demo workspace
+              </Link>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <footer className="bg-background border-t border-border">
+        <div className="mx-auto flex w-full max-w-[1100px] flex-col gap-4 px-5 py-5 sm:flex-row sm:items-center sm:justify-between">
+          <span className="text-[0.7rem] font-black uppercase tracking-[0.22em] text-muted-foreground">
             SpecForge Studio
           </span>
-          <nav className="flex flex-wrap items-center gap-6">
-            <Link href="/download" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-              Download
-            </Link>
-            <Link href="/pricing" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-              Pricing
-            </Link>
-            <Link href="/pilot-access" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-              Pilot access
-            </Link>
-            <Link href="/workspace" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-              Workspace
-            </Link>
+          <nav className="flex flex-wrap items-center gap-x-5 gap-y-2">
+            {[
+              { href: "/pricing", label: "Pricing" },
+              { href: "/download", label: "Download" },
+              { href: GITHUB_URL, label: "GitHub", external: true },
+              { href: "/pilot-access", label: "Pilot access" },
+              { href: "/workspace", label: "Demo workspace" },
+            ].map((l) =>
+              l.external ? (
+                <a
+                  key={l.href}
+                  href={l.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-[0.82rem] text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {l.label}
+                </a>
+              ) : (
+                <Link
+                  key={l.href}
+                  href={l.href}
+                  className="text-[0.82rem] text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {l.label}
+                </Link>
+              ),
+            )}
           </nav>
-          <p className="text-sm text-muted-foreground">&copy; {new Date().getFullYear()} SpecForge</p>
+          <span className="text-[0.82rem] text-muted-foreground">
+            &copy; {new Date().getFullYear()} SpecForge
+          </span>
         </div>
       </footer>
     </div>

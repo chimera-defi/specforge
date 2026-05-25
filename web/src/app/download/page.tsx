@@ -3,6 +3,8 @@ import Link from "next/link";
 import { Terminal, Wifi, Cpu, ArrowRight, MonitorDot, Cloud, Download } from "lucide-react";
 import { CopyButton } from "./copy-button";
 
+const GITHUB_URL = "https://github.com/chimera-defi/specforge";
+
 export const metadata: Metadata = {
   title: "Download SpecForge",
   description: "Run SpecForge locally — no account required.",
@@ -31,6 +33,14 @@ function Nav() {
           >
             Pricing
           </Link>
+          <a
+            href={GITHUB_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="hidden min-h-[2.7rem] items-center rounded-full px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground md:inline-flex"
+          >
+            GitHub
+          </a>
           <Link
             href="/workspace"
             className="ml-2 inline-flex min-h-[2.8rem] items-center rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground shadow-[var(--shadow-accent)] transition hover:-translate-y-[1px] hover:shadow-[var(--shadow-accent-hover)] active:scale-[0.98]"
@@ -235,6 +245,14 @@ export default function DownloadPage() {
             <Link href="/pricing" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
               Pricing
             </Link>
+            <a
+              href={GITHUB_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              GitHub
+            </a>
             <Link href="/workspace" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
               Workspace
             </Link>

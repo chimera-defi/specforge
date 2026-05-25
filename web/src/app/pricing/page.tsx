@@ -2,6 +2,8 @@ import Link from "next/link";
 import { Check, ArrowRight, HelpCircle, Sparkles } from "lucide-react";
 import { formatWorkspacePlanSeatPrice, listWorkspacePlans } from "@/lib/specforge/plans";
 
+const GITHUB_URL = "https://github.com/chimera-defi/specforge";
+
 function Nav() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-xl">
@@ -31,6 +33,14 @@ function Nav() {
           >
             Pilot access
           </Link>
+          <a
+            href={GITHUB_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="hidden min-h-[2.7rem] items-center rounded-full px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground lg:inline-flex"
+          >
+            GitHub
+          </a>
           <Link
             href="/workspace"
             className="ml-2 inline-flex min-h-[2.8rem] items-center rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground shadow-[var(--shadow-accent)] transition hover:-translate-y-[1px] hover:shadow-[var(--shadow-accent-hover)] active:scale-[0.98]"
@@ -233,6 +243,14 @@ export default function PricingPage() {
             <Link href="/download" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
               Download
             </Link>
+            <a
+              href={GITHUB_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              GitHub
+            </a>
             <Link href="/pilot-access" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
               Pilot access
             </Link>

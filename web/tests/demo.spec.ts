@@ -9,17 +9,52 @@ test("renders the integrated SpecForge demo and captures a screenshot", async ({
   await expect(page.getByText("SpecForge", { exact: true })).toBeVisible();
   await expect(
     page.getByRole("heading", {
-      name: "Write the spec once. Let humans and agents build from the same canvas.",
+      name: "AI edits. Human decisions. One launch packet.",
     }),
   ).toBeVisible();
-  await expect(page.getByRole("link", { name: "Launch workspace" })).toBeVisible();
-  await expect(page.getByText("Release candidate")).toBeVisible();
-  await expect(page.getByRole("link", { name: "Run local alpha" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Request pilot access" }).first()).toBeVisible();
+  await expect(page.getByRole("link", { name: "Try demo workspace" }).first()).toBeVisible();
+  await expect(page.getByText("5-stage idea audit — built in")).toBeVisible();
+  await expect(page.getByRole("link", { name: "GitHub" }).first()).toHaveAttribute(
+    "href",
+    "https://github.com/chimera-defi/specforge",
+  );
 
   await page.screenshot({
     path: "artifacts/screenshots/specforge-demo-home.png",
     fullPage: true,
   });
+});
+
+test("submits pilot access intake and exposes it in workspace triage", async ({ page }) => {
+  const stamp = Date.now();
+  const email = `pilot-${stamp}@example.com`;
+  const githubLogin = `pilot-${stamp}`;
+
+  await page.goto("/pilot-access");
+  await page.getByLabel("Full name *").fill("Pilot Reviewer");
+  await page.getByLabel("Work email *").fill(email);
+  await page.getByLabel("Company", { exact: true }).fill("Review Labs");
+  await page.getByLabel("Company URL").fill("https://example.com");
+  await page.locator('input[name="github_login"]').fill(githubLogin);
+  await page.getByLabel("Team size").fill("5");
+  await page.getByLabel("Pilot type").selectOption("team");
+  await page.getByLabel("Target timeline").fill("June pilot");
+  await page.getByLabel("Current planning tools").fill("Notion, Linear, Claude Code");
+  await page.getByLabel("What are you shipping? *").fill(
+    "A governed product spec workflow for a real team launch with product, design, engineering, and coding agents.",
+  );
+  await page.getByRole("button", { name: "Submit pilot request" }).click();
+
+  await expect(page).toHaveURL(/status=submitted/);
+  await expect(page.getByText("Request saved to the pilot queue")).toBeVisible();
+
+  await page.goto("/workspace?stage=start");
+  const pilotTriage = page.locator("details").filter({ hasText: "Pilot access triage" });
+  await pilotTriage.locator("summary").click();
+  const requestRow = pilotTriage.locator("li").filter({ hasText: email });
+  await expect(requestRow).toBeVisible();
+  await expect(requestRow.getByText("Pilot type: team")).toBeVisible();
 });
 
 test("captures north-star copy variants for review", async ({ page }) => {
@@ -64,10 +99,23 @@ test("creates a document, queues a patch, and exposes export JSON", async ({ pag
       timeout: 10_000,
     })
     .toBeGreaterThanOrEqual(1);
-  await page.locator("summary").filter({ hasText: "Share current spec" }).click();
+  const workspaceSessionDetails = page
+    .locator("details")
+    .filter({ has: page.locator("summary").filter({ hasText: "Workspace session" }) })
+    .first();
+  await workspaceSessionDetails.evaluate((element) => {
+    (element as HTMLDetailsElement).open = true;
+  });
+  const shareDetails = page.getByTestId("share-current-spec-details");
+  await shareDetails.evaluate((element) => {
+    const details = element as HTMLDetailsElement;
+    details.open = true;
+    details.scrollIntoView({ block: "center" });
+  });
   await expect(page.getByTestId("share-url-input")).toHaveValue(
     new RegExp(`document=${new URL(page.url()).searchParams.get("document")}`),
   );
+  await page.getByTestId("copy-invite-note").scrollIntoViewIfNeeded();
   await expect(page.getByTestId("copy-invite-note")).toBeVisible();
   await expect(page.getByTestId("share-access-note")).toContainText("Local demo access");
   const entitlementsResponse = await page.request.get("/api/workspace/entitlements");
@@ -312,8 +360,8 @@ test("renders the guided flow on a mobile viewport", async ({ page }) => {
   await page.goto("/");
 
   await expect(page.getByText("SpecForge", { exact: true })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Launch workspace" })).toBeVisible();
-  await expect(page.getByText("Release candidate")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Pilot access", exact: true })).toBeVisible();
+  await expect(page.getByText("Spec collaboration for AI-assisted teams")).toBeVisible();
 
   await page.screenshot({
     path: "artifacts/screenshots/specforge-demo-mobile.png",
@@ -375,6 +423,10 @@ test("renders the pricing page", async ({ page }) => {
   await page.goto("/pricing");
   await expect(page.getByRole("heading", { name: /Start with the spec/i })).toBeVisible();
   await expect(page.getByText("Team SaaS")).toBeVisible();
+  await expect(page.getByRole("link", { name: "GitHub" }).first()).toHaveAttribute(
+    "href",
+    "https://github.com/chimera-defi/specforge",
+  );
 
   await page.screenshot({
     path: "artifacts/screenshots/specforge-pricing.png",
@@ -392,4 +444,8 @@ test("renders the download page", async ({ page }) => {
   await expect(page.getByText("Current alpha truth", { exact: true })).toBeVisible();
   await expect(page.getByText("Desktop app next", { exact: true })).toBeVisible();
   await expect(page.locator("pre").filter({ hasText: "bun run dev:web" }).first()).toBeVisible();
+  await expect(page.getByRole("link", { name: "GitHub" }).first()).toHaveAttribute(
+    "href",
+    "https://github.com/chimera-defi/specforge",
+  );
 });

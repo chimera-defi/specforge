@@ -60,6 +60,7 @@ function normalizeReturnPath(rawReturnTo: string, fallback: string) {
 
 const PILOT_REQUEST_WINDOW_MS = 60 * 60 * 1000;
 const PILOT_REQUEST_LIMIT = 3;
+const PILOT_WEBHOOK_TIMEOUT_MS = 5000;
 const pilotRequestRateLimiter = new Map<string, { count: number; windowStartMs: number }>();
 
 function getRequestClientKey(headerList: Headers) {
@@ -123,7 +124,7 @@ function parseTeamSize(value: FormDataEntryValue | null) {
 }
 
 function isValidEmail(email: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  return /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,63}$/i.test(email);
 }
 
 function canTriagePilotAccess(role: string) {
@@ -134,6 +135,145 @@ function canTriagePilotAccess(role: string) {
     normalizedRole === "founder" ||
     normalizedRole === "admin"
   );
+}
+
+function shouldEnforceHostedPilotSecurity() {
+  return (
+    process.env.SPECFORGE_ENFORCE_HOSTED_SECURITY === "true" ||
+    process.env.NODE_ENV === "production"
+  );
+}
+
+function getPilotTriageWorkspaceId() {
+  const configuredWorkspaceId = process.env.SPECFORGE_PILOT_TRIAGE_WORKSPACE_ID?.trim();
+
+  if (configuredWorkspaceId) {
+    return configuredWorkspaceId;
+  }
+
+  if (shouldEnforceHostedPilotSecurity()) {
+    throw new Error("SPECFORGE_PILOT_TRIAGE_WORKSPACE_ID is required for hosted pilot intake.");
+  }
+
+  return "ws_demo";
+}
+
+function isHostedBlockedWebhookHost(hostname: string) {
+  const normalized = hostname.toLowerCase();
+  return (
+    normalized === "localhost" ||
+    normalized === "127.0.0.1" ||
+    normalized === "0.0.0.0" ||
+    normalized === "::1" ||
+    normalized === "[::1]" ||
+    normalized === "169.254.169.254"
+  );
+}
+
+function getPilotWebhookUrl() {
+  const webhookUrl = process.env.SPECFORGE_PILOT_WEBHOOK_URL?.trim();
+
+  if (!webhookUrl) {
+    return null;
+  }
+
+  try {
+    const parsed = new URL(webhookUrl);
+
+    if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
+      console.warn(
+        JSON.stringify({
+          at: new Date().toISOString(),
+          event: "pilot_access.notification_invalid_webhook",
+          reason: "unsupported_protocol",
+        }),
+      );
+      return null;
+    }
+
+    if (shouldEnforceHostedPilotSecurity() && isHostedBlockedWebhookHost(parsed.hostname)) {
+      console.warn(
+        JSON.stringify({
+          at: new Date().toISOString(),
+          event: "pilot_access.notification_invalid_webhook",
+          reason: "blocked_host",
+        }),
+      );
+      return null;
+    }
+
+    return parsed.toString();
+  } catch {
+    console.warn(
+      JSON.stringify({
+        at: new Date().toISOString(),
+        event: "pilot_access.notification_invalid_webhook",
+        reason: "invalid_url",
+      }),
+    );
+    return null;
+  }
+}
+
+async function notifyPilotAccessRequest(input: {
+  request_id: string;
+  full_name: string;
+  email: string;
+  github_login: string;
+  company?: string;
+  pilot_type?: string;
+  source?: string;
+}) {
+  const webhookUrl = getPilotWebhookUrl();
+  const payload = {
+    event: "pilot_access.requested",
+    at: new Date().toISOString(),
+    request: input,
+  };
+
+  if (!webhookUrl) {
+    console.log(
+      JSON.stringify({
+        at: payload.at,
+        event: payload.event,
+        request_id: input.request_id,
+        source: input.source,
+        notification: "webhook_not_configured",
+      }),
+    );
+    return;
+  }
+
+  const timeout = AbortSignal.timeout(PILOT_WEBHOOK_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(webhookUrl, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(payload),
+      signal: timeout,
+    });
+
+    if (!response.ok) {
+      console.warn(
+        JSON.stringify({
+          at: new Date().toISOString(),
+          event: "pilot_access.notification_failed",
+          request_id: input.request_id,
+          status: response.status,
+        }),
+      );
+    }
+  } catch (error) {
+    console.warn(
+      JSON.stringify({
+        at: new Date().toISOString(),
+        event: "pilot_access.notification_error",
+        request_id: input.request_id,
+        reason: error instanceof Error ? error.message : "Unknown notification error",
+      }),
+    );
+  }
 }
 
 export async function createDocumentAction(formData: FormData) {
@@ -442,13 +582,15 @@ export async function requestPilotAccessAction(formData: FormData) {
   const fullName = normalizeText(formData.get("full_name"), 80);
   const email = normalizeText(formData.get("email"), 140).toLowerCase();
   const githubLogin = normalizeText(formData.get("github_login"), 64).toLowerCase();
-  const workspaceId = "ws_demo";
   const company = normalizeText(formData.get("company"), 120);
-  const role = normalizeText(formData.get("role"), 120);
+  const companyUrl = normalizeText(formData.get("company_url"), 220);
   const teamSize = parseTeamSize(formData.get("team_size"));
+  const pilotType = normalizeText(formData.get("pilot_type"), 80);
+  const deadline = normalizeText(formData.get("deadline"), 120);
+  const currentTools = normalizeText(formData.get("current_tools"), 180);
   const useCase = normalizeText(formData.get("use_case"), 1000);
   const notes = normalizeText(formData.get("notes"), 1000);
-  const source = normalizeText(formData.get("source"), 64);
+  const source = normalizeText(formData.get("source"), 96);
 
   if (trapValue) {
     redirect(buildRedirectPath(returnTo, { status: "submitted" }));
@@ -467,19 +609,39 @@ export async function requestPilotAccessAction(formData: FormData) {
   const noteSections = [
     useCase ? `Use case:\n${useCase}` : "",
     company ? `Company: ${company}` : "",
-    role ? `Role: ${role}` : "",
+    companyUrl ? `Company URL: ${companyUrl}` : "",
     teamSize ? `Team size: ${teamSize}` : "",
+    pilotType ? `Pilot type: ${pilotType}` : "",
+    deadline ? `Target timeline: ${deadline}` : "",
+    currentTools ? `Current tools: ${currentTools}` : "",
     source ? `Source: ${source}` : "",
     notes ? `Notes:\n${notes}` : "",
   ].filter(Boolean);
 
+  let workspaceId: string;
   try {
-    await createPilotAccessRequest({
+    workspaceId = getPilotTriageWorkspaceId();
+  } catch {
+    redirect(buildRedirectPath(returnTo, { status: "unavailable" }));
+  }
+
+  try {
+    const request = await createPilotAccessRequest({
       workspace_id: workspaceId,
       github_login: githubLogin,
       requested_name: fullName,
       requested_email: email,
       note: noteSections.join("\n\n") || undefined,
+    });
+
+    await notifyPilotAccessRequest({
+      request_id: request.request_id,
+      full_name: fullName,
+      email,
+      github_login: githubLogin,
+      company: company || undefined,
+      pilot_type: pilotType || undefined,
+      source: source || undefined,
     });
   } catch {
     redirect(buildRedirectPath(returnTo, { status: "error" }));

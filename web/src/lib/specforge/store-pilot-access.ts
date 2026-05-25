@@ -154,7 +154,31 @@ export async function createPilotAccessRequest(
   );
 
   if (existing.rows[0]) {
-    return mapPilotAccessRequestRow(existing.rows[0]);
+    const existingRequest = existing.rows[0];
+    const requestedName = input.requested_name?.trim() || githubLogin;
+    const requestedEmail = input.requested_email?.trim() || null;
+    const note = input.note?.trim() || null;
+    const now = new Date().toISOString();
+
+    await database.query(
+      `UPDATE pilot_access_requests
+      SET requested_name = $1,
+        requested_email = $2,
+        note = $3,
+        created_at = $4
+      WHERE request_id = $5`,
+      [requestedName, requestedEmail, note, now, existingRequest.request_id],
+    );
+
+    await persistSnapshot(database, dbPath);
+
+    return {
+      ...mapPilotAccessRequestRow(existingRequest),
+      requested_name: requestedName,
+      requested_email: requestedEmail ?? undefined,
+      note: note ?? undefined,
+      created_at: now,
+    };
   }
 
   const now = new Date().toISOString();

@@ -292,6 +292,9 @@
 .focusSidebar {
   position: sticky;
   top: 24px;
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+  padding-right: 4px;
 }
 
 .panel {

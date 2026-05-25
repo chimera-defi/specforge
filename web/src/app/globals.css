@@ -6,17 +6,17 @@
   --font-mono: var(--font-geist-mono), monospace;
 
   /* Core semantic colors — Tailwind utility classes generated from these */
-  --color-background: #ece2d3;
-  --color-foreground: #191714;
-  --color-primary: #14202b;
+  --color-background: #f1e8db;
+  --color-foreground: #1c1a17;
+  --color-primary: #18212b;
   --color-primary-foreground: #f7f3ea;
-  --color-secondary: #f5efe4;
+  --color-secondary: #fbf6ed;
   --color-secondary-foreground: #191714;
   --color-accent: #0f766e;
   --color-accent-foreground: #ffffff;
-  --color-muted: #efe8dc;
+  --color-muted: #e8decd;
   --color-muted-foreground: #465664;
-  --color-card: rgba(255, 255, 255, 0.76);
+  --color-card: rgba(255, 253, 248, 0.84);
   --color-card-foreground: #191714;
   --color-border: rgba(25, 23, 20, 0.11);
   --color-border-mid: rgba(25, 23, 20, 0.19);
@@ -29,7 +29,7 @@
   --color-warning-subtle: rgba(183, 106, 18, 0.14);
 
   /* Brand-specific extras */
-  --color-ink-dark: #16222e;
+  --color-ink-dark: #18212b;
   --color-teal: #0f766e;
   --color-teal-hover: #0d6460;
   --color-teal-subtle: rgba(15, 118, 110, 0.08);
@@ -37,8 +37,8 @@
   --color-blue-info: #18536d;
   --color-blue-subtle: rgba(24, 83, 109, 0.12);
   --color-surface-warm: #fff9f3;
-  --color-surface-light: #f7f4ec;
-  --color-surface-panel: #faf8f4;
+  --color-surface-light: #fbf6ed;
+  --color-surface-panel: #fffaf2;
   --color-amber: #925e2f;
   --color-muted-warm: #5e554a;
   --color-muted-mid: #6f6559;
@@ -62,12 +62,12 @@
 
 :root {
   /* Brand colors */
-  --sf-ink: #191714;
-  --sf-ink-dark: #16222e;
-  --sf-surface: #ece2d3;
-  --sf-surface-light: #f5efe4;
-  --sf-surface-warm: #fff8f0;
-  --sf-surface-card: rgba(255, 255, 255, 0.76);
+  --sf-ink: #1c1a17;
+  --sf-ink-dark: #18212b;
+  --sf-surface: #f1e8db;
+  --sf-surface-light: #fbf6ed;
+  --sf-surface-warm: #fff9f3;
+  --sf-surface-card: rgba(255, 253, 248, 0.84);
 
   /* Accent */
   --sf-teal: #0f766e;
@@ -117,7 +117,7 @@
   --sf-border-faint: rgba(25, 23, 20, 0.09);
 
   /* Surfaces */
-  --sf-surface-panel: #faf8f4;  /* sidebar / panel background */
+  --sf-surface-panel: #fffaf2;  /* sidebar / panel background */
 
   /* Input / form surfaces */
   --sf-surface-input: #fffdfa;
@@ -137,10 +137,7 @@ body {
 
 body {
   color: var(--sf-ink);
-  background:
-    radial-gradient(circle at 12% 12%, rgba(15, 118, 110, 0.09), transparent 30%),
-    radial-gradient(circle at 92% 25%, rgba(24, 83, 109, 0.07), transparent 24%),
-    var(--sf-surface);
+  background: var(--sf-surface);
   font-family: var(--font-geist-sans), sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

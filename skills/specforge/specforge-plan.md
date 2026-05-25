@@ -1,6 +1,6 @@
 ---
 name: specforge-plan
-description: Use when a user wants to run the SpecForge Sprint Planning pipeline — the structured Act 1 ideation phase inspired by G-Stack's sprint planning skills. Walks through Discovery, CEO Review, Engineering Review, Design Review, and Security Review stages. Each stage produces a governed patch proposal against the live spec document. All stages optional and skippable. Works in CLI/TUI for solo and agent-native flows; multiplayer in the web workspace.
+description: Use when a user wants to run the SpecForge Sprint Planning pipeline — Act 1 planning stages inspired by G-Stack. Walks through Discovery, CEO Review, Engineering Review, Design Review, and Security Review. Each stage produces a governed patch proposal. All stages optional and skippable. For pre-spec idea validation (Act 0), use /specforge-idea-audit first. For the full automated pipeline (audit → all stages → handoff), use autoplan.
 ---
 
 # SpecForge Plan Skill
@@ -11,6 +11,7 @@ Use this skill when the user wants to:
 - run a single named planning stage
 - skip specific stages and proceed
 - get machine-readable stage outputs for agent pipelines
+- run the full automated pipeline (G-Stack `/autoplan` equivalent)
 
 ## Stages
 
@@ -26,7 +27,17 @@ Each stage: AI asks structured questions → user answers → AI generates struc
 
 ## Default flow
 
-### Run the full pipeline (interactive TUI)
+### Run the full automated pipeline (G-Stack `/autoplan` equivalent)
+
+Runs idea audit (Act 0) → all plan stages (Act 1) → spec generation (Act 2) → handoff. Fully automated with user approval gates.
+
+```bash
+bun run specforge -- autoplan --title "<title>"
+# or without a title (will prompt):
+bun run specforge -- autoplan
+```
+
+### Run only the planning stages (interactive TUI)
 
 ```bash
 bun run specforge -- plan
