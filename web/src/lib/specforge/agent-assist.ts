@@ -417,25 +417,26 @@ async function runCodexAssist(brief: string) {
   const tempDir = await mkdtemp(path.join(os.tmpdir(), "specforge-assist-"));
   const schemaPath = path.join(tempDir, "guided-spec.schema.json");
   const outputPath = path.join(tempDir, "guided-spec.output.json");
+  const promptPath = path.join(tempDir, "guided-spec.prompt.txt");
 
   try {
     await writeFile(schemaPath, JSON.stringify(assistJsonSchema, null, 2));
+    await writeFile(promptPath, buildAssistPrompt(brief));
+
+    // Use bash -lc to give codex a proper login shell context.
+    // Codex exec hangs when spawned bare via execFile without a shell.
     await execFileAsync(
-      "codex",
+      "bash",
       [
-        "exec",
-        "--skip-git-repo-check",
-        "--sandbox",
-        "read-only",
-        "--output-schema",
+        "-lc",
+        'codex exec --skip-git-repo-check --sandbox read-only --output-schema "$1" -o "$2" "$(cat "$3")" < /dev/null',
+        "specforge-codex-assist",
         schemaPath,
-        "-o",
         outputPath,
-        buildAssistPrompt(brief),
+        promptPath,
       ],
       {
-        timeout: 15_000,
-        killSignal: "SIGKILL",
+        timeout: 60_000,
         maxBuffer: 2 * 1024 * 1024,
       },
     );
@@ -474,8 +475,7 @@ async function runClaudeAssist(brief: string) {
         promptPath,
       ],
       {
-        timeout: 15_000,
-        killSignal: "SIGKILL",
+        timeout: 45_000,
         maxBuffer: 2 * 1024 * 1024,
       },
     );
@@ -513,13 +513,12 @@ function resolveRequestedTool(
     return requestedTool;
   }
 
-  // Prefer Claude over Codex — more reliable and faster for demo
-  if (statuses.find((tool) => tool.id === "claude_cli" && tool.available)) {
-    return "claude_cli";
-  }
-
   if (statuses.find((tool) => tool.id === "codex_cli" && tool.available)) {
     return "codex_cli";
+  }
+
+  if (statuses.find((tool) => tool.id === "claude_cli" && tool.available)) {
+    return "claude_cli";
   }
 
   return "heuristic";
