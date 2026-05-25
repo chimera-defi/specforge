@@ -1,6 +1,6 @@
-export type HeroVariant = "handoff" | "multiplayer" | "ship";
+export type HeroVariant = "handoff" | "multiplayer" | "ship" | "idea-audit";
 
-export const heroVariantOrder: HeroVariant[] = ["handoff", "multiplayer", "ship"];
+export const heroVariantOrder: HeroVariant[] = ["handoff", "multiplayer", "ship", "idea-audit"];
 
 export const heroVariants: Record<
   HeroVariant,
@@ -12,10 +12,10 @@ export const heroVariants: Record<
   }
 > = {
   handoff: {
-    eyebrow: "Multiplayer specs for one-shot builds",
-    headline: "Write the spec once. Let humans and agents build from the same canvas.",
+    eyebrow: "Idea audit → governed spec → build handoff",
+    headline: "From rough idea to build-ready spec. Five stages, zero silent rewrites.",
     subhead:
-      "SpecForge is a collaborative spec IDE for teams that want governed agent work, attributable changes, and a cleaner path from idea to runnable product.",
+      "SpecForge pressure-tests your idea across five G-Stack planning stages, then guides a governed spec where every AI edit is a reviewable patch proposal.",
     tagline: "Multiplayer specs for one-shot builds",
   },
   multiplayer: {
@@ -31,5 +31,12 @@ export const heroVariants: Record<
     subhead:
       "Guide the spec, review agent work, and hand off one coherent bundle instead of a pile of pasted context.",
     tagline: "Specs that move straight into build mode",
+  },
+  "idea-audit": {
+    eyebrow: "Built-in G-Stack idea audit",
+    headline: "Pressure-test the idea before writing a single line of spec.",
+    subhead:
+      "Five structured planning stages — problem framing, CEO review, engineering review, design review, security review — each producing a governed patch proposal before any spec authoring begins.",
+    tagline: "Idea audit → spec → handoff",
   },
 };
