@@ -26,14 +26,14 @@ export default function LandingPage() {
       />
 
       {/* ── Hero — left-aligned, mockup right ───────────────────── */}
-      <section className="mx-auto w-full max-w-[1100px] px-5 pb-16 pt-20 md:pt-28">
-        <div className="grid gap-12 lg:grid-cols-2 lg:items-center lg:gap-20">
+      <section className="mx-auto w-full max-w-[1100px] px-5 pb-10 pt-12 md:pt-20">
+        <div className="grid gap-8 lg:grid-cols-2 lg:items-center lg:gap-20">
           <div>
             <Badge variant="outline" className="mb-6 border-border-dark text-primary-foreground/60">
               Multiplayer spec studio
             </Badge>
 
-            <h1 className="max-w-[15ch] text-balance text-[clamp(1.6rem,7vw,4rem)] font-bold leading-[1.05] tracking-tight">
+            <h1 className="max-w-[15ch] text-balance text-[clamp(1.6rem,8vw,2.2rem)] font-bold leading-[1.05] tracking-tight md:text-[clamp(2rem,5vw,4rem)]">
               Teams spec together. Agents propose. Humans decide.
             </h1>
 
@@ -42,7 +42,7 @@ export default function LandingPage() {
               Nothing merges silently — every agent edit lands as a reviewable patch.
             </p>
 
-            <div className="mt-8 flex flex-wrap items-center gap-3">
+            <div className="mt-6 flex flex-wrap items-center gap-3">
               <Button asChild variant="outline" size="lg">
                 <Link href="/workspace?source=landing_hero">Try demo workspace</Link>
               </Button>
@@ -82,7 +82,7 @@ export default function LandingPage() {
                   </div>
                 ))}
               </div>
-              <div className="border-t border-border pt-3">
+              <div className="hidden border-t border-border pt-3 sm:block">
                 <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                   Review queue · 2 pending
                 </p>
@@ -108,13 +108,13 @@ export default function LandingPage() {
       <div className="border-t border-border-dark" />
 
       {/* ── Feature: Patch governance ────────────────────────────── */}
-      <section className="mx-auto w-full max-w-[1100px] px-5 py-24">
-        <div className="grid gap-16 lg:grid-cols-2 lg:items-center lg:gap-24">
+      <section className="mx-auto w-full max-w-[1100px] px-5 py-14 lg:py-24">
+        <div className="grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-24">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent/70">
               Patch governance
             </p>
-            <h2 className="mt-4 max-w-[18ch] text-balance text-[clamp(1.8rem,3vw,2.5rem)] font-bold leading-[1.05] tracking-tight">
+            <h2 className="mt-4 max-w-[18ch] text-balance text-[clamp(1.5rem,4vw,2.5rem)] font-bold leading-[1.05] tracking-tight">
               Every AI edit is a proposal. You decide what merges.
             </h2>
             <p className="mt-4 max-w-[46ch] text-base leading-[1.7] text-primary-foreground/55">
@@ -159,14 +159,14 @@ export default function LandingPage() {
       <div className="border-t border-border-dark" />
 
       {/* ── Feature: Idea audit ──────────────────────────────────── */}
-      <section className="mx-auto w-full max-w-[1100px] px-5 py-24">
-        <div className="grid gap-16 lg:grid-cols-2 lg:items-center lg:gap-24">
+      <section className="mx-auto w-full max-w-[1100px] px-5 py-14 lg:py-24">
+        <div className="grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-24">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent/70">
               Built-in idea audit
             </p>
-            <h2 className="mt-4 max-w-[18ch] text-balance text-[clamp(1.8rem,3vw,2.5rem)] font-bold leading-[1.05] tracking-tight">
-              Pressure-test the idea before you write a line of spec.
+            <h2 className="mt-4 max-w-[18ch] text-balance text-[clamp(1.5rem,4vw,2.5rem)] font-bold leading-[1.05] tracking-tight">
+              Pressure-test the idea before you spec.
             </h2>
             <p className="mt-4 max-w-[44ch] text-base leading-[1.7] text-primary-foreground/55">
               Five structured planning stages run before any spec authoring.
@@ -192,17 +192,17 @@ export default function LandingPage() {
       <div className="border-t border-border-dark" />
 
       {/* ── Feature: Handoff ─────────────────────────────────────── */}
-      <section className="mx-auto w-full max-w-[1100px] px-5 py-24">
-        <div className="grid gap-16 lg:grid-cols-2 lg:items-center lg:gap-24">
+      <section className="mx-auto w-full max-w-[1100px] px-5 py-14 lg:py-24">
+        <div className="grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-24">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent/70">
               Handoff
             </p>
-            <h2 className="mt-4 max-w-[18ch] text-balance text-[clamp(1.8rem,3vw,2.5rem)] font-bold leading-[1.05] tracking-tight">
-              One packet. PRD, SPEC, TASKS, and agent brief.
+            <h2 className="mt-4 max-w-[18ch] text-balance text-[clamp(1.5rem,4vw,2.5rem)] font-bold leading-[1.05] tracking-tight">
+              One governed handoff bundle.
             </h2>
             <p className="mt-4 max-w-[46ch] text-base leading-[1.7] text-primary-foreground/55">
-              Export a single governed bundle that downstream builders consume without
+              PRD, SPEC, TASKS, and agent brief — one bundle downstream builders consume without
               reconstructing context from chat history.
             </p>
             <div className="mt-6 flex flex-wrap gap-4 text-sm text-primary-foreground/50">
@@ -235,23 +235,23 @@ export default function LandingPage() {
 
       {/* ── CTA ──────────────────────────────────────────────────── */}
       <div className="border-t border-border-dark" />
-      <section className="mx-auto w-full max-w-[1100px] px-5 py-24">
-        <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
+      <section className="mx-auto w-full max-w-[1100px] px-5 py-14 lg:py-24">
+        <div className="flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h2 className="max-w-[20ch] text-balance text-[clamp(1.8rem,3vw,2.5rem)] font-bold leading-tight tracking-tight">
-              Apply for hosted pilot access.
+            <h2 className="max-w-[20ch] text-balance text-[clamp(1.5rem,4vw,2.5rem)] font-bold leading-tight tracking-tight">
+              Apply for pilot access.
             </h2>
-            <p className="mt-4 max-w-[40ch] text-base leading-relaxed text-primary-foreground/55">
-              Demo workspace is open now. Hosted team access is reviewed from the intake queue.
+            <p className="mt-3 max-w-[40ch] text-base leading-relaxed text-primary-foreground/55">
+              Demo workspace is open. Hosted team access is reviewed from the intake queue.
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-3 lg:justify-end">
+          <div className="flex shrink-0 flex-wrap items-center gap-3">
             <Button asChild variant="outline" size="lg">
               <Link href="/workspace?source=landing_cta">Try demo workspace</Link>
             </Button>
             <Button asChild variant="default" size="lg">
               <Link href="/pilot-access?source=landing_cta">
-                Request pilot access
+                Request access
                 <ArrowRight size={15} />
               </Link>
             </Button>
