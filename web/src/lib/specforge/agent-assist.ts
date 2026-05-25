@@ -434,7 +434,8 @@ async function runCodexAssist(brief: string) {
         buildAssistPrompt(brief),
       ],
       {
-        timeout: 60_000,
+        timeout: 15_000,
+        killSignal: "SIGKILL",
         maxBuffer: 2 * 1024 * 1024,
       },
     );
@@ -473,7 +474,8 @@ async function runClaudeAssist(brief: string) {
         promptPath,
       ],
       {
-        timeout: 45_000,
+        timeout: 15_000,
+        killSignal: "SIGKILL",
         maxBuffer: 2 * 1024 * 1024,
       },
     );
@@ -511,12 +513,13 @@ function resolveRequestedTool(
     return requestedTool;
   }
 
-  if (statuses.find((tool) => tool.id === "codex_cli" && tool.available)) {
-    return "codex_cli";
-  }
-
+  // Prefer Claude over Codex — more reliable and faster for demo
   if (statuses.find((tool) => tool.id === "claude_cli" && tool.available)) {
     return "claude_cli";
+  }
+
+  if (statuses.find((tool) => tool.id === "codex_cli" && tool.available)) {
+    return "codex_cli";
   }
 
   return "heuristic";
