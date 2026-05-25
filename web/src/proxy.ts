@@ -18,6 +18,9 @@ const trustForwardedFor = process.env.SPECFORGE_TRUST_X_FORWARDED_FOR === "true"
 const rateLimitBackend = process.env.SPECFORGE_RATE_LIMIT_BACKEND?.trim().toLowerCase() ?? "memory";
 const redisRestUrl = process.env.SPECFORGE_REDIS_REST_URL?.trim()?.replace(/\/+$/, "");
 const redisRestToken = process.env.SPECFORGE_REDIS_REST_TOKEN?.trim();
+const demoGateUsername = process.env.SPECFORGE_DEMO_GATE_USERNAME?.trim();
+const demoGatePassword = process.env.SPECFORGE_DEMO_GATE_PASSWORD?.trim();
+const demoGateRealm = process.env.SPECFORGE_DEMO_GATE_REALM?.trim() || "SpecForge demo";
 
 const securityHeaders = {
   "x-content-type-options": "nosniff",
@@ -26,12 +29,16 @@ const securityHeaders = {
   "permissions-policy": "camera=(), microphone=(), geolocation=()",
   "cross-origin-opener-policy": "same-origin",
   "cross-origin-resource-policy": "same-origin",
-  "content-security-policy": "default-src 'none'; frame-ancestors 'none'; base-uri 'none'",
 };
+const jsonContentSecurityPolicy = "default-src 'none'; frame-ancestors 'none'; base-uri 'none'";
 
 type RateBucket = {
   count: number;
   resetAt: number;
+};
+
+type DecorateOptions = {
+  includeContentSecurityPolicy?: boolean;
 };
 
 // Edge runtime memory is per-instance. Keep this as a baseline guardrail and
@@ -62,10 +69,13 @@ const hostedSecurityConfigError = getHostedSecurityConfigError(process.env);
 let cachedHmacSecret = "";
 let cachedHmacKey: CryptoKey | null = null;
 
-function decorateResponse(response: NextResponse, requestId: string) {
+function decorateResponse(response: NextResponse, requestId: string, options: DecorateOptions = {}) {
   response.headers.set("x-specforge-request-id", requestId);
   for (const [name, value] of Object.entries(securityHeaders)) {
     response.headers.set(name, value);
+  }
+  if (options.includeContentSecurityPolicy) {
+    response.headers.set("content-security-policy", jsonContentSecurityPolicy);
   }
 
   if (process.env.NODE_ENV === "production") {
@@ -168,6 +178,81 @@ function constantTimeEqual(a: string, b: string) {
     mismatch |= a.charCodeAt(index) ^ b.charCodeAt(index);
   }
   return mismatch === 0;
+}
+
+function getDemoGateConfigError() {
+  if ((!demoGateUsername && !demoGatePassword) || (demoGateUsername && demoGatePassword)) {
+    return null;
+  }
+
+  return "SPECFORGE_DEMO_GATE_USERNAME and SPECFORGE_DEMO_GATE_PASSWORD must be configured together";
+}
+
+function isDemoGateEnabled() {
+  return Boolean(demoGateUsername && demoGatePassword);
+}
+
+function isDemoGateProtectedPath(pathname: string) {
+  if (
+    pathname === "/workspace" ||
+    pathname.startsWith("/workspace/") ||
+    pathname === "/pilot-access" ||
+    pathname.startsWith("/pilot-access/")
+  ) {
+    return true;
+  }
+
+  return pathname.startsWith("/api/");
+}
+
+function parseBasicAuth(authorizationHeader: string | null) {
+  if (!authorizationHeader) {
+    return null;
+  }
+
+  const [scheme, encoded] = authorizationHeader.split(" ", 2);
+  if (scheme?.toLowerCase() !== "basic" || !encoded) {
+    return null;
+  }
+
+  try {
+    const decoded = atob(encoded);
+    const separatorIndex = decoded.indexOf(":");
+    if (separatorIndex <= 0) {
+      return null;
+    }
+
+    return {
+      username: decoded.slice(0, separatorIndex),
+      password: decoded.slice(separatorIndex + 1),
+    };
+  } catch {
+    return null;
+  }
+}
+
+function isDemoGateAuthorized(request: NextRequest) {
+  if (!demoGateUsername || !demoGatePassword) {
+    return true;
+  }
+
+  const credentials = parseBasicAuth(request.headers.get("authorization"));
+  if (!credentials) {
+    return false;
+  }
+
+  return (
+    constantTimeEqual(credentials.username, demoGateUsername) &&
+    constantTimeEqual(credentials.password, demoGatePassword)
+  );
+}
+
+function buildDemoGateChallenge(requestId: string) {
+  const response = new NextResponse("Authentication required", { status: 401 });
+  const realm = demoGateRealm.replace(/["\\]/g, "");
+  response.headers.set("www-authenticate", `Basic realm="${realm}", charset="UTF-8"`);
+  response.headers.set("cache-control", "no-store");
+  return decorateResponse(response, requestId, { includeContentSecurityPolicy: true });
 }
 
 async function getProxyHmacKey(secret: string) {
@@ -391,13 +476,15 @@ function isCrossSiteMutation(request: NextRequest) {
   return false;
 }
 
-function continueWithRequestId(requestHeaders: Headers, requestId: string) {
+function continueWithRequestId(requestHeaders: Headers, requestId: string, pathname: string) {
   const response = NextResponse.next({
     request: {
       headers: requestHeaders,
     },
   });
-  return decorateResponse(response, requestId);
+  return decorateResponse(response, requestId, {
+    includeContentSecurityPolicy: pathname.startsWith("/api/"),
+  });
 }
 
 /**
@@ -420,7 +507,25 @@ export async function proxy(request: NextRequest) {
     pathname === "/api/health" ||
     pathname === "/favicon.ico"
   ) {
-    return continueWithRequestId(requestHeaders, requestId);
+    return continueWithRequestId(requestHeaders, requestId, pathname);
+  }
+
+  const demoGateConfigError = getDemoGateConfigError();
+  if (demoGateConfigError && isDemoGateProtectedPath(pathname)) {
+    return decorateResponse(
+      NextResponse.json(
+        {
+          error: `Server misconfiguration: ${demoGateConfigError}`,
+        },
+        { status: 503 },
+      ),
+      requestId,
+      { includeContentSecurityPolicy: true },
+    );
+  }
+
+  if (isDemoGateEnabled() && isDemoGateProtectedPath(pathname) && !isDemoGateAuthorized(request)) {
+    return buildDemoGateChallenge(requestId);
   }
 
   const skipAuth = process.env.NEXT_PUBLIC_SKIP_AUTH_OVERRIDE === "true";
@@ -439,11 +544,12 @@ export async function proxy(request: NextRequest) {
         { status: 503 },
       ),
       requestId,
+      { includeContentSecurityPolicy: true },
     );
   }
 
   if (skipAuth || !githubConfigured) {
-    return continueWithRequestId(requestHeaders, requestId);
+    return continueWithRequestId(requestHeaders, requestId, pathname);
   }
 
   if (pathname.startsWith("/api/")) {
@@ -456,6 +562,7 @@ export async function proxy(request: NextRequest) {
           { status: 403 },
         ),
         requestId,
+        { includeContentSecurityPolicy: true },
       );
     }
 
@@ -469,7 +576,7 @@ export async function proxy(request: NextRequest) {
         { status: 429 },
       );
       response.headers.set("retry-after", String(rate.retryAfterSeconds ?? 60));
-      return decorateResponse(response, requestId);
+      return decorateResponse(response, requestId, { includeContentSecurityPolicy: true });
     }
 
     const sessionCookie = request.cookies.get(WORKSPACE_SESSION_COOKIE)?.value;
@@ -478,6 +585,7 @@ export async function proxy(request: NextRequest) {
       return decorateResponse(
         NextResponse.json({ error: "Authentication required" }, { status: 401 }),
         requestId,
+        { includeContentSecurityPolicy: true },
       );
     }
 
@@ -487,15 +595,16 @@ export async function proxy(request: NextRequest) {
       return decorateResponse(
         NextResponse.json({ error: "Invalid or expired session" }, { status: 401 }),
         requestId,
+        { includeContentSecurityPolicy: true },
       );
     }
   }
 
-  return continueWithRequestId(requestHeaders, requestId);
+  return continueWithRequestId(requestHeaders, requestId, pathname);
 }
 
 export const config = {
-  matcher: ["/api/:path*"],
+  matcher: ["/workspace", "/workspace/:path*", "/pilot-access", "/pilot-access/:path*", "/api/:path*"],
 };
 
 export const __proxyInternals = {
@@ -505,5 +614,7 @@ export const __proxyInternals = {
   consumeRateLimitInMemory,
   consumeRateLimitWithRedis,
   isCrossSiteMutation,
+  isDemoGateProtectedPath,
+  parseBasicAuth,
   resetRateLimitBuckets: () => rateBuckets.clear(),
 };
