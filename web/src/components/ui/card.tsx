@@ -6,7 +6,7 @@ const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElemen
     <div
       ref={ref}
       className={cn(
-        "rounded-[var(--radius-card)] border border-border bg-card shadow-[var(--shadow-card)] transition-all duration-300",
+        "rounded-card border border-border bg-card shadow-card transition-all duration-300",
         className,
       )}
       {...props}
@@ -59,7 +59,7 @@ const CardPanel = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivE
     <div
       ref={ref}
       className={cn(
-        "rounded-[var(--radius-panel)] border border-border bg-surface-light p-4",
+        "rounded-panel border border-border bg-surface-light p-4",
         className,
       )}
       {...props}

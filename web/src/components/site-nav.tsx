@@ -47,40 +47,41 @@ export function SiteNav({
           : "sticky top-0 z-50 w-full border-b border-border bg-background/90 backdrop-blur-xl"
       }
     >
-      <div className="mx-auto flex min-h-[3.75rem] w-full max-w-[1100px] items-center justify-between px-5">
+      <div style={{ maxWidth: "1100px", marginLeft: "auto", marginRight: "auto", paddingLeft: "clamp(1.5rem, 4vw, 4rem)", paddingRight: "clamp(1.5rem, 4vw, 4rem)" }} className="flex min-h-[3.75rem] w-full items-center justify-between">
         <Link
           href="/"
           className={
             isDark
-              ? "text-xs font-black uppercase tracking-[0.12em] sm:tracking-[0.24em] text-primary-foreground/90 transition-opacity hover:opacity-60"
-              : "text-xs font-black uppercase tracking-[0.12em] sm:tracking-[0.24em] text-foreground transition-opacity hover:opacity-60"
+              ? "text-xs font-black uppercase tracking-wide sm:tracking-widest text-primary-foreground/90 transition-opacity hover:opacity-60"
+              : "text-xs font-black uppercase tracking-wide sm:tracking-widest text-foreground transition-opacity hover:opacity-60"
           }
         >
           SpecForge
         </Link>
 
-        <nav className="flex items-center gap-0.5">
+        <nav className="flex items-center gap-1">
           {NAV_LINKS.map((link) => {
             const cls = [
               hideClass[link.hideBelow ?? "sm"],
-              "min-h-[2.75rem] items-center px-3 text-sm transition-colors",
+              "min-h-[2.75rem] items-center text-sm transition-colors",
               isDark
                 ? "text-primary-foreground/55 hover:text-primary-foreground/90"
                 : "text-muted-foreground hover:text-foreground",
             ].join(" ");
 
+            const linkPad = { paddingLeft: "0.75rem", paddingRight: "0.75rem" };
             return link.external ? (
-              <a key={link.href} href={link.href} target="_blank" rel="noreferrer" className={cls}>
+              <a key={link.href} href={link.href} target="_blank" rel="noreferrer" className={cls} style={linkPad}>
                 {link.label}
               </a>
             ) : (
-              <Link key={link.href} href={link.href} className={cls}>
+              <Link key={link.href} href={link.href} className={cls} style={linkPad}>
                 {link.label}
               </Link>
             );
           })}
 
-          <Button asChild variant={ctaVariant} size="sm" className="ml-2 whitespace-nowrap">
+          <Button asChild variant={ctaVariant} size="sm" style={{ marginLeft: "0.75rem" }} className="whitespace-nowrap">
             <Link href={ctaHref}>
               <span className="sm:hidden">Access</span>
               <span className="hidden sm:inline">{ctaLabel}</span>

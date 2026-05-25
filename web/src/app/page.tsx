@@ -7,13 +7,42 @@ import { Card, CardPanel } from "@/components/ui/card";
 
 const GITHUB_URL = "https://github.com/chimera-defi/specforge";
 
+// Container style — inline to bypass Turbopack @layer cascade issue
+const container: React.CSSProperties = {
+  maxWidth: "1100px",
+  marginLeft: "auto",
+  marginRight: "auto",
+  paddingLeft: "clamp(1.5rem, 5vw, 4rem)",
+  paddingRight: "clamp(1.5rem, 5vw, 4rem)",
+};
+
+const sectionPad: React.CSSProperties = {
+  paddingTop: "clamp(4rem, 8vw, 8rem)",
+  paddingBottom: "clamp(4rem, 8vw, 8rem)",
+};
+
+const cardItem: React.CSSProperties = {
+  paddingLeft: "0.75rem",
+  paddingRight: "0.75rem",
+  paddingTop: "0.625rem",
+  paddingBottom: "0.625rem",
+};
+
 const auditStages = [
-  { n: "01", title: "Problem framing", sub: "Six forcing questions. Product thesis, kill criteria, competitors." },
-  { n: "02", title: "CEO review", sub: "10-star vision, scope decisions, financial model, non-goals." },
+  { n: "01", title: "Problem framing", sub: "Product thesis, kill criteria, competitive landscape." },
+  { n: "02", title: "CEO review", sub: "10-star vision, scope decisions, financial model." },
   { n: "03", title: "Engineering review", sub: "Architecture, failure modes, implementation brief." },
-  { n: "04", title: "Design review", sub: "Design system constraints, interaction model, UX pack." },
-  { n: "05", title: "Security review", sub: "OWASP threat model, trust boundaries, risk register." },
+  { n: "04", title: "Design review", sub: "Design constraints, interaction model, UX pack." },
+  { n: "05", title: "Security review", sub: "Threat model, trust boundaries, risk register." },
 ];
+
+const reviewQueue = [
+  { block: "Problem Statement", type: "structural edit", status: "pending" },
+  { block: "Success Metrics", type: "content addition", status: "pending" },
+  { block: "Architecture", type: "task export change", status: "accepted" },
+];
+
+const handoffFiles = ["PRD.md", "SPEC.md", "TASKS.md", "agent_spec.json", "execution_brief.json"];
 
 export default function LandingPage() {
   return (
@@ -25,53 +54,52 @@ export default function LandingPage() {
         ctaVariant="default"
       />
 
-      {/* ── Hero — left-aligned, mockup right ───────────────────── */}
-      <section className="mx-auto w-full max-w-[1100px] px-5 pb-10 pt-12 md:pt-20">
-        <div className="grid gap-8 lg:grid-cols-2 lg:items-center lg:gap-20">
-          <div>
-            <Badge variant="outline" className="mb-6 border-border-dark text-primary-foreground/60">
-              Multiplayer spec studio
+      {/* ─── Hero ──────────────────────────────────────────── */}
+      <section className="w-full" style={{ ...container, paddingTop: "5rem", paddingBottom: "4rem" }}>
+        <div className="grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-20">
+          <div className="space-y-8">
+            <Badge variant="outline" className="border-border-dark text-primary-foreground/60">
+              Idea validation · Spec creation
             </Badge>
 
-            <h1 className="max-w-[15ch] text-balance text-[clamp(1.6rem,8vw,2.2rem)] font-bold leading-[1.05] tracking-tight md:text-[clamp(2rem,5vw,4rem)]">
-              Teams spec together. Agents propose. Humans decide.
+            <h1 className="text-balance text-4xl font-extrabold leading-[1.05] tracking-tight md:text-5xl">
+              From idea to<br className="hidden sm:block" /> build-ready spec.
             </h1>
 
-            <p className="mt-5 max-w-[46ch] text-base leading-[1.7] text-primary-foreground/55">
-              Multiple humans and AI agents on the same canvas.
-              Nothing merges silently — every agent edit lands as a reviewable patch.
+            <p className="max-w-[42ch] text-base leading-relaxed text-primary-foreground/60">
+              Validate your idea, spec it collaboratively with AI, and hand off a build-ready bundle — without losing the reasoning.
             </p>
 
-            <div className="mt-6 flex flex-wrap items-center gap-3">
+            <div className="flex flex-wrap gap-4" style={{ paddingTop: "0.5rem" }}>
               <Button asChild variant="outline" size="lg">
-                <Link href="/workspace?source=landing_hero">Try demo workspace</Link>
+                <Link href="/workspace?source=landing_hero">Try the demo</Link>
               </Button>
               <Button asChild variant="default" size="lg">
                 <Link href="/pilot-access?source=landing_hero">
-                  Request pilot access
+                  Request access
                   <ArrowRight size={15} />
                 </Link>
               </Button>
             </div>
           </div>
 
-          {/* Hero mockup — patch review queue */}
+          {/* Collaborator + review mockup */}
           <Card className="p-1">
             <CardPanel>
               <div className="mb-3 flex min-w-0 items-center justify-between gap-2">
-                <span className="min-w-0 truncate text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                <span className="min-w-0 truncate text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                   Live collaborators
                 </span>
                 <Badge variant="success" className="shrink-0">3 online</Badge>
               </div>
               <div className="mb-4 space-y-2">
                 {[
-                  { name: "Alex", role: "Founder", action: "Editing § Problem Statement", color: "#0f766e" },
-                  { name: "Claude", role: "Agent", action: "Proposing § Architecture patch", color: "#18536d" },
-                  { name: "Sam", role: "Engineer", action: "Reviewing § Success Metrics", color: "#6d28a8" },
+                  { name: "Alex", role: "Founder", action: "Editing Problem Statement", dotClass: "bg-role-human" },
+                  { name: "Claude", role: "Agent", action: "Proposing Architecture patch", dotClass: "bg-role-agent" },
+                  { name: "Sam", role: "Engineer", action: "Reviewing Success Metrics", dotClass: "bg-role-design" },
                 ].map((p) => (
-                  <div key={p.name} className="flex items-center gap-3 rounded-xl border border-border bg-card px-3 py-2.5">
-                    <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: p.color }} />
+                  <div key={p.name} className="flex items-center gap-3 rounded-xl border border-border bg-card" style={cardItem}>
+                    <span className={`h-2 w-2 shrink-0 rounded-full ${p.dotClass}`} />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-baseline gap-1.5">
                         <span className="text-sm font-semibold text-foreground">{p.name}</span>
@@ -82,15 +110,15 @@ export default function LandingPage() {
                   </div>
                 ))}
               </div>
-              <div className="hidden border-t border-border pt-3 sm:block">
-                <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              <div className="hidden border-t border-border sm:block" style={{ paddingTop: "0.75rem" }}>
+                <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                   Review queue · 2 pending
                 </p>
                 {[
-                  { block: "§ Problem Statement", type: "structural edit", status: "pending" },
-                  { block: "§ Architecture", type: "task export change", status: "accepted" },
+                  { block: "Problem Statement", type: "structural edit", status: "pending" },
+                  { block: "Architecture", type: "task export change", status: "accepted" },
                 ].map((p) => (
-                  <div key={p.block} className="mb-2 flex items-center justify-between gap-2 rounded-xl border border-border bg-card px-3 py-2 last:mb-0">
+                  <div key={p.block} className="mb-2 flex items-center justify-between gap-2 rounded-xl border border-border bg-card last:mb-0" style={{ paddingLeft: "0.75rem", paddingRight: "0.75rem", paddingTop: "0.5rem", paddingBottom: "0.5rem" }}>
                     <div className="min-w-0">
                       <p className="truncate text-sm font-semibold text-foreground">{p.block}</p>
                       <p className="text-xs text-muted-foreground">{p.type}</p>
@@ -104,26 +132,50 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── Divider ──────────────────────────────────────────────── */}
       <div className="border-t border-border-dark" />
 
-      {/* ── Feature: Patch governance ────────────────────────────── */}
-      <section className="mx-auto w-full max-w-[1100px] px-5 py-14 lg:py-24">
-        <div className="grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-24">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent/70">
-              Patch governance
+      {/* ─── Step 1: Validate ─────────────────────────────── */}
+      <section className="w-full" style={{ ...container, ...sectionPad }}>
+        <div className="mb-12 max-w-[52ch] space-y-7">
+          <p className="text-xs font-semibold uppercase tracking-widest text-accent/70">
+            Step 1 — Validate
+          </p>
+          <h2 className="text-2xl font-bold leading-snug text-balance">
+            Pressure-test before you write a line.
+          </h2>
+          <p className="text-base leading-relaxed text-primary-foreground/60">
+            Five structured review stages run before spec authoring — each producing a governed patch proposal that nothing auto-applies.
+          </p>
+        </div>
+        <ol className="grid gap-6 sm:grid-cols-3 lg:grid-cols-5">
+          {auditStages.map((s) => (
+            <li key={s.n} className="flex flex-col gap-2 rounded-2xl border border-border-dark bg-surface-elevated" style={{ paddingLeft: "1.25rem", paddingRight: "1.25rem", paddingTop: "1rem", paddingBottom: "1rem" }}>
+              <span className="text-xs font-bold tabular-nums text-accent/60">{s.n}</span>
+              <p className="text-sm font-semibold text-primary-foreground">{s.title}</p>
+              <p className="text-xs leading-relaxed text-primary-foreground/55">{s.sub}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <div className="border-t border-border-dark" />
+
+      {/* ─── Step 2: Spec ─────────────────────────────────── */}
+      <section className="w-full" style={{ ...container, ...sectionPad }}>
+        <div className="grid gap-12 lg:grid-cols-2 lg:items-center lg:gap-24">
+          <div className="space-y-7">
+            <p className="text-xs font-semibold uppercase tracking-widest text-accent/70">
+              Step 2 — Spec
             </p>
-            <h2 className="mt-4 max-w-[18ch] text-balance text-[clamp(1.5rem,4vw,2.5rem)] font-bold leading-[1.05] tracking-tight">
-              Every AI edit is a proposal. You decide what merges.
+            <h2 className="text-2xl font-bold leading-snug text-balance">
+              Every AI edit is a proposal.
             </h2>
-            <p className="mt-4 max-w-[46ch] text-base leading-[1.7] text-primary-foreground/55">
-              Agent contributions land as block-level patches with rationale, confidence,
-              and decision history. Nothing rewrites your document silently.
+            <p className="max-w-[44ch] text-base leading-relaxed text-primary-foreground/60">
+              Humans and AI agents work on the same canvas in real time. Agent edits land as block-level patches with rationale — nothing merges silently.
             </p>
             <Link
               href="/workspace?source=feature_governance"
-              className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:underline"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:underline"
             >
               See the workspace <ArrowRight size={13} />
             </Link>
@@ -132,17 +184,13 @@ export default function LandingPage() {
           <Card className="p-1">
             <CardPanel>
               <div className="mb-3 flex min-w-0 items-center justify-between gap-2">
-                <span className="min-w-0 truncate text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                <span className="min-w-0 truncate text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                   Review queue · 3 proposals
                 </span>
                 <Badge variant="success" className="shrink-0">1 accepted</Badge>
               </div>
-              {[
-                { block: "§ Problem Statement", type: "structural edit", status: "pending" },
-                { block: "§ Success Metrics", type: "content addition", status: "pending" },
-                { block: "§ Architecture", type: "task export change", status: "accepted" },
-              ].map((p) => (
-                <div key={p.block} className="mb-2 flex items-center justify-between gap-2 rounded-xl border border-border bg-card px-3 py-2.5 last:mb-0">
+              {reviewQueue.map((p) => (
+                <div key={p.block} className="mb-2 flex items-center justify-between gap-2 rounded-xl border border-border bg-card last:mb-0" style={cardItem}>
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-foreground">{p.block}</p>
                     <p className="text-xs text-muted-foreground">{p.type}</p>
@@ -155,57 +203,38 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── Divider ──────────────────────────────────────────────── */}
       <div className="border-t border-border-dark" />
 
-      {/* ── Feature: Idea audit ──────────────────────────────────── */}
-      <section className="mx-auto w-full max-w-[1100px] px-5 py-14 lg:py-24">
-        <div className="grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-24">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent/70">
-              Built-in idea audit
+      {/* ─── Step 3: Hand off ─────────────────────────────── */}
+      <section className="w-full" style={{ ...container, ...sectionPad }}>
+        <div className="grid gap-12 lg:grid-cols-2 lg:items-center lg:gap-24">
+          <Card className="p-1 lg:order-2">
+            <CardPanel>
+              <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                handoff.json
+              </p>
+              <div className="space-y-2">
+                {handoffFiles.map((f) => (
+                  <div key={f} className="flex items-center justify-between gap-2 rounded-xl border border-border bg-card" style={{ paddingLeft: "0.75rem", paddingRight: "0.75rem", paddingTop: "0.5rem", paddingBottom: "0.5rem" }}>
+                    <span className="min-w-0 truncate font-mono text-sm text-foreground">{f}</span>
+                    <Badge variant="success" className="shrink-0">ready</Badge>
+                  </div>
+                ))}
+              </div>
+            </CardPanel>
+          </Card>
+
+          <div className="space-y-5 lg:order-1">
+            <p className="text-xs font-semibold uppercase tracking-widest text-accent/70">
+              Step 3 — Hand off
             </p>
-            <h2 className="mt-4 max-w-[18ch] text-balance text-[clamp(1.5rem,4vw,2.5rem)] font-bold leading-[1.05] tracking-tight">
-              Pressure-test the idea before you spec.
+            <h2 className="text-2xl font-bold leading-snug text-balance">
+              One bundle. Builders start immediately.
             </h2>
-            <p className="mt-4 max-w-[44ch] text-base leading-[1.7] text-primary-foreground/55">
-              Five structured planning stages run before any spec authoring.
-              Each produces a governed patch proposal — nothing auto-applies.
+            <p className="max-w-[44ch] text-base leading-relaxed text-primary-foreground/60">
+              PRD, SPEC, TASKS, and agent brief — one export downstream builders consume without reconstructing context from scratch.
             </p>
-          </div>
-
-          <ol className="space-y-5">
-            {auditStages.map((s) => (
-              <li key={s.n} className="flex gap-4">
-                <span className="mt-0.5 shrink-0 text-xs font-semibold tabular-nums text-accent/60">{s.n}</span>
-                <div>
-                  <p className="text-sm font-semibold text-primary-foreground">{s.title}</p>
-                  <p className="mt-0.5 text-sm leading-relaxed text-primary-foreground/50">{s.sub}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
-
-      {/* ── Divider ──────────────────────────────────────────────── */}
-      <div className="border-t border-border-dark" />
-
-      {/* ── Feature: Handoff ─────────────────────────────────────── */}
-      <section className="mx-auto w-full max-w-[1100px] px-5 py-14 lg:py-24">
-        <div className="grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-24">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent/70">
-              Handoff
-            </p>
-            <h2 className="mt-4 max-w-[18ch] text-balance text-[clamp(1.5rem,4vw,2.5rem)] font-bold leading-[1.05] tracking-tight">
-              One governed handoff bundle.
-            </h2>
-            <p className="mt-4 max-w-[46ch] text-base leading-[1.7] text-primary-foreground/55">
-              PRD, SPEC, TASKS, and agent brief — one bundle downstream builders consume without
-              reconstructing context from chat history.
-            </p>
-            <div className="mt-6 flex flex-wrap gap-4 text-sm text-primary-foreground/50">
+            <div className="flex flex-wrap gap-5 text-sm text-primary-foreground/55">
               <span className="inline-flex items-center gap-1.5">
                 <Zap size={13} className="text-accent" /> Zero context reconstruction
               </span>
@@ -214,40 +243,24 @@ export default function LandingPage() {
               </span>
             </div>
           </div>
-
-          <Card className="p-1">
-            <CardPanel>
-              <p className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                handoff.json
-              </p>
-              <div className="space-y-2">
-                {["PRD.md", "SPEC.md", "TASKS.md", "agent_spec.json", "execution_brief.json"].map((f) => (
-                  <div key={f} className="flex items-center justify-between gap-2 rounded-xl border border-border bg-card px-3 py-2">
-                    <span className="min-w-0 truncate font-mono text-sm text-foreground">{f}</span>
-                    <Badge variant="success" className="shrink-0">ready</Badge>
-                  </div>
-                ))}
-              </div>
-            </CardPanel>
-          </Card>
         </div>
       </section>
 
-      {/* ── CTA ──────────────────────────────────────────────────── */}
+      {/* ─── CTA ──────────────────────────────────────────── */}
       <div className="border-t border-border-dark" />
-      <section className="mx-auto w-full max-w-[1100px] px-5 py-14 lg:py-24">
+      <section className="w-full" style={{ ...container, paddingTop: "clamp(3rem, 6vw, 7rem)", paddingBottom: "clamp(3rem, 6vw, 7rem)" }}>
         <div className="flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h2 className="max-w-[20ch] text-balance text-[clamp(1.5rem,4vw,2.5rem)] font-bold leading-tight tracking-tight">
+          <div className="space-y-3">
+            <h2 className="max-w-[20ch] text-balance text-2xl font-bold leading-tight tracking-tight">
               Apply for pilot access.
             </h2>
-            <p className="mt-3 max-w-[40ch] text-base leading-relaxed text-primary-foreground/55">
-              Demo workspace is open. Hosted team access is reviewed from the intake queue.
+            <p className="max-w-[38ch] text-base leading-relaxed text-primary-foreground/60">
+              Demo is open. Hosted team access reviewed from the intake queue.
             </p>
           </div>
-          <div className="flex shrink-0 flex-wrap items-center gap-3">
+          <div className="flex shrink-0 flex-wrap gap-4">
             <Button asChild variant="outline" size="lg">
-              <Link href="/workspace?source=landing_cta">Try demo workspace</Link>
+              <Link href="/workspace?source=landing_cta">Try the demo</Link>
             </Button>
             <Button asChild variant="default" size="lg">
               <Link href="/pilot-access?source=landing_cta">
@@ -259,16 +272,15 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── Footer ───────────────────────────────────────────────── */}
+      {/* ─── Footer ───────────────────────────────────────── */}
       <footer className="border-t border-border-dark">
-        <div className="mx-auto flex w-full max-w-[1100px] flex-col gap-4 px-5 py-6 sm:flex-row sm:items-center sm:justify-between">
-          <span className="text-xs font-semibold uppercase tracking-[0.22em] text-primary-foreground/35">
-            SpecForge Studio
+        <div className="flex w-full flex-col gap-4 sm:flex-row sm:items-center sm:justify-between" style={{ ...container, paddingTop: "2rem", paddingBottom: "2rem" }}>
+          <span className="text-xs font-black uppercase tracking-widest text-primary-foreground/35">
+            SpecForge
           </span>
           <nav className="flex flex-wrap items-center gap-x-5 gap-y-2">
             {[
               { href: "/pricing", label: "Pricing" },
-              { href: "/download", label: "Download" },
               { href: GITHUB_URL, label: "GitHub", external: true },
               { href: "/pilot-access", label: "Pilot access" },
               { href: "/workspace", label: "Demo" },
