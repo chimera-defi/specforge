@@ -52,8 +52,8 @@ export function SiteNav({
           href="/"
           className={
             isDark
-              ? "text-xs font-black uppercase tracking-[0.12em] sm:tracking-[0.24em] text-primary-foreground/90 transition-opacity hover:opacity-60"
-              : "text-xs font-black uppercase tracking-[0.12em] sm:tracking-[0.24em] text-foreground transition-opacity hover:opacity-60"
+              ? "text-xs font-black uppercase tracking-wide sm:tracking-widest text-primary-foreground/90 transition-opacity hover:opacity-60"
+              : "text-xs font-black uppercase tracking-wide sm:tracking-widest text-foreground transition-opacity hover:opacity-60"
           }
         >
           SpecForge
