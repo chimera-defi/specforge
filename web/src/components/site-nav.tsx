@@ -47,7 +47,7 @@ export function SiteNav({
           : "sticky top-0 z-50 w-full border-b border-border bg-background/90 backdrop-blur-xl"
       }
     >
-      <div className="mx-auto flex min-h-[3.75rem] w-full max-w-[1100px] items-center justify-between px-5">
+      <div className="mx-auto flex min-h-[3.75rem] w-full max-w-[1100px] items-center justify-between px-5 sm:px-8">
         <Link
           href="/"
           className={

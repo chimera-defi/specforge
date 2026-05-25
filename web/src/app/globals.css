@@ -35,6 +35,11 @@
   --color-border-dark-mid: rgba(255, 255, 255, 0.14);
   --color-border-dark-strong: rgba(255, 255, 255, 0.13);
 
+  /* Role / person colors */
+  --color-role-human: #0f766e;
+  --color-role-agent: #18536d;
+  --color-role-design: #6d28a8;
+
   /* Brand-specific extras */
   --color-ink-dark: #18212b;
   --color-teal: #0f766e;

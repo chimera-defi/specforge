@@ -21,6 +21,9 @@ const redisRestToken = process.env.SPECFORGE_REDIS_REST_TOKEN?.trim();
 const demoGateUsername = process.env.SPECFORGE_DEMO_GATE_USERNAME?.trim();
 const demoGatePassword = process.env.SPECFORGE_DEMO_GATE_PASSWORD?.trim();
 const demoGateRealm = process.env.SPECFORGE_DEMO_GATE_REALM?.trim() || "SpecForge demo";
+const demoLoginPassword = process.env.DEMO_PASSWORD?.trim();
+const demoLoginUsername = process.env.DEMO_USERNAME?.trim() ?? "demo";
+const DEMO_SESSION_COOKIE = "specforge_demo_session";
 
 const securityHeaders = {
   "x-content-type-options": "nosniff",
@@ -203,6 +206,21 @@ function isDemoGateProtectedPath(pathname: string) {
   }
 
   return pathname.startsWith("/api/");
+}
+
+function isDemoLoginProtectedPath(pathname: string) {
+  return pathname === "/workspace" || pathname.startsWith("/workspace/");
+}
+
+function isDemoLoginAuthorized(request: NextRequest) {
+  if (!demoLoginPassword) return true;
+  const cookie = request.cookies.get(DEMO_SESSION_COOKIE)?.value;
+  if (!cookie) return false;
+  try {
+    return atob(cookie) === `${demoLoginUsername}:${demoLoginPassword}`;
+  } catch {
+    return false;
+  }
 }
 
 function parseBasicAuth(authorizationHeader: string | null) {
@@ -508,6 +526,13 @@ export async function proxy(request: NextRequest) {
     pathname === "/favicon.ico"
   ) {
     return continueWithRequestId(requestHeaders, requestId, pathname);
+  }
+
+  // Cookie-based demo login gate (DEMO_PASSWORD env var)
+  if (demoLoginPassword && isDemoLoginProtectedPath(pathname) && !isDemoLoginAuthorized(request)) {
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("redirect", pathname);
+    return decorateResponse(NextResponse.redirect(loginUrl), requestId);
   }
 
   const demoGateConfigError = getDemoGateConfigError();

@@ -15,6 +15,14 @@ const auditStages = [
   { n: "05", title: "Security review", sub: "OWASP threat model, trust boundaries, risk register." },
 ];
 
+const reviewQueue = [
+  { block: "§ Problem Statement", type: "structural edit", status: "pending" },
+  { block: "§ Success Metrics", type: "content addition", status: "pending" },
+  { block: "§ Architecture", type: "task export change", status: "accepted" },
+];
+
+const handoffFiles = ["PRD.md", "SPEC.md", "TASKS.md", "agent_spec.json", "execution_brief.json"];
+
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-primary text-primary-foreground">
@@ -25,21 +33,20 @@ export default function LandingPage() {
         ctaVariant="default"
       />
 
-      {/* ── Hero — left-aligned, mockup right ───────────────────── */}
-      <section className="mx-auto w-full max-w-[1100px] px-5 pb-10 pt-12 md:pt-20">
+      {/* Hero */}
+      <section className="mx-auto w-full max-w-[1100px] px-5 pb-10 pt-12 sm:px-8 md:pt-20">
         <div className="grid gap-8 lg:grid-cols-2 lg:items-center lg:gap-20">
           <div>
             <Badge variant="outline" className="mb-6 border-border-dark text-primary-foreground/60">
-              Multiplayer spec studio
+              Idea validation &amp; spec studio
             </Badge>
 
             <h1 className="max-w-[15ch] text-balance text-[clamp(1.6rem,8vw,2.2rem)] font-bold leading-[1.05] tracking-tight md:text-[clamp(2rem,5vw,4rem)]">
-              Teams spec together. Agents propose. Humans decide.
+              From raw idea to build-ready spec — together.
             </h1>
 
             <p className="mt-5 max-w-[46ch] text-base leading-[1.7] text-primary-foreground/55">
-              Multiple humans and AI agents on the same canvas.
-              Nothing merges silently — every agent edit lands as a reviewable patch.
+              Validate the idea, spec it collaboratively with your team and AI agents, then hand off a governed bundle to builders — no context reconstruction needed.
             </p>
 
             <div className="mt-6 flex flex-wrap items-center gap-3">
@@ -55,7 +62,6 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Hero mockup — patch review queue */}
           <Card className="p-1">
             <CardPanel>
               <div className="mb-3 flex min-w-0 items-center justify-between gap-2">
@@ -66,12 +72,12 @@ export default function LandingPage() {
               </div>
               <div className="mb-4 space-y-2">
                 {[
-                  { name: "Alex", role: "Founder", action: "Editing § Problem Statement", color: "#0f766e" },
-                  { name: "Claude", role: "Agent", action: "Proposing § Architecture patch", color: "#18536d" },
-                  { name: "Sam", role: "Engineer", action: "Reviewing § Success Metrics", color: "#6d28a8" },
+                  { name: "Alex", role: "Founder", action: "Editing § Problem Statement", dotClass: "bg-role-human" },
+                  { name: "Claude", role: "Agent", action: "Proposing § Architecture patch", dotClass: "bg-role-agent" },
+                  { name: "Sam", role: "Engineer", action: "Reviewing § Success Metrics", dotClass: "bg-role-design" },
                 ].map((p) => (
                   <div key={p.name} className="flex items-center gap-3 rounded-xl border border-border bg-card px-3 py-2.5">
-                    <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: p.color }} />
+                    <span className={`h-2 w-2 shrink-0 rounded-full ${p.dotClass}`} />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-baseline gap-1.5">
                         <span className="text-sm font-semibold text-foreground">{p.name}</span>
@@ -104,22 +110,51 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── Divider ──────────────────────────────────────────────── */}
       <div className="border-t border-border-dark" />
 
-      {/* ── Feature: Patch governance ────────────────────────────── */}
-      <section className="mx-auto w-full max-w-[1100px] px-5 py-14 lg:py-24">
+      {/* Validate first */}
+      <section className="mx-auto w-full max-w-[1100px] px-5 py-14 sm:px-8 lg:py-24">
         <div className="grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-24">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent/70">
-              Patch governance
+              Step 1 — Validate
+            </p>
+            <h2 className="mt-4 max-w-[18ch] text-balance text-[clamp(1.5rem,4vw,2.5rem)] font-bold leading-[1.05] tracking-tight">
+              Pressure-test the idea before you write a line.
+            </h2>
+            <p className="mt-4 max-w-[44ch] text-base leading-[1.7] text-primary-foreground/55">
+              Five structured review stages run before any spec authoring — problem framing, CEO review, engineering review, design, and security. Each stage produces a governed patch proposal. Nothing auto-applies.
+            </p>
+          </div>
+
+          <ol className="space-y-5">
+            {auditStages.map((s) => (
+              <li key={s.n} className="flex gap-4">
+                <span className="mt-0.5 shrink-0 text-xs font-semibold tabular-nums text-accent/60">{s.n}</span>
+                <div>
+                  <p className="text-sm font-semibold text-primary-foreground">{s.title}</p>
+                  <p className="mt-0.5 text-sm leading-relaxed text-primary-foreground/55">{s.sub}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      <div className="border-t border-border-dark" />
+
+      {/* Spec collaboratively */}
+      <section className="mx-auto w-full max-w-[1100px] px-5 py-14 sm:px-8 lg:py-24">
+        <div className="grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-24">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent/70">
+              Step 2 — Spec
             </p>
             <h2 className="mt-4 max-w-[18ch] text-balance text-[clamp(1.5rem,4vw,2.5rem)] font-bold leading-[1.05] tracking-tight">
               Every AI edit is a proposal. You decide what merges.
             </h2>
             <p className="mt-4 max-w-[46ch] text-base leading-[1.7] text-primary-foreground/55">
-              Agent contributions land as block-level patches with rationale, confidence,
-              and decision history. Nothing rewrites your document silently.
+              Multiple humans and AI agents work on the same canvas in real time. Agent contributions land as block-level patches with rationale and confidence — nothing rewrites your document silently.
             </p>
             <Link
               href="/workspace?source=feature_governance"
@@ -137,11 +172,7 @@ export default function LandingPage() {
                 </span>
                 <Badge variant="success" className="shrink-0">1 accepted</Badge>
               </div>
-              {[
-                { block: "§ Problem Statement", type: "structural edit", status: "pending" },
-                { block: "§ Success Metrics", type: "content addition", status: "pending" },
-                { block: "§ Architecture", type: "task export change", status: "accepted" },
-              ].map((p) => (
+              {reviewQueue.map((p) => (
                 <div key={p.block} className="mb-2 flex items-center justify-between gap-2 rounded-xl border border-border bg-card px-3 py-2.5 last:mb-0">
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-foreground">{p.block}</p>
@@ -155,57 +186,22 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── Divider ──────────────────────────────────────────────── */}
       <div className="border-t border-border-dark" />
 
-      {/* ── Feature: Idea audit ──────────────────────────────────── */}
-      <section className="mx-auto w-full max-w-[1100px] px-5 py-14 lg:py-24">
+      {/* Hand off */}
+      <section className="mx-auto w-full max-w-[1100px] px-5 py-14 sm:px-8 lg:py-24">
         <div className="grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-24">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent/70">
-              Built-in idea audit
+              Step 3 — Hand off
             </p>
             <h2 className="mt-4 max-w-[18ch] text-balance text-[clamp(1.5rem,4vw,2.5rem)] font-bold leading-[1.05] tracking-tight">
-              Pressure-test the idea before you spec.
-            </h2>
-            <p className="mt-4 max-w-[44ch] text-base leading-[1.7] text-primary-foreground/55">
-              Five structured planning stages run before any spec authoring.
-              Each produces a governed patch proposal — nothing auto-applies.
-            </p>
-          </div>
-
-          <ol className="space-y-5">
-            {auditStages.map((s) => (
-              <li key={s.n} className="flex gap-4">
-                <span className="mt-0.5 shrink-0 text-xs font-semibold tabular-nums text-accent/60">{s.n}</span>
-                <div>
-                  <p className="text-sm font-semibold text-primary-foreground">{s.title}</p>
-                  <p className="mt-0.5 text-sm leading-relaxed text-primary-foreground/50">{s.sub}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
-
-      {/* ── Divider ──────────────────────────────────────────────── */}
-      <div className="border-t border-border-dark" />
-
-      {/* ── Feature: Handoff ─────────────────────────────────────── */}
-      <section className="mx-auto w-full max-w-[1100px] px-5 py-14 lg:py-24">
-        <div className="grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-24">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent/70">
-              Handoff
-            </p>
-            <h2 className="mt-4 max-w-[18ch] text-balance text-[clamp(1.5rem,4vw,2.5rem)] font-bold leading-[1.05] tracking-tight">
-              One governed handoff bundle.
+              One governed bundle. Builders can start immediately.
             </h2>
             <p className="mt-4 max-w-[46ch] text-base leading-[1.7] text-primary-foreground/55">
-              PRD, SPEC, TASKS, and agent brief — one bundle downstream builders consume without
-              reconstructing context from chat history.
+              PRD, SPEC, TASKS, and agent brief — one export downstream builders consume without reconstructing context from scratch.
             </p>
-            <div className="mt-6 flex flex-wrap gap-4 text-sm text-primary-foreground/50">
+            <div className="mt-6 flex flex-wrap gap-4 text-sm text-primary-foreground/55">
               <span className="inline-flex items-center gap-1.5">
                 <Zap size={13} className="text-accent" /> Zero context reconstruction
               </span>
@@ -221,7 +217,7 @@ export default function LandingPage() {
                 handoff.json
               </p>
               <div className="space-y-2">
-                {["PRD.md", "SPEC.md", "TASKS.md", "agent_spec.json", "execution_brief.json"].map((f) => (
+                {handoffFiles.map((f) => (
                   <div key={f} className="flex items-center justify-between gap-2 rounded-xl border border-border bg-card px-3 py-2">
                     <span className="min-w-0 truncate font-mono text-sm text-foreground">{f}</span>
                     <Badge variant="success" className="shrink-0">ready</Badge>
@@ -233,9 +229,9 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── CTA ──────────────────────────────────────────────────── */}
+      {/* CTA */}
       <div className="border-t border-border-dark" />
-      <section className="mx-auto w-full max-w-[1100px] px-5 py-14 lg:py-24">
+      <section className="mx-auto w-full max-w-[1100px] px-5 py-14 sm:px-8 lg:py-24">
         <div className="flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h2 className="max-w-[20ch] text-balance text-[clamp(1.5rem,4vw,2.5rem)] font-bold leading-tight tracking-tight">
@@ -259,16 +255,15 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── Footer ───────────────────────────────────────────────── */}
+      {/* Footer */}
       <footer className="border-t border-border-dark">
-        <div className="mx-auto flex w-full max-w-[1100px] flex-col gap-4 px-5 py-6 sm:flex-row sm:items-center sm:justify-between">
-          <span className="text-xs font-semibold uppercase tracking-[0.22em] text-primary-foreground/35">
-            SpecForge Studio
+        <div className="mx-auto flex w-full max-w-[1100px] flex-col gap-4 px-5 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+          <span className="text-xs font-black uppercase tracking-widest text-primary-foreground/35">
+            SpecForge
           </span>
           <nav className="flex flex-wrap items-center gap-x-5 gap-y-2">
             {[
               { href: "/pricing", label: "Pricing" },
-              { href: "/download", label: "Download" },
               { href: GITHUB_URL, label: "GitHub", external: true },
               { href: "/pilot-access", label: "Pilot access" },
               { href: "/workspace", label: "Demo" },
