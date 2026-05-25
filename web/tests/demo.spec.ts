@@ -15,6 +15,10 @@ test("renders the integrated SpecForge demo and captures a screenshot", async ({
   await expect(page.getByRole("link", { name: "Request pilot access" }).first()).toBeVisible();
   await expect(page.getByRole("link", { name: "Try demo workspace" }).first()).toBeVisible();
   await expect(page.getByText("5-stage idea audit — built in")).toBeVisible();
+  await expect(page.getByRole("link", { name: "GitHub" }).first()).toHaveAttribute(
+    "href",
+    "https://github.com/chimera-defi/specforge",
+  );
 
   await page.screenshot({
     path: "artifacts/screenshots/specforge-demo-home.png",
@@ -419,6 +423,10 @@ test("renders the pricing page", async ({ page }) => {
   await page.goto("/pricing");
   await expect(page.getByRole("heading", { name: /Start with the spec/i })).toBeVisible();
   await expect(page.getByText("Team SaaS")).toBeVisible();
+  await expect(page.getByRole("link", { name: "GitHub" }).first()).toHaveAttribute(
+    "href",
+    "https://github.com/chimera-defi/specforge",
+  );
 
   await page.screenshot({
     path: "artifacts/screenshots/specforge-pricing.png",
@@ -436,4 +444,8 @@ test("renders the download page", async ({ page }) => {
   await expect(page.getByText("Current alpha truth", { exact: true })).toBeVisible();
   await expect(page.getByText("Desktop app next", { exact: true })).toBeVisible();
   await expect(page.locator("pre").filter({ hasText: "bun run dev:web" }).first()).toBeVisible();
+  await expect(page.getByRole("link", { name: "GitHub" }).first()).toHaveAttribute(
+    "href",
+    "https://github.com/chimera-defi/specforge",
+  );
 });

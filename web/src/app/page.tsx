@@ -3,6 +3,8 @@ import Link from "next/link";
 import { ArrowRight, GitMerge, Package, Users } from "lucide-react";
 import { heroVariantOrder, heroVariants, type HeroVariant } from "@/lib/specforge/marketing";
 
+const GITHUB_URL = "https://github.com/chimera-defi/specforge";
+
 type Props = {
   searchParams?: Promise<{ variant?: string }>;
 };
@@ -30,6 +32,14 @@ function Nav() {
           >
             Download
           </Link>
+          <a
+            href={GITHUB_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="hidden min-h-[2.5rem] items-center px-3 text-[0.82rem] text-primary-foreground/55 transition-colors hover:text-primary-foreground/90 lg:inline-flex"
+          >
+            GitHub
+          </a>
           <Link
             href="/pilot-access?source=landing_nav"
             className="ml-2 inline-flex min-h-[2.25rem] items-center rounded-full bg-accent px-4 text-[0.82rem] font-semibold text-accent-foreground transition hover:bg-teal-hover active:scale-[0.97]"
@@ -328,17 +338,30 @@ export default async function LandingPage({ searchParams }: Props) {
             {[
               { href: "/pricing", label: "Pricing" },
               { href: "/download", label: "Download" },
+              { href: GITHUB_URL, label: "GitHub", external: true },
               { href: "/pilot-access", label: "Pilot access" },
               { href: "/workspace", label: "Demo workspace" },
-            ].map((l) => (
-              <Link
-                key={l.href}
-                href={l.href}
-                className="text-[0.82rem] text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {l.label}
-              </Link>
-            ))}
+            ].map((l) =>
+              l.external ? (
+                <a
+                  key={l.href}
+                  href={l.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-[0.82rem] text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {l.label}
+                </a>
+              ) : (
+                <Link
+                  key={l.href}
+                  href={l.href}
+                  className="text-[0.82rem] text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {l.label}
+                </Link>
+              ),
+            )}
           </nav>
           <span className="text-[0.82rem] text-muted-foreground">
             &copy; {new Date().getFullYear()} SpecForge
