@@ -58,9 +58,9 @@ export default function PricingPage() {
   const plans = listWorkspacePlans();
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-primary text-primary-foreground">
       <SiteNav
-        variant="light"
+        variant="dark"
         ctaHref="/workspace?source=pricing_nav"
         ctaLabel="Open workspace"
         ctaVariant="default"
@@ -68,11 +68,11 @@ export default function PricingPage() {
 
       <main>
         <section className="w-full animate-fade-up" style={{ ...container, paddingTop: "3.5rem", paddingBottom: "2.5rem" }}>
-          <Badge variant="amber" style={{ marginBottom: "0.75rem" }}>Pricing</Badge>
+          <Badge variant="outline" className="border-border-dark text-primary-foreground/60" style={{ marginBottom: "0.75rem" }}>Pricing</Badge>
           <h1 className="text-balance text-[clamp(2.2rem,5vw,3.8rem)] font-black leading-[1.05] tracking-tight" style={{ marginBottom: "1rem", maxWidth: "22ch" }}>
             Start with the spec. Pay for collaboration and delivery depth.
           </h1>
-          <p className="text-base leading-[1.72] text-muted-foreground" style={{ maxWidth: "58ch" }}>
+          <p className="text-base leading-[1.72] text-primary-foreground/60" style={{ maxWidth: "58ch" }}>
             Seat pricing covers realtime authoring, governed patch review, and launch-packet
             handoff. Sign in with GitHub for hosted team workspaces.
           </p>
@@ -83,7 +83,7 @@ export default function PricingPage() {
                 <ArrowRight size={14} />
               </Link>
             </Button>
-            <Button asChild variant="secondary" size="lg">
+            <Button asChild variant="outline" size="lg">
               <Link href="/workspace?source=pricing_intro#billing-readiness">
                 Open billing status
               </Link>
@@ -114,7 +114,7 @@ export default function PricingPage() {
                     "relative flex flex-col gap-5 rounded-card border shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-card-hover)] animate-fade-up",
                     isPilot
                       ? "border-teal-border bg-gradient-to-b from-teal-subtle via-card to-card ring-2 ring-teal-border"
-                      : "border-border-mid bg-card"
+                      : "border-border-dark bg-surface-elevated"
                   )}
                   style={{ padding: "1.5rem", animationDelay: `${0.08 * (index + 1)}s` }}
                 >
@@ -130,15 +130,15 @@ export default function PricingPage() {
                     <div className="flex items-baseline gap-1.5">
                       <span className="text-[2rem] font-black leading-none">{formatWorkspacePlanSeatPrice(plan)}</span>
                       {plan.seatPriceMonthlyUsd !== null && (
-                        <span className="text-sm text-muted-foreground">/ seat / month</span>
+                        <span className="text-sm text-primary-foreground/60">/ seat / month</span>
                       )}
                     </div>
-                    <p className="text-sm leading-snug text-muted-foreground">{plan.summary}</p>
+                    <p className="text-sm leading-snug text-primary-foreground/60">{plan.summary}</p>
                   </div>
 
                   <ul className="flex flex-1 flex-col gap-2.5">
                     {plan.features.map((feature) => (
-                      <li key={feature} className="flex items-start gap-2 text-sm">
+                      <li key={feature} className="flex items-start gap-2 text-sm text-primary-foreground/85">
                         <Check size={15} className="mt-0.5 shrink-0 text-accent" strokeWidth={2.5} />
                         <span>{feature}</span>
                       </li>
@@ -164,24 +164,24 @@ export default function PricingPage() {
             <div className="overflow-x-auto">
               <table className="w-full min-w-[36rem] border-collapse text-sm">
                 <thead>
-                  <tr className="border-b border-border-mid bg-muted/40">
-                    <th className="text-left text-xs font-black uppercase tracking-[0.1em] text-muted-foreground" style={{ paddingLeft: "1.25rem", paddingRight: "1.25rem", paddingTop: "0.75rem", paddingBottom: "0.75rem" }}>
+                  <tr className="border-b border-border-dark bg-surface-elevated/40">
+                    <th className="text-left text-xs font-black uppercase tracking-[0.1em] text-primary-foreground/60" style={{ paddingLeft: "1.25rem", paddingRight: "1.25rem", paddingTop: "0.75rem", paddingBottom: "0.75rem" }}>
                       Tool
                     </th>
-                    <th className="text-left text-xs font-black uppercase tracking-[0.1em] text-muted-foreground" style={{ paddingLeft: "1.25rem", paddingRight: "1.25rem", paddingTop: "0.75rem", paddingBottom: "0.75rem" }}>
+                    <th className="text-left text-xs font-black uppercase tracking-[0.1em] text-primary-foreground/60" style={{ paddingLeft: "1.25rem", paddingRight: "1.25rem", paddingTop: "0.75rem", paddingBottom: "0.75rem" }}>
                       Pricing
                     </th>
-                    <th className="text-left text-xs font-black uppercase tracking-[0.1em] text-muted-foreground" style={{ paddingLeft: "1.25rem", paddingRight: "1.25rem", paddingTop: "0.75rem", paddingBottom: "0.75rem" }}>
+                    <th className="text-left text-xs font-black uppercase tracking-[0.1em] text-primary-foreground/60" style={{ paddingLeft: "1.25rem", paddingRight: "1.25rem", paddingTop: "0.75rem", paddingBottom: "0.75rem" }}>
                       Gap
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   {comparisons.map(({ name, note, focus }) => (
-                    <tr key={name} className="border-b border-border last:border-b-0 hover:bg-muted/20">
+                    <tr key={name} className="border-b border-border-dark last:border-b-0 hover:bg-surface-elevated/20">
                       <td className="font-semibold text-foreground" style={{ paddingLeft: "1.25rem", paddingRight: "1.25rem", paddingTop: "1rem", paddingBottom: "1rem" }}>{name}</td>
-                      <td className="break-words text-muted-foreground" style={{ paddingLeft: "1.25rem", paddingRight: "1.25rem", paddingTop: "1rem", paddingBottom: "1rem" }}>{note}</td>
-                      <td className="break-words italic text-muted-foreground" style={{ paddingLeft: "1.25rem", paddingRight: "1.25rem", paddingTop: "1rem", paddingBottom: "1rem" }}>{focus}</td>
+                      <td className="break-words text-primary-foreground/60" style={{ paddingLeft: "1.25rem", paddingRight: "1.25rem", paddingTop: "1rem", paddingBottom: "1rem" }}>{note}</td>
+                      <td className="break-words italic text-primary-foreground/60" style={{ paddingLeft: "1.25rem", paddingRight: "1.25rem", paddingTop: "1rem", paddingBottom: "1rem" }}>{focus}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -197,23 +197,23 @@ export default function PricingPage() {
             {faqs.map(({ q, a }, index) => (
               <div
                 key={q}
-                className="rounded-[var(--radius-panel)] border border-border-mid bg-card shadow-card animate-fade-up"
+                className="rounded-[var(--radius-panel)] border border-border-dark bg-surface-elevated shadow-card animate-fade-up"
                 style={{ padding: "1.25rem", animationDelay: `${0.06 * (index + 1)}s` }}
               >
                 <div className="flex items-start gap-2">
                   <HelpCircle size={15} className="mt-0.5 shrink-0 text-accent" />
                   <strong className="text-sm font-semibold leading-snug">{q}</strong>
                 </div>
-                <p className="text-sm leading-relaxed text-muted-foreground" style={{ paddingLeft: "1.4rem", paddingTop: "0.5rem" }}>{a}</p>
+                <p className="text-sm leading-relaxed text-primary-foreground/60" style={{ paddingLeft: "1.4rem", paddingTop: "0.5rem" }}>{a}</p>
               </div>
             ))}
           </div>
         </section>
       </main>
 
-      <footer className="border-t border-border">
+      <footer className="border-t border-border-dark">
         <div className="flex w-full flex-wrap items-center justify-between gap-4" style={{ ...container, paddingTop: "1.5rem", paddingBottom: "1.5rem" }}>
-          <span className="text-xs font-black uppercase tracking-[0.24em] text-muted-foreground">
+          <span className="text-xs font-black uppercase tracking-[0.24em] text-primary-foreground/35">
             SpecForge Studio
           </span>
           <nav aria-label="Footer" className="flex flex-wrap items-center gap-5">
@@ -231,7 +231,7 @@ export default function PricingPage() {
                   target="_blank"
                   rel="noreferrer"
                   aria-label="GitHub (opens in new tab)"
-                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                  className="text-sm text-primary-foreground/35 transition-colors hover:text-primary-foreground/75"
                 >
                   {l.label}
                 </a>
@@ -239,14 +239,14 @@ export default function PricingPage() {
                 <Link
                   key={l.href}
                   href={l.href}
-                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                  className="text-sm text-primary-foreground/35 transition-colors hover:text-primary-foreground/75"
                 >
                   {l.label}
                 </Link>
               ),
             )}
           </nav>
-          <p className="text-sm text-muted-foreground">&copy; {new Date().getFullYear()} SpecForge</p>
+          <p className="text-sm text-primary-foreground/35">&copy; {new Date().getFullYear()} SpecForge</p>
         </div>
       </footer>
     </div>

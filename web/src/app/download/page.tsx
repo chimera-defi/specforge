@@ -13,13 +13,13 @@ export const metadata: Metadata = {
 
 function CodeBlock({ code, label }: { code: string; label?: string }) {
   return (
-    <div className="overflow-hidden rounded-panel border border-border-mid shadow-card">
+    <div className="overflow-hidden rounded-panel border border-border-dark shadow-card">
       {label && (
         <div
-          className="flex items-center justify-between border-b border-border bg-surface-light/70"
+          className="flex items-center justify-between border-b border-border-dark bg-surface-elevated/70"
           style={{ paddingLeft: "1rem", paddingRight: "1rem", paddingTop: "0.625rem", paddingBottom: "0.625rem" }}
         >
-          <span className="font-mono text-xs font-semibold text-muted-foreground">{label}</span>
+          <span className="font-mono text-xs font-semibold text-primary-foreground/60">{label}</span>
           <CopyButton text={code} />
         </div>
       )}
@@ -58,7 +58,7 @@ const roadmap = [
     icon: <Cloud size={18} />,
     description:
       "Managed collaboration runtime for teams that want hosted onboarding and centralized workspace ops.",
-    statusClass: "bg-border text-muted-foreground border-border",
+    statusClass: "bg-border text-primary-foreground/60 border-border",
   },
 ];
 
@@ -85,9 +85,9 @@ npm install -g @openai/codex`;
 
 export default function DownloadPage() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-primary text-primary-foreground">
       <SiteNav
-        variant="light"
+        variant="dark"
         ctaHref="/workspace?source=download_nav"
         ctaLabel="Open workspace"
         ctaVariant="default"
@@ -111,7 +111,7 @@ export default function DownloadPage() {
             <h1 className="text-balance text-[clamp(2.55rem,5.5vw,4.3rem)] font-black leading-[1.05] tracking-tight" style={{ maxWidth: "16ch" }}>
               Start with the local alpha now. Ship the desktop app next.
             </h1>
-            <p className="text-[1.03rem] leading-[1.72] text-muted-foreground" style={{ maxWidth: "56ch" }}>
+            <p className="text-[1.03rem] leading-[1.72] text-primary-foreground/60" style={{ maxWidth: "56ch" }}>
               Current alpha truth: local-first workflow, governed patch review, and launch-packet export
               without handing your source context to a hosted editor.
             </p>
@@ -126,14 +126,14 @@ export default function DownloadPage() {
               </a>
               <Link
                 href="/workspace"
-                className="inline-flex min-h-[2.95rem] items-center rounded-full border border-border-mid bg-card text-sm font-semibold text-foreground transition-colors hover:bg-surface-light active:scale-[0.98]"
+                className="inline-flex min-h-[2.95rem] items-center rounded-full border border-border-dark bg-surface-elevated text-sm font-semibold text-primary-foreground transition-colors hover:bg-surface-elevated/80 active:scale-[0.98]"
                 style={{ paddingLeft: "1rem", paddingRight: "1rem", paddingTop: "0.625rem", paddingBottom: "0.625rem" }}
               >
                 Open workspace demo
               </Link>
               <Link
                 href="/pricing"
-                className="inline-flex min-h-[2.95rem] items-center rounded-full border border-border-mid bg-card text-sm font-semibold text-foreground transition-colors hover:bg-surface-light active:scale-[0.98]"
+                className="inline-flex min-h-[2.95rem] items-center rounded-full border border-border-dark bg-surface-elevated text-sm font-semibold text-primary-foreground transition-colors hover:bg-surface-elevated/80 active:scale-[0.98]"
                 style={{ paddingLeft: "1rem", paddingRight: "1rem", paddingTop: "0.625rem", paddingBottom: "0.625rem" }}
               >
                 See hosted pilot plans
@@ -141,14 +141,14 @@ export default function DownloadPage() {
             </div>
             <div className="flex flex-wrap gap-2">
               <span
-                className="inline-flex items-center gap-2 rounded-full border border-border-mid bg-card text-sm text-muted-foreground"
+                className="inline-flex items-center gap-2 rounded-full border border-border-dark bg-surface-elevated text-sm text-primary-foreground/60"
                 style={{ paddingLeft: "1rem", paddingRight: "1rem", paddingTop: "0.5rem", paddingBottom: "0.5rem" }}
               >
                 <Download size={14} className="text-accent" />
                 Current alpha truth
               </span>
               <span
-                className="inline-flex items-center gap-2 rounded-full border border-border-mid bg-card text-sm text-muted-foreground"
+                className="inline-flex items-center gap-2 rounded-full border border-border-dark bg-surface-elevated text-sm text-primary-foreground/60"
                 style={{ paddingLeft: "1rem", paddingRight: "1rem", paddingTop: "0.5rem", paddingBottom: "0.5rem" }}
               >
                 Desktop app next
@@ -156,13 +156,13 @@ export default function DownloadPage() {
             </div>
           </div>
 
-          <div className="rounded-card border border-border-mid bg-card shadow-card animate-fade-up [animation-delay:120ms]" style={{ padding: "1.25rem" }}>
+          <div className="rounded-card border border-border-dark bg-surface-elevated shadow-card animate-fade-up [animation-delay:120ms]" style={{ padding: "1.25rem" }}>
             <h2 className="text-base font-black tracking-tight" style={{ marginBottom: "1rem" }}>Distribution plan</h2>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
               {roadmap.map(({ status, label, icon, statusClass }) => (
                 <div
                   key={status}
-                  className="flex items-center gap-3 rounded-lg border border-border-mid bg-surface-light/40"
+                  className="flex items-center gap-3 rounded-lg border border-border-dark bg-surface-elevated/40"
                   style={{ paddingLeft: "0.75rem", paddingRight: "0.75rem", paddingTop: "0.625rem", paddingBottom: "0.625rem" }}
                 >
                   <span
@@ -171,8 +171,8 @@ export default function DownloadPage() {
                   >
                     {status}
                   </span>
-                  <span className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                    <span className="text-muted-foreground/70">{icon}</span>
+                  <span className="flex items-center gap-2 text-sm font-medium text-primary-foreground/60">
+                    <span className="text-primary-foreground/60/70">{icon}</span>
                     {label}
                   </span>
                 </div>
@@ -194,7 +194,7 @@ export default function DownloadPage() {
           }}
         >
           <h2 className="text-xl font-black tracking-tight" style={{ marginBottom: "0.5rem" }}>Quick start</h2>
-          <p className="text-muted-foreground leading-relaxed" style={{ marginBottom: "1.25rem", maxWidth: "55ch" }}>
+          <p className="text-primary-foreground/60 leading-relaxed" style={{ marginBottom: "1.25rem", maxWidth: "55ch" }}>
             Clone, install, and open the workspace in under a minute. Requires{" "}
             <a
               href="https://bun.sh"
@@ -220,23 +220,23 @@ export default function DownloadPage() {
             paddingBottom: "3rem",
           }}
         >
-          <div className="rounded-panel border border-border-mid bg-card shadow-card" style={{ padding: "1.25rem" }}>
+          <div className="rounded-panel border border-border-dark bg-surface-elevated shadow-card" style={{ padding: "1.25rem" }}>
             <div className="flex items-center gap-2" style={{ marginBottom: "0.5rem" }}>
               <Wifi size={18} className="text-accent" />
               <h2 className="text-xl font-black tracking-tight">With multiplayer</h2>
             </div>
-            <p className="text-muted-foreground leading-relaxed" style={{ marginBottom: "1.25rem", maxWidth: "55ch" }}>
+            <p className="text-primary-foreground/60 leading-relaxed" style={{ marginBottom: "1.25rem", maxWidth: "55ch" }}>
               Start the collab server beside the web app for realtime presence and shared room state.
             </p>
             <CodeBlock code={multiplayerCode} label="second terminal" />
           </div>
 
-          <div className="rounded-panel border border-border-mid bg-card shadow-card" style={{ padding: "1.25rem" }}>
+          <div className="rounded-panel border border-border-dark bg-surface-elevated shadow-card" style={{ padding: "1.25rem" }}>
             <div className="flex items-center gap-2" style={{ marginBottom: "0.5rem" }}>
               <Cpu size={18} className="text-accent" />
               <h2 className="text-xl font-black tracking-tight">AI assist (optional)</h2>
             </div>
-            <p className="text-muted-foreground leading-relaxed" style={{ marginBottom: "1.25rem", maxWidth: "55ch" }}>
+            <p className="text-primary-foreground/60 leading-relaxed" style={{ marginBottom: "1.25rem", maxWidth: "55ch" }}>
               Reuse local Claude Code CLI or Codex CLI credentials for guided field population and patch proposals.
             </p>
             <CodeBlock code={aiAssistCode} label="install AI CLI" />
@@ -244,7 +244,7 @@ export default function DownloadPage() {
         </section>
       </main>
 
-      <footer className="border-t border-border">
+      <footer className="border-t border-border-dark">
         <div
           className="flex w-full flex-wrap items-center justify-between gap-4"
           style={{
@@ -257,14 +257,14 @@ export default function DownloadPage() {
             paddingBottom: "1.5rem",
           }}
         >
-          <span className="text-[0.76rem] font-black uppercase tracking-[0.24em] text-muted-foreground">
+          <span className="text-[0.76rem] font-black uppercase tracking-[0.24em] text-primary-foreground/35">
             SpecForge Studio
           </span>
           <nav aria-label="Footer" className="flex flex-wrap items-center gap-6">
-            <Link href="/" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+            <Link href="/" className="text-sm text-primary-foreground/35 transition-colors hover:text-primary-foreground/75">
               Home
             </Link>
-            <Link href="/pricing" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+            <Link href="/pricing" className="text-sm text-primary-foreground/35 transition-colors hover:text-primary-foreground/75">
               Pricing
             </Link>
             <a
@@ -272,15 +272,15 @@ export default function DownloadPage() {
               target="_blank"
               rel="noreferrer"
               aria-label="GitHub (opens in new tab)"
-              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+              className="text-sm text-primary-foreground/35 transition-colors hover:text-primary-foreground/75"
             >
               GitHub
             </a>
-            <Link href="/workspace" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+            <Link href="/workspace" className="text-sm text-primary-foreground/35 transition-colors hover:text-primary-foreground/75">
               Workspace
             </Link>
           </nav>
-          <p className="text-sm text-muted-foreground">&copy; {new Date().getFullYear()} SpecForge</p>
+          <p className="text-sm text-primary-foreground/35">&copy; {new Date().getFullYear()} SpecForge</p>
         </div>
       </footer>
     </div>
