@@ -52,8 +52,8 @@ export function SiteNav({
           href="/"
           className={
             isDark
-              ? "text-xs font-black uppercase tracking-[0.24em] text-primary-foreground/90 transition-opacity hover:opacity-60"
-              : "text-xs font-black uppercase tracking-[0.24em] text-foreground transition-opacity hover:opacity-60"
+              ? "text-xs font-black uppercase tracking-[0.12em] sm:tracking-[0.24em] text-primary-foreground/90 transition-opacity hover:opacity-60"
+              : "text-xs font-black uppercase tracking-[0.12em] sm:tracking-[0.24em] text-foreground transition-opacity hover:opacity-60"
           }
         >
           SpecForge
@@ -80,8 +80,11 @@ export function SiteNav({
             );
           })}
 
-          <Button asChild variant={ctaVariant} size="sm" className="ml-2">
-            <Link href={ctaHref}>{ctaLabel}</Link>
+          <Button asChild variant={ctaVariant} size="sm" className="ml-2 whitespace-nowrap">
+            <Link href={ctaHref}>
+              <span className="sm:hidden">Access</span>
+              <span className="hidden sm:inline">{ctaLabel}</span>
+            </Link>
           </Button>
         </nav>
       </div>

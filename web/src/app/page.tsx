@@ -33,7 +33,7 @@ export default function LandingPage() {
               Multiplayer spec studio
             </Badge>
 
-            <h1 className="max-w-[15ch] text-balance text-[clamp(2.4rem,5vw,4rem)] font-bold leading-[1.0] tracking-tight">
+            <h1 className="max-w-[15ch] text-balance text-[clamp(1.6rem,7vw,4rem)] font-bold leading-[1.05] tracking-tight">
               Teams spec together. Agents propose. Humans decide.
             </h1>
 
@@ -58,11 +58,11 @@ export default function LandingPage() {
           {/* Hero mockup — patch review queue */}
           <Card className="p-1">
             <CardPanel>
-              <div className="mb-3 flex items-center justify-between gap-2">
-                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              <div className="mb-3 flex min-w-0 items-center justify-between gap-2">
+                <span className="min-w-0 truncate text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                   Live collaborators
                 </span>
-                <Badge variant="success">3 online</Badge>
+                <Badge variant="success" className="shrink-0">3 online</Badge>
               </div>
               <div className="mb-4 space-y-2">
                 {[
@@ -73,10 +73,10 @@ export default function LandingPage() {
                   <div key={p.name} className="flex items-center gap-3 rounded-xl border border-border bg-card px-3 py-2.5">
                     <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: p.color }} />
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold text-foreground">
-                        {p.name}
-                        <span className="ml-1.5 font-normal text-muted-foreground text-xs">{p.role}</span>
-                      </p>
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-sm font-semibold text-foreground">{p.name}</span>
+                        <span className="shrink-0 text-xs text-muted-foreground">{p.role}</span>
+                      </div>
                       <p className="truncate text-xs text-muted-foreground">{p.action}</p>
                     </div>
                   </div>
@@ -90,12 +90,12 @@ export default function LandingPage() {
                   { block: "§ Problem Statement", type: "structural edit", status: "pending" },
                   { block: "§ Architecture", type: "task export change", status: "accepted" },
                 ].map((p) => (
-                  <div key={p.block} className="mb-2 flex items-center justify-between gap-3 rounded-xl border border-border bg-card px-3 py-2 last:mb-0">
+                  <div key={p.block} className="mb-2 flex items-center justify-between gap-2 rounded-xl border border-border bg-card px-3 py-2 last:mb-0">
                     <div className="min-w-0">
                       <p className="truncate text-sm font-semibold text-foreground">{p.block}</p>
                       <p className="text-xs text-muted-foreground">{p.type}</p>
                     </div>
-                    <Badge variant={p.status === "accepted" ? "success" : "default"}>{p.status}</Badge>
+                    <Badge variant={p.status === "accepted" ? "success" : "default"} className="shrink-0">{p.status}</Badge>
                   </div>
                 ))}
               </div>
@@ -131,23 +131,23 @@ export default function LandingPage() {
 
           <Card className="p-1">
             <CardPanel>
-              <div className="mb-3 flex items-center justify-between gap-2">
-                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              <div className="mb-3 flex min-w-0 items-center justify-between gap-2">
+                <span className="min-w-0 truncate text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                   Review queue · 3 proposals
                 </span>
-                <Badge variant="success">1 accepted</Badge>
+                <Badge variant="success" className="shrink-0">1 accepted</Badge>
               </div>
               {[
                 { block: "§ Problem Statement", type: "structural edit", status: "pending" },
                 { block: "§ Success Metrics", type: "content addition", status: "pending" },
                 { block: "§ Architecture", type: "task export change", status: "accepted" },
               ].map((p) => (
-                <div key={p.block} className="mb-2 flex items-center justify-between gap-3 rounded-xl border border-border bg-card px-3 py-2.5 last:mb-0">
+                <div key={p.block} className="mb-2 flex items-center justify-between gap-2 rounded-xl border border-border bg-card px-3 py-2.5 last:mb-0">
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-foreground">{p.block}</p>
                     <p className="text-xs text-muted-foreground">{p.type}</p>
                   </div>
-                  <Badge variant={p.status === "accepted" ? "success" : "default"}>{p.status}</Badge>
+                  <Badge variant={p.status === "accepted" ? "success" : "default"} className="shrink-0">{p.status}</Badge>
                 </div>
               ))}
             </CardPanel>
@@ -222,9 +222,9 @@ export default function LandingPage() {
               </p>
               <div className="space-y-2">
                 {["PRD.md", "SPEC.md", "TASKS.md", "agent_spec.json", "execution_brief.json"].map((f) => (
-                  <div key={f} className="flex items-center justify-between rounded-xl border border-border bg-card px-3 py-2">
-                    <span className="font-mono text-sm text-foreground">{f}</span>
-                    <Badge variant="success">ready</Badge>
+                  <div key={f} className="flex items-center justify-between gap-2 rounded-xl border border-border bg-card px-3 py-2">
+                    <span className="min-w-0 truncate font-mono text-sm text-foreground">{f}</span>
+                    <Badge variant="success" className="shrink-0">ready</Badge>
                   </div>
                 ))}
               </div>
