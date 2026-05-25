@@ -49,7 +49,7 @@ export default function LandingPage() {
               Validate your idea, spec it collaboratively with AI, and hand off a build-ready bundle — without losing the reasoning.
             </p>
 
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-4 pt-2">
               <Button asChild variant="outline" size="lg">
                 <Link href="/workspace?source=landing_hero">Try the demo</Link>
               </Button>
@@ -239,7 +239,7 @@ export default function LandingPage() {
               Demo is open. Hosted team access reviewed from the intake queue.
             </p>
           </div>
-          <div className="flex shrink-0 flex-wrap gap-3">
+          <div className="flex shrink-0 flex-wrap gap-4">
             <Button asChild variant="outline" size="lg">
               <Link href="/workspace?source=landing_cta">Try the demo</Link>
             </Button>
