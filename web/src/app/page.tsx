@@ -34,9 +34,9 @@ export default function LandingPage() {
       />
 
       {/* ─── Hero ──────────────────────────────────────────── */}
-      <section className="mx-auto w-full max-w-[1100px] px-6 pb-14 pt-16 sm:px-8 md:pt-24 lg:px-10">
+      <section className="mx-auto w-full max-w-[1100px] px-6 pb-16 pt-20 sm:px-10 md:pt-28 lg:px-16">
         <div className="grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-20">
-          <div className="space-y-6">
+          <div className="space-y-8">
             <Badge variant="outline" className="border-border-dark text-primary-foreground/60">
               Idea validation · Spec creation
             </Badge>
@@ -115,8 +115,8 @@ export default function LandingPage() {
 
       {/* ─── Step 1: Validate ─────────────────────────────── */}
       {/* Full-width step list — breaks rhythm from 2-col sections */}
-      <section className="mx-auto w-full max-w-[1100px] px-6 py-16 sm:px-8 lg:px-10 lg:py-28">
-        <div className="mb-10 max-w-[52ch] space-y-4">
+      <section className="mx-auto w-full max-w-[1100px] px-6 py-20 sm:px-10 lg:px-16 lg:py-32">
+        <div className="mb-12 max-w-[52ch] space-y-7">
           <p className="text-xs font-semibold uppercase tracking-widest text-accent/70">
             Step 1 — Validate
           </p>
@@ -141,9 +141,9 @@ export default function LandingPage() {
       <div className="border-t border-border-dark" />
 
       {/* ─── Step 2: Spec ─────────────────────────────────── */}
-      <section className="mx-auto w-full max-w-[1100px] px-6 py-16 sm:px-8 lg:px-10 lg:py-28">
+      <section className="mx-auto w-full max-w-[1100px] px-6 py-20 sm:px-10 lg:px-16 lg:py-32">
         <div className="grid gap-12 lg:grid-cols-2 lg:items-center lg:gap-24">
-          <div className="space-y-5">
+          <div className="space-y-7">
             <p className="text-xs font-semibold uppercase tracking-widest text-accent/70">
               Step 2 — Spec
             </p>
@@ -186,7 +186,7 @@ export default function LandingPage() {
       <div className="border-t border-border-dark" />
 
       {/* ─── Step 3: Hand off ─────────────────────────────── */}
-      <section className="mx-auto w-full max-w-[1100px] px-6 py-16 sm:px-8 lg:px-10 lg:py-28">
+      <section className="mx-auto w-full max-w-[1100px] px-6 py-20 sm:px-10 lg:px-16 lg:py-32">
         <div className="grid gap-12 lg:grid-cols-2 lg:items-center lg:gap-24">
           {/* Reverse column order on desktop — breaks visual rhythm */}
           <Card className="p-1 lg:order-2">
@@ -229,7 +229,7 @@ export default function LandingPage() {
 
       {/* ─── CTA ──────────────────────────────────────────── */}
       <div className="border-t border-border-dark" />
-      <section className="mx-auto w-full max-w-[1100px] px-6 py-16 sm:px-8 lg:px-10 lg:py-24">
+      <section className="mx-auto w-full max-w-[1100px] px-6 py-20 sm:px-10 lg:px-16 lg:py-28">
         <div className="flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
           <div className="space-y-3">
             <h2 className="max-w-[20ch] text-balance text-2xl font-bold leading-tight tracking-tight">
@@ -255,7 +255,7 @@ export default function LandingPage() {
 
       {/* ─── Footer ───────────────────────────────────────── */}
       <footer className="border-t border-border-dark">
-        <div className="mx-auto flex w-full max-w-[1100px] flex-col gap-4 px-6 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-8 lg:px-10">
+        <div className="mx-auto flex w-full max-w-[1100px] flex-col gap-4 px-6 py-8 sm:flex-row sm:items-center sm:justify-between sm:px-10 lg:px-16">
           <span className="text-xs font-black uppercase tracking-widest text-primary-foreground/35">
             SpecForge
           </span>
