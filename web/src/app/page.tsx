@@ -7,6 +7,27 @@ import { Card, CardPanel } from "@/components/ui/card";
 
 const GITHUB_URL = "https://github.com/chimera-defi/specforge";
 
+// Container style — inline to bypass Turbopack @layer cascade issue
+const container: React.CSSProperties = {
+  maxWidth: "1100px",
+  marginLeft: "auto",
+  marginRight: "auto",
+  paddingLeft: "clamp(1.5rem, 5vw, 4rem)",
+  paddingRight: "clamp(1.5rem, 5vw, 4rem)",
+};
+
+const sectionPad: React.CSSProperties = {
+  paddingTop: "clamp(4rem, 8vw, 8rem)",
+  paddingBottom: "clamp(4rem, 8vw, 8rem)",
+};
+
+const cardItem: React.CSSProperties = {
+  paddingLeft: "0.75rem",
+  paddingRight: "0.75rem",
+  paddingTop: "0.625rem",
+  paddingBottom: "0.625rem",
+};
+
 const auditStages = [
   { n: "01", title: "Problem framing", sub: "Product thesis, kill criteria, competitive landscape." },
   { n: "02", title: "CEO review", sub: "10-star vision, scope decisions, financial model." },
@@ -34,7 +55,7 @@ export default function LandingPage() {
       />
 
       {/* ─── Hero ──────────────────────────────────────────── */}
-      <section className="mx-auto w-full max-w-[1100px] px-6 pb-16 pt-20 sm:px-10 md:pt-28 lg:px-16">
+      <section className="w-full" style={{ ...container, paddingTop: "5rem", paddingBottom: "4rem" }}>
         <div className="grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-20">
           <div className="space-y-8">
             <Badge variant="outline" className="border-border-dark text-primary-foreground/60">
@@ -49,7 +70,7 @@ export default function LandingPage() {
               Validate your idea, spec it collaboratively with AI, and hand off a build-ready bundle — without losing the reasoning.
             </p>
 
-            <div className="flex flex-wrap gap-4 pt-2">
+            <div className="flex flex-wrap gap-4" style={{ paddingTop: "0.5rem" }}>
               <Button asChild variant="outline" size="lg">
                 <Link href="/workspace?source=landing_hero">Try the demo</Link>
               </Button>
@@ -77,7 +98,7 @@ export default function LandingPage() {
                   { name: "Claude", role: "Agent", action: "Proposing Architecture patch", dotClass: "bg-role-agent" },
                   { name: "Sam", role: "Engineer", action: "Reviewing Success Metrics", dotClass: "bg-role-design" },
                 ].map((p) => (
-                  <div key={p.name} className="flex items-center gap-3 rounded-xl border border-border bg-card px-3 py-2.5">
+                  <div key={p.name} className="flex items-center gap-3 rounded-xl border border-border bg-card" style={cardItem}>
                     <span className={`h-2 w-2 shrink-0 rounded-full ${p.dotClass}`} />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-baseline gap-1.5">
@@ -89,7 +110,7 @@ export default function LandingPage() {
                   </div>
                 ))}
               </div>
-              <div className="hidden border-t border-border pt-3 sm:block">
+              <div className="hidden border-t border-border sm:block" style={{ paddingTop: "0.75rem" }}>
                 <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                   Review queue · 2 pending
                 </p>
@@ -97,7 +118,7 @@ export default function LandingPage() {
                   { block: "Problem Statement", type: "structural edit", status: "pending" },
                   { block: "Architecture", type: "task export change", status: "accepted" },
                 ].map((p) => (
-                  <div key={p.block} className="mb-2 flex items-center justify-between gap-2 rounded-xl border border-border bg-card px-3 py-2 last:mb-0">
+                  <div key={p.block} className="mb-2 flex items-center justify-between gap-2 rounded-xl border border-border bg-card last:mb-0" style={{ paddingLeft: "0.75rem", paddingRight: "0.75rem", paddingTop: "0.5rem", paddingBottom: "0.5rem" }}>
                     <div className="min-w-0">
                       <p className="truncate text-sm font-semibold text-foreground">{p.block}</p>
                       <p className="text-xs text-muted-foreground">{p.type}</p>
@@ -114,8 +135,7 @@ export default function LandingPage() {
       <div className="border-t border-border-dark" />
 
       {/* ─── Step 1: Validate ─────────────────────────────── */}
-      {/* Full-width step list — breaks rhythm from 2-col sections */}
-      <section className="mx-auto w-full max-w-[1100px] px-6 py-20 sm:px-10 lg:px-16 lg:py-32">
+      <section className="w-full" style={{ ...container, ...sectionPad }}>
         <div className="mb-12 max-w-[52ch] space-y-7">
           <p className="text-xs font-semibold uppercase tracking-widest text-accent/70">
             Step 1 — Validate
@@ -129,7 +149,7 @@ export default function LandingPage() {
         </div>
         <ol className="grid gap-6 sm:grid-cols-3 lg:grid-cols-5">
           {auditStages.map((s) => (
-            <li key={s.n} className="flex flex-col gap-2 rounded-2xl border border-border-dark bg-surface-elevated px-5 py-4">
+            <li key={s.n} className="flex flex-col gap-2 rounded-2xl border border-border-dark bg-surface-elevated" style={{ paddingLeft: "1.25rem", paddingRight: "1.25rem", paddingTop: "1rem", paddingBottom: "1rem" }}>
               <span className="text-xs font-bold tabular-nums text-accent/60">{s.n}</span>
               <p className="text-sm font-semibold text-primary-foreground">{s.title}</p>
               <p className="text-xs leading-relaxed text-primary-foreground/55">{s.sub}</p>
@@ -141,7 +161,7 @@ export default function LandingPage() {
       <div className="border-t border-border-dark" />
 
       {/* ─── Step 2: Spec ─────────────────────────────────── */}
-      <section className="mx-auto w-full max-w-[1100px] px-6 py-20 sm:px-10 lg:px-16 lg:py-32">
+      <section className="w-full" style={{ ...container, ...sectionPad }}>
         <div className="grid gap-12 lg:grid-cols-2 lg:items-center lg:gap-24">
           <div className="space-y-7">
             <p className="text-xs font-semibold uppercase tracking-widest text-accent/70">
@@ -170,7 +190,7 @@ export default function LandingPage() {
                 <Badge variant="success" className="shrink-0">1 accepted</Badge>
               </div>
               {reviewQueue.map((p) => (
-                <div key={p.block} className="mb-2 flex items-center justify-between gap-2 rounded-xl border border-border bg-card px-3 py-2.5 last:mb-0">
+                <div key={p.block} className="mb-2 flex items-center justify-between gap-2 rounded-xl border border-border bg-card last:mb-0" style={cardItem}>
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-foreground">{p.block}</p>
                     <p className="text-xs text-muted-foreground">{p.type}</p>
@@ -186,9 +206,8 @@ export default function LandingPage() {
       <div className="border-t border-border-dark" />
 
       {/* ─── Step 3: Hand off ─────────────────────────────── */}
-      <section className="mx-auto w-full max-w-[1100px] px-6 py-20 sm:px-10 lg:px-16 lg:py-32">
+      <section className="w-full" style={{ ...container, ...sectionPad }}>
         <div className="grid gap-12 lg:grid-cols-2 lg:items-center lg:gap-24">
-          {/* Reverse column order on desktop — breaks visual rhythm */}
           <Card className="p-1 lg:order-2">
             <CardPanel>
               <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
@@ -196,7 +215,7 @@ export default function LandingPage() {
               </p>
               <div className="space-y-2">
                 {handoffFiles.map((f) => (
-                  <div key={f} className="flex items-center justify-between gap-2 rounded-xl border border-border bg-card px-3 py-2">
+                  <div key={f} className="flex items-center justify-between gap-2 rounded-xl border border-border bg-card" style={{ paddingLeft: "0.75rem", paddingRight: "0.75rem", paddingTop: "0.5rem", paddingBottom: "0.5rem" }}>
                     <span className="min-w-0 truncate font-mono text-sm text-foreground">{f}</span>
                     <Badge variant="success" className="shrink-0">ready</Badge>
                   </div>
@@ -229,7 +248,7 @@ export default function LandingPage() {
 
       {/* ─── CTA ──────────────────────────────────────────── */}
       <div className="border-t border-border-dark" />
-      <section className="mx-auto w-full max-w-[1100px] px-6 py-20 sm:px-10 lg:px-16 lg:py-28">
+      <section className="w-full" style={{ ...container, paddingTop: "clamp(3rem, 6vw, 7rem)", paddingBottom: "clamp(3rem, 6vw, 7rem)" }}>
         <div className="flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
           <div className="space-y-3">
             <h2 className="max-w-[20ch] text-balance text-2xl font-bold leading-tight tracking-tight">
@@ -255,7 +274,7 @@ export default function LandingPage() {
 
       {/* ─── Footer ───────────────────────────────────────── */}
       <footer className="border-t border-border-dark">
-        <div className="mx-auto flex w-full max-w-[1100px] flex-col gap-4 px-6 py-8 sm:flex-row sm:items-center sm:justify-between sm:px-10 lg:px-16">
+        <div className="flex w-full flex-col gap-4 sm:flex-row sm:items-center sm:justify-between" style={{ ...container, paddingTop: "2rem", paddingBottom: "2rem" }}>
           <span className="text-xs font-black uppercase tracking-widest text-primary-foreground/35">
             SpecForge
           </span>

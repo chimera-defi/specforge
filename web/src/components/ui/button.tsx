@@ -9,7 +9,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-accent text-accent-foreground shadow-[var(--shadow-accent)] hover:-translate-y-px hover:bg-teal-hover hover:shadow-[var(--shadow-accent-hover)]",
+          "bg-accent text-accent-foreground shadow-accent hover:-translate-y-px hover:bg-teal-hover hover:shadow-[var(--shadow-accent-hover)]",
         primary:
           "bg-primary text-primary-foreground hover:bg-ink-dark",
         secondary:
@@ -24,9 +24,9 @@ const buttonVariants = cva(
           "text-accent underline-offset-4 hover:underline",
       },
       size: {
-        default: "h-11 px-5 py-2",
-        sm: "h-9 px-4 text-xs",
-        lg: "px-8 py-4 text-base",
+        default: "h-11",
+        sm: "h-9 text-xs",
+        lg: "h-14 text-base",
         icon: "h-10 w-10",
       },
     },
@@ -43,12 +43,20 @@ export interface ButtonProps
   asChild?: boolean;
 }
 
+const buttonPadding: Record<string, React.CSSProperties> = {
+  default: { paddingLeft: "1.25rem", paddingRight: "1.25rem" },
+  sm: { paddingLeft: "1rem", paddingRight: "1rem" },
+  lg: { paddingLeft: "2rem", paddingRight: "2rem" },
+  icon: {},
+};
+
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, style, ...props }, ref) => {
     const Comp = asChild ? Slot : "button";
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
+        style={{ ...buttonPadding[size ?? "default"], ...style }}
         ref={ref}
         {...props}
       />
