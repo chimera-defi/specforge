@@ -3,6 +3,8 @@ import { ArrowRight, CheckCircle2, Clock3, Inbox, ShieldCheck, Users } from "luc
 
 import { requestPilotAccessAction } from "../actions";
 
+const GITHUB_URL = "https://github.com/chimera-defi/specforge";
+
 type Props = {
   searchParams?: Promise<{
     status?: string;
@@ -34,6 +36,14 @@ function Nav() {
           >
             Pricing
           </Link>
+          <a
+            href={GITHUB_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="hidden min-h-[2.75rem] items-center rounded-full px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground lg:inline-flex"
+          >
+            GitHub
+          </a>
           <Link
             href="/workspace?source=pilot_access_nav"
             className="inline-flex min-h-[2.75rem] items-center justify-center rounded-full border border-border-mid bg-card px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-surface-light active:scale-[0.98]"
