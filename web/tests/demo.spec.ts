@@ -9,12 +9,12 @@ test("renders the integrated SpecForge demo and captures a screenshot", async ({
   await expect(page.getByText("SpecForge", { exact: true })).toBeVisible();
   await expect(
     page.getByRole("heading", {
-      name: "From rough idea to build-ready spec. Five stages, zero silent rewrites.",
+      name: "AI edits. Human decisions. One launch packet.",
     }),
   ).toBeVisible();
-  await expect(page.getByRole("link", { name: "Request hosted pilot access" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Request pilot access" }).first()).toBeVisible();
   await expect(page.getByRole("link", { name: "Try demo workspace" }).first()).toBeVisible();
-  await expect(page.getByText("Demo now. Hosted pilot by review.")).toBeVisible();
+  await expect(page.getByText("5-stage idea audit — built in")).toBeVisible();
 
   await page.screenshot({
     path: "artifacts/screenshots/specforge-demo-home.png",
@@ -342,7 +342,7 @@ test("renders the guided flow on a mobile viewport", async ({ page }) => {
 
   await expect(page.getByText("SpecForge", { exact: true })).toBeVisible();
   await expect(page.getByRole("link", { name: "Pilot access" })).toBeVisible();
-  await expect(page.getByText("Idea audit → governed spec → build handoff")).toBeVisible();
+  await expect(page.getByText("Spec collaboration for AI-assisted teams")).toBeVisible();
 
   await page.screenshot({
     path: "artifacts/screenshots/specforge-demo-mobile.png",
