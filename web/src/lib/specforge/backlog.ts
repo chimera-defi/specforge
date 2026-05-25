@@ -16,10 +16,11 @@ import {
 
 import { logger } from "../logger";
 
-const tasksPath = path.resolve(process.cwd(), "..", "TASKS.md");
-const specPath = path.resolve(process.cwd(), "..", "SPEC.md");
-const architecturePath = path.resolve(process.cwd(), "..", "ARCHITECTURE_DECISIONS.md");
-const techStackPath = path.resolve(process.cwd(), "..", "TECH_STACK.md");
+const specDocsPath = path.resolve(process.cwd(), "..", "spec");
+const tasksPath = path.join(specDocsPath, "TASKS.md");
+const specPath = path.join(specDocsPath, "SPEC.md");
+const architecturePath = path.join(specDocsPath, "ARCHITECTURE_DECISIONS.md");
+const techStackPath = path.join(specDocsPath, "TECH_STACK.md");
 const loopStatePath = path.resolve(
   process.cwd(),
   "..",

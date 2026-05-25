@@ -14,6 +14,9 @@ const ENV_KEYS = [
   "SPECFORGE_REDIS_REST_URL",
   "SPECFORGE_REDIS_REST_TOKEN",
   "SPECFORGE_RATE_LIMIT_REMOTE_TIMEOUT_MS",
+  "SPECFORGE_DEMO_GATE_USERNAME",
+  "SPECFORGE_DEMO_GATE_PASSWORD",
+  "SPECFORGE_DEMO_GATE_REALM",
   "GITHUB_CLIENT_ID",
   "GITHUB_CLIENT_SECRET",
   "SPECFORGE_GITHUB_REDIRECT_URI",
@@ -45,6 +48,9 @@ async function loadProxyModule(overrides: Record<string, string | undefined> = {
     SPECFORGE_REDIS_REST_URL: undefined,
     SPECFORGE_REDIS_REST_TOKEN: undefined,
     SPECFORGE_RATE_LIMIT_REMOTE_TIMEOUT_MS: undefined,
+    SPECFORGE_DEMO_GATE_USERNAME: undefined,
+    SPECFORGE_DEMO_GATE_PASSWORD: undefined,
+    SPECFORGE_DEMO_GATE_REALM: undefined,
     GITHUB_CLIENT_ID: undefined,
     GITHUB_CLIENT_SECRET: undefined,
     SPECFORGE_GITHUB_REDIRECT_URI: undefined,
@@ -56,6 +62,10 @@ async function loadProxyModule(overrides: Record<string, string | undefined> = {
 
 function buildRequest(url: string, init?: RequestInit) {
   return new NextRequest(new Request(url, init));
+}
+
+function buildBasicAuthHeader(username: string, password: string) {
+  return `Basic ${btoa(`${username}:${password}`)}`;
 }
 
 function buildValidSessionCookie() {
@@ -86,6 +96,65 @@ describe("proxy hardening", () => {
     expect(response.headers.get("x-specforge-request-id")).toBeTruthy();
     expect(response.headers.get("x-content-type-options")).toBe("nosniff");
     expect(response.headers.get("x-frame-options")).toBe("DENY");
+  });
+
+  it("requires demo gate credentials for shared demo pages", async () => {
+    const { proxy } = await loadProxyModule({
+      SPECFORGE_DEMO_GATE_USERNAME: "demo",
+      SPECFORGE_DEMO_GATE_PASSWORD: "secret",
+    });
+    const response = await proxy(buildRequest("http://localhost:3000/workspace"));
+
+    expect(response.status).toBe(401);
+    expect(response.headers.get("www-authenticate")).toContain('Basic realm="SpecForge demo"');
+  });
+
+  it("allows shared demo pages with valid demo gate credentials", async () => {
+    const { proxy } = await loadProxyModule({
+      SPECFORGE_DEMO_GATE_USERNAME: "demo",
+      SPECFORGE_DEMO_GATE_PASSWORD: "secret",
+    });
+    const response = await proxy(
+      buildRequest("http://localhost:3000/workspace", {
+        headers: new Headers({
+          authorization: buildBasicAuthHeader("demo", "secret"),
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-security-policy")).toBeNull();
+  });
+
+  it("protects demo API routes when local auth is skipped", async () => {
+    const { proxy } = await loadProxyModule({
+      SPECFORGE_DEMO_GATE_USERNAME: "demo",
+      SPECFORGE_DEMO_GATE_PASSWORD: "secret",
+    });
+
+    const unauthenticated = await proxy(buildRequest("http://localhost:3000/api/documents"));
+    expect(unauthenticated.status).toBe(401);
+
+    const authenticated = await proxy(
+      buildRequest("http://localhost:3000/api/documents", {
+        headers: new Headers({
+          authorization: buildBasicAuthHeader("demo", "secret"),
+        }),
+      }),
+    );
+    expect(authenticated.status).toBe(200);
+  });
+
+  it("fails closed when the demo gate is partially configured", async () => {
+    const { proxy } = await loadProxyModule({
+      SPECFORGE_DEMO_GATE_USERNAME: "demo",
+    });
+    const response = await proxy(buildRequest("http://localhost:3000/workspace"));
+
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toMatchObject({
+      error: expect.stringContaining("SPECFORGE_DEMO_GATE_USERNAME"),
+    });
   });
 
   it("blocks cross-site mutation requests when auth mode is active", async () => {

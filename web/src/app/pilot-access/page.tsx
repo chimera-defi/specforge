@@ -2,8 +2,8 @@ import Link from "next/link";
 import { ArrowRight, CheckCircle2, Clock3, Inbox, ShieldCheck, Users } from "lucide-react";
 
 import { requestPilotAccessAction } from "../actions";
-
-const GITHUB_URL = "https://github.com/chimera-defi/specforge";
+import { SiteNav } from "@/components/site-nav";
+import { Button } from "@/components/ui/button";
 
 type Props = {
   searchParams?: Promise<{
@@ -12,49 +12,6 @@ type Props = {
     plan?: string;
   }>;
 };
-
-function Nav() {
-  return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/90 backdrop-blur-xl">
-      <div className="mx-auto flex min-h-[4rem] w-full max-w-[1180px] items-center justify-between gap-3 px-4 py-3">
-        <Link
-          href="/"
-          className="shrink-0 text-[0.78rem] font-black uppercase tracking-[0.22em] text-foreground transition-opacity hover:opacity-70"
-        >
-          SpecForge
-        </Link>
-        <nav className="flex min-w-0 items-center justify-end gap-1">
-          <Link
-            href="/"
-            className="hidden min-h-[2.75rem] items-center rounded-full px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
-          >
-            Home
-          </Link>
-          <Link
-            href="/pricing"
-            className="hidden min-h-[2.75rem] items-center rounded-full px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground md:inline-flex"
-          >
-            Pricing
-          </Link>
-          <a
-            href={GITHUB_URL}
-            target="_blank"
-            rel="noreferrer"
-            className="hidden min-h-[2.75rem] items-center rounded-full px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground lg:inline-flex"
-          >
-            GitHub
-          </a>
-          <Link
-            href="/workspace?source=pilot_access_nav"
-            className="inline-flex min-h-[2.75rem] items-center justify-center rounded-full border border-border-mid bg-card px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-surface-light active:scale-[0.98]"
-          >
-            Demo workspace
-          </Link>
-        </nav>
-      </div>
-    </header>
-  );
-}
 
 function getStatusMessage(status: string | undefined) {
   switch (status) {
@@ -112,7 +69,12 @@ export default async function PilotAccessPage({ searchParams }: Props) {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <Nav />
+      <SiteNav
+        variant="light"
+        ctaHref="/workspace?source=pilot_access_nav"
+        ctaLabel="Demo workspace"
+        ctaVariant="secondary"
+      />
 
       <main>
         <section className="mx-auto grid w-full max-w-[1180px] grid-cols-1 gap-8 px-4 pb-16 pt-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-start lg:pt-14">
@@ -162,20 +124,16 @@ export default async function PilotAccessPage({ searchParams }: Props) {
               ))}
             </div>
 
-            <div className="grid gap-2 sm:flex sm:flex-wrap">
-              <a
-                href="#pilot-form"
-                className="inline-flex min-h-[2.9rem] w-full items-center justify-center gap-2 rounded-full bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground shadow-[var(--shadow-accent)] transition hover:-translate-y-[1px] hover:shadow-[var(--shadow-accent-hover)] active:scale-[0.98] sm:w-auto"
-              >
-                Start request
-                <ArrowRight size={15} />
-              </a>
-              <Link
-                href="/workspace?source=pilot_access"
-                className="inline-flex min-h-[2.9rem] w-full items-center justify-center rounded-full border border-border-mid bg-card px-5 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-surface-light active:scale-[0.98] sm:w-auto"
-              >
-                Try demo workspace
-              </Link>
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+              <Button asChild variant="default" size="lg" className="w-full sm:w-auto">
+                <a href="#pilot-form">
+                  Start request
+                  <ArrowRight size={15} />
+                </a>
+              </Button>
+              <Button asChild variant="secondary" size="lg" className="w-full sm:w-auto">
+                <Link href="/workspace?source=pilot_access">Try demo workspace</Link>
+              </Button>
             </div>
           </div>
 
@@ -198,7 +156,7 @@ export default async function PilotAccessPage({ searchParams }: Props) {
                     This creates a persisted pending request. It does not grant instant hosted access.
                   </p>
                 </div>
-                <span className="hidden rounded-full border border-teal-border bg-teal-subtle px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-accent sm:inline-flex">
+                <span className="hidden rounded-full border border-teal-border bg-teal-subtle px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-accent sm:inline-block">
                   Review queue
                 </span>
               </div>
@@ -348,13 +306,10 @@ export default async function PilotAccessPage({ searchParams }: Props) {
                   otherwise the request remains only in the workspace triage queue.
                 </p>
 
-                <button
-                  type="submit"
-                  className="inline-flex min-h-[3rem] w-full items-center justify-center gap-2 rounded-full bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground shadow-[var(--shadow-accent)] transition hover:-translate-y-[1px] hover:shadow-[var(--shadow-accent-hover)] active:scale-[0.98]"
-                >
+                <Button type="submit" variant="default" size="lg" className="w-full">
                   Submit pilot request
                   <ArrowRight size={15} />
-                </button>
+                </Button>
               </form>
             </section>
 

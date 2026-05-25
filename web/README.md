@@ -55,7 +55,7 @@ Current slice:
 - workspace ops summary endpoint at `/api/ops/summary`
 - workspace incident feed endpoint at `/api/ops/incidents`
 - workspace backup index endpoint at `/api/ops/backups`
-- pricing anchors benchmarked in `../PRICING_BENCHMARKS.md`
+- pricing anchors benchmarked in `../spec/PRICING_BENCHMARKS.md`
 
 ## REST API Quickstart
 
@@ -90,7 +90,7 @@ curl -X POST http://localhost:3000/api/service/spec-jobs/{jobId}/review-decision
 curl -X POST http://localhost:3000/api/service/spec-jobs/{jobId}/retry
 ```
 
-See `../API_REFERENCE.md` for the full endpoint catalog.
+See `../spec/API_REFERENCE.md` for the full endpoint catalog.
 
 ## Commands
 
@@ -164,7 +164,7 @@ bun run state:backup
   - `/api/auth/login`
   - `/api/auth/callback`
   - `/api/auth/logout`
-- Local recovery and observability notes live in `../LOCAL_RUNBOOK.md`.
+- Local recovery and observability notes live in `../spec/LOCAL_RUNBOOK.md`.
 - Health endpoints:
   - `/api/health`
   - `/api/metrics`

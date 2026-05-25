@@ -1,125 +1,123 @@
-## SpecForge
+# SpecForge
 
-**Status**: Scoped MVP/spec parity reached on the build branch
+SpecForge is an idea-validation and multiplayer spec-creation workspace. It helps a founder, team, or AI pair turn a raw product idea into a validated, implementation-ready spec without losing the reasoning, tradeoffs, and review history that make the spec trustworthy.
 
-## Public Demo Link
+The product combines a guided idea audit, a collaborative spec canvas, governed AI patch review, and handoff exports. The goal is not another generic document editor. The goal is a shared operating room for deciding whether an idea is worth building, then producing the PRD, technical spec, acceptance criteria, and launch packet needed to build it.
 
-- Marketing page: `https://placing-constructed-cabinets-happen.trycloudflare.com/`
-- Workspace: `https://placing-constructed-cabinets-happen.trycloudflare.com/workspace`
+Repository: https://github.com/chimera-defi/specforge
 
-These are temporary local-dev tunnel URLs for the current shared session. If the tunnel restarts,
-run `cloudflared tunnel --url http://127.0.0.1:3000 --no-autoupdate` and update this section.
+## Current Shared Demo
 
-## Usage Modes
+- Landing page: https://placing-constructed-cabinets-happen.trycloudflare.com/
+- Demo workspace: https://placing-constructed-cabinets-happen.trycloudflare.com/workspace
+- Pilot request form: https://placing-constructed-cabinets-happen.trycloudflare.com/pilot-access
 
-SpecForge runs across four surfaces — all backed by the same spec engine:
+These URLs are Cloudflare quick-tunnel links for the local demo machine. They only work while both the local SpecForge server and the `cloudflared` tunnel process are running. If the browser says the site cannot be reached, the tunnel or local dev server is down or has been restarted with a new public URL.
 
-| Mode | When to use | Entry point |
-|------|-------------|-------------|
-| **Browser GUI** | Human-driven spec authoring with live collaboration | `bun run dev` → `http://localhost:3000/workspace` |
-| **Terminal / TUI** | Spec creation and status from the command line | `specforge init`, `specforge tui` |
-| **REST API (BYOA)** | Your own agent submits a brief and polls for artifacts | `POST /api/service/spec-jobs` |
-| **Autonomous agent** | SpecForge's own agent runs the full spec loop unattended | `POST /api/service/spec-jobs` with `"mode": "autonomous"` |
+When sharing the free demo publicly, configure the temporary Basic Auth gate with runtime-only credentials. Do not commit the password.
 
-See `API_REFERENCE.md` for the full endpoint catalog.
+```bash
+SPECFORGE_DEMO_GATE_USERNAME=specforge \
+SPECFORGE_DEMO_GATE_PASSWORD=<share-out-of-band> \
+bun --filter specforge-web dev --hostname 0.0.0.0
+```
 
-### Concept
-A collaborative spec IDE where humans and AI agents work on the same markdown canvas with depth gates, governed patch review, and attributable changes.
+Then expose the web server:
 
-### Thesis
-Collaborative editors already exist. The wedge is not generic editing; it is a spec-native workspace that keeps humans and agents on one canvas, enforces decision depth, and turns approved specs into execution-ready outputs.
+```bash
+cloudflared tunnel --url http://127.0.0.1:3000 --no-autoupdate
+```
 
-### Canonical Docs
-1. `EXECUTIVE_SUMMARY.md`
-2. `PRD.md`
-3. `SPEC.md`
-4. `ARCHITECTURE_DECISIONS.md`
-5. `TECH_STACK.md`
-6. `TASKS.md`
-7. `web/README.md`
-8. `LOCAL_RUNBOOK.md`
-9. `GO_LIVE_RUNBOOK.md`
-10. `DESIGN_PARTNER_TRIAL_PROMPT.md`
-11. `WIREFRAMES.md`
-12. `DESIGN_AGENT_HANDOFF_PROMPT.md`
-13. `TAURI_DESKTOP_PLAN.md`
-14. `CLAUDE_BUILDOUT_PLAN.md`
-15. `LOCAL_FIRST_SPEC_SYSTEM_PLAN.md`
-16. `BILLING_SETUP.md`
+## What It Does
 
-### Full Pack (Grouped)
-- Product and strategy: `EXECUTIVE_SUMMARY`, `PRD`, `SPEC`
-- Architecture and runtime: `ARCHITECTURE_DECISIONS`, `TECH_STACK`, `LOCAL_RUNBOOK`, `GO_LIVE_RUNBOOK`, `BILLING_SETUP`, `EVENT_MODEL`
-- UX and flow: `VISION_AND_FLOW`, `UX_PRINCIPLES`, `USER_FLOWS`
-- Validation and economics: `VALIDATION_PLAN`, `GO_NO_GO_SCORECARD`, `PILOT_SCORECARD_TEMPLATE`, `FINANCIAL_MODEL`, `RISK_REGISTER`
-- Build surface: `web/`, `collab-server/`, `contracts/`, `fixtures/`, `FIRST_60_MINUTES.md`, `ACCEPTANCE_TEST_MATRIX.md`
-- Component plan: `COMPONENT_MODEL.md`
-- Backlog and execution: `TASKS`, `90_DAY_EXECUTION_PLAN`, `DECISIONS`, `AGENT_HANDOFF`
-- Archived/working notes: `archive/`, `RESEARCH_NOTES.md`
+SpecForge is built around four jobs:
 
-### Source Notes
-Primary references and links are consolidated in `RESEARCH_NOTES.md` to avoid duplication.
+1. Validate the idea before writing a full build plan.
+2. Let multiple humans and agents co-author the same spec in real time.
+3. Keep AI edits governed through patches, review states, and attribution.
+4. Export a build-ready packet instead of a vague brainstorm transcript.
 
-### Current Product Position
-1. Validate authoring behavior first:
-   - repeat collaborative use
-   - trust in governed agent patches
-   - ability to reach a build-ready spec
-2. Use selected `ideas/` packs as example corpora and end-to-end benchmarks.
-3. Treat repo generation as a downstream proof surface, not the initial product gate.
-4. Use `/` as the marketing/overview surface, `/pricing` as the commercial framing page, and `/workspace` as the actual product.
-5. Let local operators reuse existing Codex CLI or Claude Code CLI logins for guided assist without shipping secrets to the browser.
-6. Reuse one OpenSpec core across the web app, terminal CLI, and orchestrator so the product stops drifting across surfaces.
-7. Give design partners a copy-paste prompt they can hand to their own AI helper so trial sessions stay structured even without a live moderator.
-8. Treat UI and interaction design as part of the canonical spec by requiring a `UX Pack`, or explicitly mark a spec `API-only` / `CLI-only` when no GUI is needed.
-9. Keep design review inside the same product flow by exposing a `Design handoff` panel in the export stage that lifts the canonical `UX Pack`, any completed design-review outputs, and a copyable review prompt for external design agents or partners.
+The core workflow is:
 
-### Applied Learnings
-1. Lock the wedge early:
-   - guided specs + governed agent review + one-shot handoff
-   - avoid drifting back into generic collaborative editing
-2. Export is not enough:
-   - the product only becomes legible when export turns into starter handoff, execution brief, and launch packet
-3. Put the workflow into the UI:
-   - if the next action is not obvious on screen, the spec is still too ambiguous
-4. Constrain generation first:
-   - one curated TypeScript starter is a better MVP than broad repo generation claims
-5. Keep browser tests on the real path:
-   - create -> review -> decide -> handoff is the regression boundary for future idea builds
-6. Remove placeholder content aggressively:
-   - live `TBD` text in seeds, fallbacks, or generated scaffolds makes the product feel unfinished even when the underlying code works
-7. Share commercial contracts:
-   - pricing, plan JSON, and entitlement logic should come from one catalog or they will drift immediately
-8. Thin pages and stores early:
-   - once a route or persistence module becomes hard to skim, extract by domain before more product logic piles in
-9. Keep UX coverage explicit:
-   - if the product has a human-facing interface, the spec should name key screens, failure states, and responsive expectations before handoff
-10. Package the working local product before rewriting it:
-   - a desktop shell should supervise the existing local web and collab processes instead of forcing a premature runtime rewrite
+1. Capture the idea, audience, constraints, risks, and proof points.
+2. Draft the spec with structured depth gates.
+3. Collaborate in the workspace with live cursors and shared state.
+4. Review AI-suggested patches before applying them.
+5. Export PRD/spec artifacts, handoff notes, and launch planning material.
 
-### Current Runtime
-1. `web/` is the real Next.js app.
-2. `collab-server/` is the real Hocuspocus/Yjs collaboration service.
-3. `core/` now contains the first shared OpenSpec runtime modules used by both browser and terminal flows.
-4. `orchestrator/` now contains shared delivery-loop backlog logic consumed by the runner and the web UI.
-5. `cli/` now exposes a terminal-native `specforge` wizard over the same guided spec model.
-6. The local app persists state in `web/.data/` and auto-seeds from `fixtures/`.
-7. The root workspace scripts are only wrappers around the real runnable app and test commands.
-8. `docker compose up --build` now brings up the web app, collaboration service, and Postgres with health checks.
-9. Runtime health surfaces:
-   - `web`: `/api/health`
-   - `web metrics`: `/api/metrics`
-   - `collab-server`: `http://localhost:4322/health`
-   - `collab metrics`: `http://localhost:4322/metrics`
-10. Health and metrics responses include persistence configuration so local-vs-hosted storage drift is visible without opening the code.
-11. The local deployment rehearsal now ships `fixtures/` inside the web image and exercises the hosted Postgres path instead of only local snapshots.
-12. Local demo mode still includes admin controls for resetting workspace state and seeding review activity during MVP testing.
+## Pilot Intake
 
-### Post-Parity Company Plan
-1. Run design-partner validation on the hosted rehearsal path.
-2. Decide hosted SaaS only vs self-hosted OSS + hosted SaaS.
-3. Add deeper commercial onboarding and conversion instrumentation on top of the current landing/pricing surfaces.
-4. Complete Stripe billing beyond the current checkout skeleton (webhooks, subscription sync, and plan automation), plus stronger operational dashboards.
-5. Expand starter generation only after design-partner usage proves the next templates.
-6. Validate whether an external design-skill integration is worth productizing, instead of hardwiring one prematurely.
-7. Package the local product for desktop distribution so design partners can trial SpecForge without a manual multi-process setup.
+The pilot access form is wired to real persistence. Submissions are saved as pending records in the SpecForge store, can be reviewed from the workspace triage panel, and can optionally notify an external workflow.
+
+Configure these variables for hosted or shared demos:
+
+```bash
+SPECFORGE_PILOT_TRIAGE_WORKSPACE_ID=<private-workspace-id>
+SPECFORGE_PILOT_WEBHOOK_URL=<optional-notification-webhook>
+```
+
+Without a webhook, the app still stores the request; it does not send email by itself. The review queue in `/workspace` is the source of truth.
+
+## Run Locally
+
+Install dependencies:
+
+```bash
+bun install
+```
+
+Start the web app and collaboration server in separate terminals:
+
+```bash
+bun run dev:web
+bun run dev:collab
+```
+
+Open:
+
+- `http://localhost:3000/` for the landing page
+- `http://localhost:3000/workspace` for the demo workspace
+- `http://localhost:3000/pilot-access` for the pilot request flow
+- `http://localhost:4322/health` for the collaboration server health check
+
+Local state is stored under `web/.data/` and is intentionally ignored by git.
+
+## Product Surfaces
+
+| Surface | Purpose | Path |
+| --- | --- | --- |
+| Web app | Landing page, pilot intake, multiplayer workspace | `web/` |
+| Collaboration server | Hocuspocus/Yjs realtime editing service | `collab-server/` |
+| CLI | Terminal-native spec workflow | `cli/` |
+| Desktop shell | Tauri wrapper around the local product | `desktop/` |
+| Agent skill | Agent-facing SpecForge workflow prompts | `skills/specforge/` |
+| Spec pack | Product, architecture, UX, validation, and runbook docs | `spec/` |
+
+## Documentation
+
+The repo root is intentionally small. The original planning pack now lives in `spec/` so the product root stays readable.
+
+Start here:
+
+- `spec/SPEC.md` - product intent and binding feature behavior
+- `spec/PRD.md` - requirements and acceptance expectations
+- `spec/ARCHITECTURE_DECISIONS.md` - architecture choices
+- `spec/TECH_STACK.md` - stack decisions
+- `spec/TASKS.md` - current backlog
+- `spec/LOCAL_RUNBOOK.md` - local development and operations
+- `web/DESIGN.md` - design system for the web app
+- `spec/API_REFERENCE.md` - service and API endpoints
+
+## Verification
+
+Canonical checks from the repo root:
+
+```bash
+bun run contracts:validate
+bun run lint
+bun run test
+bun run test:acceptance
+bun run build:web
+```
+
+Run `bun run test:cli` when touching `cli/`, and `bun run build:desktop` when touching `desktop/`.

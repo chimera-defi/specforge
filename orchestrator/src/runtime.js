@@ -9,10 +9,11 @@ const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 
 export const packRoot = path.resolve(scriptDir, "..", "..");
 export const worktreeRoot = path.resolve(packRoot, "..", "..");
-export const tasksPath = path.join(packRoot, "TASKS.md");
-export const specPath = path.join(packRoot, "SPEC.md");
-export const architecturePath = path.join(packRoot, "ARCHITECTURE_DECISIONS.md");
-export const techStackPath = path.join(packRoot, "TECH_STACK.md");
+export const specDocsRoot = path.join(packRoot, "spec");
+export const tasksPath = path.join(specDocsRoot, "TASKS.md");
+export const specPath = path.join(specDocsRoot, "SPEC.md");
+export const architecturePath = path.join(specDocsRoot, "ARCHITECTURE_DECISIONS.md");
+export const techStackPath = path.join(specDocsRoot, "TECH_STACK.md");
 export const loopStatePath = path.join(
   worktreeRoot,
   ".cursor",

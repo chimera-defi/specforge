@@ -1,73 +1,28 @@
 import Link from "next/link";
 import { Check, ArrowRight, HelpCircle, Sparkles } from "lucide-react";
 import { formatWorkspacePlanSeatPrice, listWorkspacePlans } from "@/lib/specforge/plans";
+import { SiteNav } from "@/components/site-nav";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 
 const GITHUB_URL = "https://github.com/chimera-defi/specforge";
-
-function Nav() {
-  return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-xl">
-      <div className="mx-auto flex w-full max-w-[1180px] items-center justify-between px-4 py-3">
-        <Link
-          href="/"
-          className="text-[0.8rem] font-black uppercase tracking-[0.24em] text-foreground transition-opacity hover:opacity-70"
-        >
-          SpecForge
-        </Link>
-        <nav className="flex items-center gap-1">
-          <Link
-            href="/"
-            className="inline-flex min-h-[2.7rem] items-center rounded-full px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Home
-          </Link>
-          <Link
-            href="/download"
-            className="inline-flex min-h-[2.7rem] items-center rounded-full px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Download
-          </Link>
-          <Link
-            href="/pilot-access"
-            className="inline-flex min-h-[2.7rem] items-center rounded-full px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Pilot access
-          </Link>
-          <a
-            href={GITHUB_URL}
-            target="_blank"
-            rel="noreferrer"
-            className="hidden min-h-[2.7rem] items-center rounded-full px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground lg:inline-flex"
-          >
-            GitHub
-          </a>
-          <Link
-            href="/workspace"
-            className="ml-2 inline-flex min-h-[2.8rem] items-center rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground shadow-[var(--shadow-accent)] transition hover:-translate-y-[1px] hover:shadow-[var(--shadow-accent-hover)] active:scale-[0.98]"
-          >
-            Open workspace
-          </Link>
-        </nav>
-      </div>
-    </header>
-  );
-}
 
 const comparisons = [
   {
     name: "Notion",
-    note: "Plus at $10 / member · Business at $20 / member",
-    focus: "Strong docs base, but no governed agent patch workflow.",
+    note: "Plus $10 / member · Business $20 / member",
+    focus: "Strong docs base, no governed agent patch workflow.",
   },
   {
     name: "Linear",
-    note: "Basic at $10 / user · Business at $16 / user",
+    note: "Basic $10 / user · Business $16 / user",
     focus: "Excellent delivery tracker, not spec-first authoring.",
   },
   {
     name: "Confluence",
-    note: "Premium listed at $10.44 / user",
-    focus: "Enterprise docs system, weaker realtime AI governance model.",
+    note: "Premium ~$10.44 / user",
+    focus: "Enterprise docs, weaker realtime AI governance.",
   },
 ];
 
@@ -94,39 +49,39 @@ export default function PricingPage() {
   const plans = listWorkspacePlans();
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
-      <div className="pointer-events-none absolute left-[-10rem] top-[-5rem] h-[24rem] w-[24rem] rounded-full bg-teal-subtle blur-3xl" />
-      <div className="pointer-events-none absolute bottom-[-8rem] right-[-8rem] h-[20rem] w-[20rem] rounded-full bg-blue-subtle blur-3xl" />
+    <div className="min-h-screen bg-background text-foreground">
+      <SiteNav
+        variant="light"
+        ctaHref="/workspace?source=pricing_nav"
+        ctaLabel="Open workspace"
+        ctaVariant="default"
+      />
 
-      <Nav />
-
-      <section className="mx-auto w-full max-w-[1180px] px-4 pb-10 pt-14 animate-fade-up">
-        <p className="mb-3 text-xs font-black uppercase tracking-[0.22em] text-accent">Pricing</p>
-        <h1 className="mb-4 max-w-[20ch] text-balance text-[clamp(2.4rem,5.2vw,4.2rem)] font-black leading-[1.05] tracking-tight">
+      <section className="mx-auto w-full max-w-[1100px] px-5 pb-10 pt-14 animate-fade-up">
+        <Badge variant="amber" className="mb-3">Pricing</Badge>
+        <h1 className="mb-4 max-w-[22ch] text-balance text-[clamp(2.2rem,5vw,3.8rem)] font-black leading-[1.05] tracking-tight">
           Start with the spec. Pay for collaboration and delivery depth.
         </h1>
-        <p className="max-w-[58ch] text-[1.04rem] leading-[1.72] text-muted-foreground">
-          Seat pricing covers realtime authoring, governed patch review, and launch-packet handoff.
-          Sign in with GitHub for hosted team workspaces, then scale from local alpha to managed pilots.
+        <p className="max-w-[58ch] text-base leading-[1.72] text-muted-foreground">
+          Seat pricing covers realtime authoring, governed patch review, and launch-packet
+          handoff. Sign in with GitHub for hosted team workspaces.
         </p>
-        <div className="mt-4 flex flex-wrap gap-3">
-          <Link
-            href="/pilot-access?source=pricing_intro"
-            className="inline-flex min-h-[2.85rem] items-center gap-2 rounded-full bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground shadow-[var(--shadow-accent)] transition hover:-translate-y-[1px] hover:shadow-[var(--shadow-accent-hover)] active:scale-[0.98]"
-          >
-            Request pilot access
-            <ArrowRight size={14} />
-          </Link>
-          <Link
-            href="/workspace?source=pricing_intro#billing-readiness"
-            className="inline-flex min-h-[2.85rem] items-center gap-2 rounded-full border border-border-mid bg-card px-5 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-surface-light active:scale-[0.98]"
-          >
-            Open billing status
-          </Link>
+        <div className="mt-6 flex flex-wrap gap-3">
+          <Button asChild variant="default" size="lg">
+            <Link href="/pilot-access?source=pricing_intro">
+              Request pilot access
+              <ArrowRight size={14} />
+            </Link>
+          </Button>
+          <Button asChild variant="secondary" size="lg">
+            <Link href="/workspace?source=pricing_intro#billing-readiness">
+              Open billing status
+            </Link>
+          </Button>
         </div>
       </section>
 
-      <section className="mx-auto w-full max-w-[1180px] px-4 pb-14">
+      <section className="mx-auto w-full max-w-[1100px] px-5 pb-14">
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           {plans.map((plan, index) => {
             const isPilot = plan.plan === "pilot";
@@ -145,15 +100,16 @@ export default function PricingPage() {
             return (
               <article
                 key={plan.plan}
-                className={`relative flex flex-col gap-5 rounded-[var(--radius-card)] border p-6 shadow-[var(--shadow-card)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-card-hover)] animate-fade-up ${
+                className={[
+                  "relative flex flex-col gap-5 rounded-[var(--radius-card)] border p-6 shadow-[var(--shadow-card)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-card-hover)] animate-fade-up",
                   isPilot
                     ? "border-teal-border bg-gradient-to-b from-teal-subtle via-card to-card ring-2 ring-teal-border"
-                    : "border-border-mid bg-card"
-                }`}
+                    : "border-border-mid bg-card",
+                ].join(" ")}
                 style={{ animationDelay: `${0.08 * (index + 1)}s` }}
               >
                 {isPilot && (
-                  <span className="absolute -top-3 left-5 inline-flex items-center gap-1 rounded-full bg-accent px-3 py-1 text-[0.7rem] font-black uppercase tracking-[0.16em] text-accent-foreground shadow-[var(--shadow-accent)]">
+                  <span className="absolute -top-3 left-5 inline-flex items-center gap-1 rounded-full bg-accent px-3 py-1 text-xs font-black uppercase tracking-[0.16em] text-accent-foreground shadow-[var(--shadow-accent)]">
                     <Sparkles size={11} />
                     Recommended
                   </span>
@@ -179,40 +135,53 @@ export default function PricingPage() {
                   ))}
                 </ul>
 
-                <Link
-                  href={ctaHref}
-                  className={`inline-flex min-h-[2.7rem] items-center justify-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition hover:-translate-y-[1px] active:scale-[0.98] ${
-                    isPilot
-                      ? "bg-accent text-accent-foreground shadow-[var(--shadow-accent)]"
-                      : "bg-primary text-primary-foreground"
-                  }`}
-                >
-                  {ctaLabel}
-                  <ArrowRight size={14} />
-                </Link>
+                <Button asChild variant={isPilot ? "default" : "primary"}>
+                  <Link href={ctaHref}>
+                    {ctaLabel}
+                    <ArrowRight size={14} />
+                  </Link>
+                </Button>
               </article>
             );
           })}
         </div>
       </section>
 
-      <section className="mx-auto w-full max-w-[1180px] px-4 pb-14">
+      {/* Comparison table */}
+      <section className="mx-auto w-full max-w-[1100px] px-5 pb-14">
         <h2 className="mb-6 text-xl font-black tracking-tight">How we compare</h2>
-        <div className="overflow-hidden rounded-[var(--radius-panel)] border border-border-mid bg-card shadow-[var(--shadow-card)]">
-          {comparisons.map(({ name, note, focus }) => (
-            <div
-              key={name}
-              className="grid grid-cols-1 gap-x-6 gap-y-1 border-b border-border px-5 py-4 last:border-b-0 sm:grid-cols-[8rem_1fr_1fr]"
-            >
-              <span className="text-sm font-semibold text-foreground">{name}</span>
-              <span className="text-sm text-muted-foreground">{note}</span>
-              <span className="text-sm italic text-muted-foreground">{focus}</span>
-            </div>
-          ))}
-        </div>
+        <Card className="overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[36rem] border-collapse text-sm">
+              <thead>
+                <tr className="border-b border-border-mid bg-muted/40">
+                  <th className="px-5 py-3 text-left text-xs font-black uppercase tracking-[0.1em] text-muted-foreground">
+                    Tool
+                  </th>
+                  <th className="px-5 py-3 text-left text-xs font-black uppercase tracking-[0.1em] text-muted-foreground">
+                    Pricing
+                  </th>
+                  <th className="px-5 py-3 text-left text-xs font-black uppercase tracking-[0.1em] text-muted-foreground">
+                    Gap
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {comparisons.map(({ name, note, focus }) => (
+                  <tr key={name} className="border-b border-border last:border-b-0 hover:bg-muted/20">
+                    <td className="px-5 py-4 font-semibold text-foreground">{name}</td>
+                    <td className="break-words px-5 py-4 text-muted-foreground">{note}</td>
+                    <td className="break-words px-5 py-4 italic text-muted-foreground">{focus}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
       </section>
 
-      <section className="mx-auto w-full max-w-[1180px] px-4 pb-16">
+      {/* FAQs */}
+      <section className="mx-auto w-full max-w-[1100px] px-5 pb-16">
         <h2 className="mb-6 text-xl font-black tracking-tight">Common questions</h2>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {faqs.map(({ q, a }, index) => (
@@ -232,31 +201,38 @@ export default function PricingPage() {
       </section>
 
       <footer className="border-t border-border">
-        <div className="mx-auto flex w-full max-w-[1180px] flex-wrap items-center justify-between gap-4 px-4 py-6">
-          <span className="text-[0.76rem] font-black uppercase tracking-[0.24em] text-muted-foreground">
+        <div className="mx-auto flex w-full max-w-[1100px] flex-wrap items-center justify-between gap-4 px-5 py-6">
+          <span className="text-xs font-black uppercase tracking-[0.24em] text-muted-foreground">
             SpecForge Studio
           </span>
-          <nav className="flex flex-wrap items-center gap-6">
-            <Link href="/" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-              Home
-            </Link>
-            <Link href="/download" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-              Download
-            </Link>
-            <a
-              href={GITHUB_URL}
-              target="_blank"
-              rel="noreferrer"
-              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-            >
-              GitHub
-            </a>
-            <Link href="/pilot-access" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-              Pilot access
-            </Link>
-            <Link href="/workspace" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-              Workspace
-            </Link>
+          <nav className="flex flex-wrap items-center gap-5">
+            {[
+              { href: "/", label: "Home" },
+              { href: "/download", label: "Download" },
+              { href: GITHUB_URL, label: "GitHub", external: true },
+              { href: "/pilot-access", label: "Pilot access" },
+              { href: "/workspace", label: "Workspace" },
+            ].map((l) =>
+              l.external ? (
+                <a
+                  key={l.href}
+                  href={l.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {l.label}
+                </a>
+              ) : (
+                <Link
+                  key={l.href}
+                  href={l.href}
+                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {l.label}
+                </Link>
+              ),
+            )}
           </nav>
           <p className="text-sm text-muted-foreground">&copy; {new Date().getFullYear()} SpecForge</p>
         </div>

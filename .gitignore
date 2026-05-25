@@ -18,9 +18,11 @@ desktop/src-tauri/target/
 desktop/gen/
 desktop/.tauri/
 # Local agent/session artifacts
+20[0-9][0-9]-[0-9][0-9]-[0-9][0-9]-*.txt
 .claude/
 .worktrees/
 artifacts/devin-delegate/
 artifacts/kimi-delegate/
 artifacts/token-reduction/
 artifacts/qmd-repo-*.stamp
+.gstack/
