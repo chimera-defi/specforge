@@ -17,3 +17,10 @@ target/
 desktop/src-tauri/target/
 desktop/gen/
 desktop/.tauri/
+# Local agent/session artifacts
+.claude/
+.worktrees/
+artifacts/devin-delegate/
+artifacts/kimi-delegate/
+artifacts/token-reduction/
+artifacts/qmd-repo-*.stamp
