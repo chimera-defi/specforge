@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 const GITHUB_URL = "https://github.com/chimera-defi/specforge";
 
@@ -61,17 +62,17 @@ export function SiteNav({
 
         <nav className="flex items-center gap-1">
           {NAV_LINKS.map((link) => {
-            const cls = [
+            const cls = cn(
               hideClass[link.hideBelow ?? "sm"],
               "min-h-[2.75rem] items-center text-sm transition-colors",
               isDark
                 ? "text-primary-foreground/55 hover:text-primary-foreground/90"
                 : "text-muted-foreground hover:text-foreground",
-            ].join(" ");
+            );
 
             const linkPad = { paddingLeft: "0.75rem", paddingRight: "0.75rem" };
             return link.external ? (
-              <a key={link.href} href={link.href} target="_blank" rel="noreferrer" className={cls} style={linkPad}>
+              <a key={link.href} href={link.href} target="_blank" rel="noreferrer" className={cls} style={linkPad} aria-label={`${link.label} (opens in new tab)`}>
                 {link.label}
               </a>
             ) : (

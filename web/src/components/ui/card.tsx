@@ -16,13 +16,13 @@ const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElemen
 Card.displayName = "Card";
 
 const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("flex flex-col gap-1.5 p-5", className)} {...props} />
+  ({ className, style, ...props }, ref) => (
+    <div ref={ref} className={cn("flex flex-col gap-1.5", className)} style={{ padding: "1.25rem", ...style }} {...props} />
   ),
 );
 CardHeader.displayName = "CardHeader";
 
-const CardTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLHeadingElement>>(
+const CardTitle = React.forwardRef<HTMLHeadingElement, React.HTMLAttributes<HTMLHeadingElement>>(
   ({ className, ...props }, ref) => (
     <h3
       ref={ref}
@@ -41,27 +41,28 @@ const CardDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttribu
 CardDescription.displayName = "CardDescription";
 
 const CardContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("px-5 pb-5", className)} {...props} />
+  ({ className, style, ...props }, ref) => (
+    <div ref={ref} className={cn(className)} style={{ paddingLeft: "1.25rem", paddingRight: "1.25rem", paddingBottom: "1.25rem", ...style }} {...props} />
   ),
 );
 CardContent.displayName = "CardContent";
 
 const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("flex items-center px-5 pb-5", className)} {...props} />
+  ({ className, style, ...props }, ref) => (
+    <div ref={ref} className={cn("flex items-center", className)} style={{ paddingLeft: "1.25rem", paddingRight: "1.25rem", paddingBottom: "1.25rem", ...style }} {...props} />
   ),
 );
 CardFooter.displayName = "CardFooter";
 
 const CardPanel = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
+  ({ className, style, ...props }, ref) => (
     <div
       ref={ref}
       className={cn(
-        "rounded-panel border border-border bg-surface-light p-4",
+        "rounded-panel border border-border bg-surface-light",
         className,
       )}
+      style={{ padding: "1rem", ...style }}
       {...props}
     />
   ),

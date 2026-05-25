@@ -43,7 +43,7 @@ export interface ButtonProps
   asChild?: boolean;
 }
 
-const buttonPadding: Record<string, React.CSSProperties> = {
+const buttonPadding: Record<NonNullable<VariantProps<typeof buttonVariants>["size"]>, React.CSSProperties> = {
   default: { paddingLeft: "1.25rem", paddingRight: "1.25rem" },
   sm: { paddingLeft: "1rem", paddingRight: "1rem" },
   lg: { paddingLeft: "2rem", paddingRight: "2rem" },
