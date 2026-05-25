@@ -164,6 +164,38 @@ describe("specforge store", () => {
     ).toBe(true);
   });
 
+  it("updates an existing pending pilot access request with the latest submission", async () => {
+    const options = await makeOptions();
+    const first = await createPilotAccessRequest(
+      {
+        workspace_id: "ws_demo",
+        github_login: "@duplicate-pilot",
+        requested_name: "Original Pilot",
+        requested_email: "old@example.com",
+        note: "Original note",
+      },
+      options,
+    );
+
+    const updated = await createPilotAccessRequest(
+      {
+        workspace_id: "ws_demo",
+        github_login: "duplicate-pilot",
+        requested_name: "Updated Pilot",
+        requested_email: "new@example.com",
+        note: "Updated note",
+      },
+      options,
+    );
+    const requests = await listPilotAccessRequests("ws_demo", options);
+
+    expect(updated.request_id).toBe(first.request_id);
+    expect(updated.requested_name).toBe("Updated Pilot");
+    expect(updated.requested_email).toBe("new@example.com");
+    expect(updated.note).toBe("Updated note");
+    expect(requests.filter((request) => request.github_login === "duplicate-pilot")).toHaveLength(1);
+  });
+
   it("approves pilot access requests and creates a workspace membership", async () => {
     const options = await makeOptions();
     const created = await createPilotAccessRequest(

@@ -46,9 +46,11 @@ test("submits pilot access intake and exposes it in workspace triage", async ({ 
   await expect(page.getByText("Request saved to the pilot queue")).toBeVisible();
 
   await page.goto("/workspace?stage=start");
-  await page.locator("summary").filter({ hasText: "Pilot access triage" }).click();
-  await expect(page.getByText(email)).toBeVisible();
-  await expect(page.getByText("Pilot type: team")).toBeVisible();
+  const pilotTriage = page.locator("details").filter({ hasText: "Pilot access triage" });
+  await pilotTriage.locator("summary").click();
+  const requestRow = pilotTriage.locator("li").filter({ hasText: email });
+  await expect(requestRow).toBeVisible();
+  await expect(requestRow.getByText("Pilot type: team")).toBeVisible();
 });
 
 test("captures north-star copy variants for review", async ({ page }) => {
@@ -93,10 +95,23 @@ test("creates a document, queues a patch, and exposes export JSON", async ({ pag
       timeout: 10_000,
     })
     .toBeGreaterThanOrEqual(1);
-  await page.locator("summary").filter({ hasText: "Share current spec" }).click();
+  const workspaceSessionDetails = page
+    .locator("details")
+    .filter({ has: page.locator("summary").filter({ hasText: "Workspace session" }) })
+    .first();
+  await workspaceSessionDetails.evaluate((element) => {
+    (element as HTMLDetailsElement).open = true;
+  });
+  const shareDetails = page.getByTestId("share-current-spec-details");
+  await shareDetails.evaluate((element) => {
+    const details = element as HTMLDetailsElement;
+    details.open = true;
+    details.scrollIntoView({ block: "center" });
+  });
   await expect(page.getByTestId("share-url-input")).toHaveValue(
     new RegExp(`document=${new URL(page.url()).searchParams.get("document")}`),
   );
+  await page.getByTestId("copy-invite-note").scrollIntoViewIfNeeded();
   await expect(page.getByTestId("copy-invite-note")).toBeVisible();
   await expect(page.getByTestId("share-access-note")).toContainText("Local demo access");
   const entitlementsResponse = await page.request.get("/api/workspace/entitlements");
@@ -341,7 +356,7 @@ test("renders the guided flow on a mobile viewport", async ({ page }) => {
   await page.goto("/");
 
   await expect(page.getByText("SpecForge", { exact: true })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Pilot access" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Pilot access", exact: true })).toBeVisible();
   await expect(page.getByText("Spec collaboration for AI-assisted teams")).toBeVisible();
 
   await page.screenshot({

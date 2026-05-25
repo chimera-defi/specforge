@@ -28,6 +28,7 @@ export default defineConfig({
         PORT: "3100",
         NEXT_PUBLIC_COLLAB_URL: "ws://127.0.0.1:4322",
         SPECFORGE_DB_PATH: ".data/specforge-db-playwright.json",
+        SPECFORGE_PILOT_TRIAGE_WORKSPACE_ID: "ws_demo",
       },
     },
     {

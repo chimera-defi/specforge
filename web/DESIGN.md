@@ -33,10 +33,10 @@ All colors are defined in `src/app/globals.css` as `:root` custom properties.
 |-------|-------|-------|
 | `--sf-ink` | `#1c1a17` | Primary text, icon strokes |
 | `--sf-ink-dark` | `#18212b` | Dark section backgrounds, inverted surfaces |
-| `--sf-surface` | `#efe4d5` | Page background (warm parchment) |
-| `--sf-surface-light` | `#f7f4ec` | Lighter page background variant |
+| `--sf-surface` | `#f1e8db` | Page background (warm parchment, lighter marketing shell) |
+| `--sf-surface-light` | `#fbf6ed` | Lighter page background variant |
 | `--sf-surface-warm` | `#fff9f3` | Warm white for inverted text on dark |
-| `--sf-surface-card` | `rgba(255,255,255,0.72)` | Card/panel backgrounds |
+| `--sf-surface-card` | `rgba(255,253,248,0.84)` | Card/panel backgrounds |
 | `--sf-surface-input` | `#fffdfa` | Form inputs, text areas, editor surface |
 
 ### Brand Accent (Teal)

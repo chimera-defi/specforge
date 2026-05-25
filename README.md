@@ -2,6 +2,14 @@
 
 **Status**: Scoped MVP/spec parity reached on the build branch
 
+## Public Demo Link
+
+- Marketing page: `https://placing-constructed-cabinets-happen.trycloudflare.com/`
+- Workspace: `https://placing-constructed-cabinets-happen.trycloudflare.com/workspace`
+
+These are temporary local-dev tunnel URLs for the current shared session. If the tunnel restarts,
+run `cloudflared tunnel --url http://127.0.0.1:3000 --no-autoupdate` and update this section.
+
 ## Usage Modes
 
 SpecForge runs across four surfaces — all backed by the same spec engine:

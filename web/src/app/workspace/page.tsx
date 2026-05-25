@@ -654,7 +654,7 @@ export default async function Home({ searchParams }: Props) {
                       </form>
                     </div>
                   </details>
-                  <details className={styles.wizardSection}>
+                  <details className={styles.wizardSection} data-testid="share-current-spec-details">
                     <summary className={styles.disclosureSummary}>
                       <span>Share current spec</span>
                       <span>{activeDocument ? "Copy URL" : "Workspace link"}</span>
