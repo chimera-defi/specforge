@@ -24,3 +24,4 @@ artifacts/devin-delegate/
 artifacts/kimi-delegate/
 artifacts/token-reduction/
 artifacts/qmd-repo-*.stamp
+.gstack/

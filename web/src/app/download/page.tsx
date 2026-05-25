@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Terminal, Wifi, Cpu, ArrowRight, MonitorDot, Cloud, Download } from "lucide-react";
 import { CopyButton } from "./copy-button";
+import { SiteNav } from "@/components/site-nav";
 
 const GITHUB_URL = "https://github.com/chimera-defi/specforge";
 
@@ -9,49 +10,6 @@ export const metadata: Metadata = {
   title: "Download SpecForge",
   description: "Run SpecForge locally — no account required.",
 };
-
-function Nav() {
-  return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-xl">
-      <div className="mx-auto flex w-full max-w-[1180px] items-center justify-between px-4 py-3">
-        <Link
-          href="/"
-          className="text-[0.8rem] font-black uppercase tracking-[0.24em] text-foreground transition-opacity hover:opacity-70"
-        >
-          SpecForge
-        </Link>
-        <nav className="flex items-center gap-1">
-          <Link
-            href="/"
-            className="inline-flex min-h-[2.7rem] items-center rounded-full px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Home
-          </Link>
-          <Link
-            href="/pricing"
-            className="inline-flex min-h-[2.7rem] items-center rounded-full px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Pricing
-          </Link>
-          <a
-            href={GITHUB_URL}
-            target="_blank"
-            rel="noreferrer"
-            className="hidden min-h-[2.7rem] items-center rounded-full px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground md:inline-flex"
-          >
-            GitHub
-          </a>
-          <Link
-            href="/workspace"
-            className="ml-2 inline-flex min-h-[2.8rem] items-center rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground shadow-[var(--shadow-accent)] transition hover:-translate-y-[1px] hover:shadow-[var(--shadow-accent-hover)] active:scale-[0.98]"
-          >
-            Open workspace
-          </Link>
-        </nav>
-      </div>
-    </header>
-  );
-}
 
 function CodeBlock({ code, label }: { code: string; label?: string }) {
   return (
@@ -124,11 +82,13 @@ npm install -g @openai/codex`;
 
 export default function DownloadPage() {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
-      <div className="pointer-events-none absolute left-[-8rem] top-[8rem] h-[22rem] w-[22rem] rounded-full bg-teal-subtle blur-3xl" />
-      <div className="pointer-events-none absolute bottom-[-10rem] right-[-8rem] h-[20rem] w-[20rem] rounded-full bg-blue-subtle blur-3xl" />
-
-      <Nav />
+    <div className="min-h-screen bg-background text-foreground">
+      <SiteNav
+        variant="light"
+        ctaHref="/workspace?source=download_nav"
+        ctaLabel="Open workspace"
+        ctaVariant="default"
+      />
 
       <section className="mx-auto grid w-full max-w-[1180px] grid-cols-1 gap-10 px-4 pb-12 pt-14 lg:grid-cols-[1.12fr_0.88fr] lg:items-start">
         <div className="space-y-5 animate-fade-up">

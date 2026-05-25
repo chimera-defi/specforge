@@ -2,55 +2,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, GitMerge, Package, Users } from "lucide-react";
 import { heroVariantOrder, heroVariants, type HeroVariant } from "@/lib/specforge/marketing";
+import { SiteNav } from "@/components/site-nav";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardPanel } from "@/components/ui/card";
 
 const GITHUB_URL = "https://github.com/chimera-defi/specforge";
 
 type Props = {
   searchParams?: Promise<{ variant?: string }>;
 };
-
-function Nav() {
-  return (
-    <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-primary/95 backdrop-blur-xl">
-      <div className="mx-auto flex min-h-[3.75rem] w-full max-w-[1100px] items-center justify-between px-5">
-        <Link
-          href="/"
-          className="text-[0.72rem] font-black uppercase tracking-[0.24em] text-primary-foreground/90 transition-opacity hover:opacity-60"
-        >
-          SpecForge
-        </Link>
-        <nav className="flex items-center gap-1">
-          <Link
-            href="/pricing"
-            className="hidden min-h-[2.5rem] items-center px-3 text-[0.82rem] text-primary-foreground/55 transition-colors hover:text-primary-foreground/90 sm:inline-flex"
-          >
-            Pricing
-          </Link>
-          <Link
-            href="/download"
-            className="hidden min-h-[2.5rem] items-center px-3 text-[0.82rem] text-primary-foreground/55 transition-colors hover:text-primary-foreground/90 md:inline-flex"
-          >
-            Download
-          </Link>
-          <a
-            href={GITHUB_URL}
-            target="_blank"
-            rel="noreferrer"
-            className="hidden min-h-[2.5rem] items-center px-3 text-[0.82rem] text-primary-foreground/55 transition-colors hover:text-primary-foreground/90 lg:inline-flex"
-          >
-            GitHub
-          </a>
-          <Link
-            href="/pilot-access?source=landing_nav"
-            className="ml-2 inline-flex min-h-[2.25rem] items-center rounded-full bg-accent px-4 text-[0.82rem] font-semibold text-accent-foreground transition hover:bg-teal-hover active:scale-[0.97]"
-          >
-            Request access
-          </Link>
-        </nav>
-      </div>
-    </header>
-  );
-}
 
 const stages = [
   { n: "01", label: "Problem" },
@@ -71,36 +32,37 @@ export default async function LandingPage({ searchParams }: Props) {
 
   return (
     <div className="min-h-screen bg-primary text-primary-foreground">
-      <Nav />
+      <SiteNav
+        variant="dark"
+        ctaHref="/pilot-access?source=landing_nav"
+        ctaLabel="Request access"
+        ctaVariant="default"
+      />
 
       {/* ── Hero ─────────────────────────────────────────────────── */}
       <section className="mx-auto flex w-full max-w-[780px] flex-col items-center px-5 pb-14 pt-16 text-center md:pt-24">
-        <span className="mb-6 inline-flex items-center rounded-full border border-white/10 bg-white/6 px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-primary-foreground/55">
+        <Badge variant="outline" className="mb-6">
           {copy.eyebrow}
-        </span>
+        </Badge>
 
-        <h1 className="text-balance text-[clamp(2.8rem,8vw,5.2rem)] font-black leading-[0.98] tracking-tight">
+        <h1 className="text-balance text-[clamp(2.6rem,7vw,4.8rem)] font-black leading-[0.98] tracking-tight">
           {copy.headline}
         </h1>
 
-        <p className="mt-5 max-w-[52ch] text-[1.05rem] leading-[1.65] text-primary-foreground/60">
+        <p className="mt-5 max-w-[52ch] text-base leading-[1.65] text-primary-foreground/60">
           {copy.subhead}
         </p>
 
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-          <Link
-            href="/pilot-access?source=landing_hero"
-            className="inline-flex min-h-[2.85rem] items-center gap-2 rounded-full bg-accent px-5 text-[0.9rem] font-semibold text-accent-foreground shadow-[var(--shadow-accent)] transition hover:-translate-y-[1px] hover:bg-teal-hover hover:shadow-[var(--shadow-accent-hover)] active:scale-[0.97]"
-          >
-            Request pilot access
-            <ArrowRight size={15} />
-          </Link>
-          <Link
-            href="/workspace?source=landing_hero"
-            className="inline-flex min-h-[2.85rem] items-center rounded-full border border-white/15 px-5 text-[0.9rem] font-semibold text-primary-foreground/80 transition hover:border-white/30 hover:text-primary-foreground active:scale-[0.97]"
-          >
-            Try demo workspace
-          </Link>
+          <Button asChild variant="default" size="lg">
+            <Link href="/pilot-access?source=landing_hero">
+              Request pilot access
+              <ArrowRight size={15} />
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="lg">
+            <Link href="/workspace?source=landing_hero">Try demo workspace</Link>
+          </Button>
         </div>
       </section>
 
@@ -137,16 +99,16 @@ export default async function LandingPage({ searchParams }: Props) {
         {/* Stage strip */}
         <section className="mx-auto w-full max-w-[1100px] px-5 py-12">
           <div className="flex flex-col gap-5 border-b border-border-mid pb-12 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-[0.75rem] font-black uppercase tracking-[0.18em] text-amber">
+            <p className="shrink-0 text-xs font-black uppercase tracking-[0.18em] text-amber">
               5-stage idea audit — built in
             </p>
-            <ol className="flex flex-wrap items-center gap-x-0 gap-y-2 text-[0.82rem] font-semibold text-muted-foreground">
+            <ol className="flex min-w-0 flex-wrap items-center gap-y-2 text-sm font-semibold text-muted-foreground">
               {stages.map((s, i) => (
                 <li key={s.n} className="flex items-center">
                   <span className="text-foreground">{s.n}</span>
-                  <span className="ml-1.5">{s.label}</span>
+                  <span className="ml-1.5 truncate">{s.label}</span>
                   {i < stages.length - 1 && (
-                    <span className="mx-3 text-border-mid select-none">·</span>
+                    <span className="mx-2.5 select-none text-border-mid">·</span>
                   )}
                 </li>
               ))}
@@ -154,36 +116,34 @@ export default async function LandingPage({ searchParams }: Props) {
           </div>
         </section>
 
-        {/* Feature 1 — no silent rewrites */}
+        {/* Feature 1 — patch governance */}
         <section className="mx-auto w-full max-w-[1100px] px-5 pb-20">
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center lg:gap-20">
             <div>
-              <p className="text-[0.72rem] font-black uppercase tracking-[0.18em] text-amber">
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-amber">
                 Patch governance
               </p>
-              <h2 className="mt-4 text-balance text-[clamp(2rem,4vw,3rem)] font-black leading-[1.05] tracking-tight">
+              <h2 className="mt-4 text-balance text-[clamp(1.9rem,3.8vw,2.8rem)] font-black leading-[1.05] tracking-tight">
                 Every AI edit is a proposal. Humans decide what merges.
               </h2>
-              <p className="mt-4 max-w-[46ch] leading-[1.7] text-muted-foreground">
-                Agent contributions land as block-level patches with rationale, confidence, and decision history. Nothing rewrites your document silently.
+              <p className="mt-4 max-w-[46ch] text-base leading-[1.7] text-muted-foreground">
+                Agent contributions land as block-level patches with rationale, confidence, and
+                decision history. Nothing rewrites your document silently.
               </p>
               <Link
                 href="/workspace?source=feature1"
-                className="mt-6 inline-flex items-center gap-1.5 text-[0.85rem] font-semibold text-accent hover:underline"
+                className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:underline"
               >
                 See the workspace <ArrowRight size={13} />
               </Link>
             </div>
-            <div className="rounded-[var(--radius-lg)] border border-border bg-card p-1 shadow-[var(--shadow-card)]">
-              <div className="rounded-[var(--radius-panel)] border border-border bg-surface-light p-4">
-                {/* Patch proposal mockup */}
-                <div className="mb-3 flex items-center justify-between">
-                  <span className="text-[0.7rem] font-black uppercase tracking-[0.14em] text-muted-mid">
+            <Card className="p-1">
+              <CardPanel>
+                <div className="mb-3 flex items-center justify-between gap-2">
+                  <span className="text-xs font-black uppercase tracking-[0.14em] text-muted-foreground">
                     Review queue · 3 proposals
                   </span>
-                  <span className="rounded-full bg-success-subtle px-2 py-0.5 text-[0.65rem] font-semibold text-success">
-                    1 accepted
-                  </span>
+                  <Badge variant="success">1 accepted</Badge>
                 </div>
                 {[
                   { block: "§ Problem Statement", type: "structural_edit", status: "pending" },
@@ -192,29 +152,23 @@ export default async function LandingPage({ searchParams }: Props) {
                 ].map((p) => (
                   <div
                     key={p.block}
-                    className="mb-2 last:mb-0 flex items-center justify-between rounded-[var(--radius-sm)] border border-border bg-card px-3 py-2.5"
+                    className="mb-2 flex items-center justify-between gap-3 rounded-xl border border-border bg-card px-3 py-2.5 last:mb-0"
                   >
-                    <div>
-                      <p className="text-[0.78rem] font-semibold text-foreground">{p.block}</p>
-                      <p className="text-[0.68rem] text-muted-foreground">{p.type}</p>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-foreground">{p.block}</p>
+                      <p className="text-xs text-muted-foreground">{p.type}</p>
                     </div>
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-[0.65rem] font-semibold ${
-                        p.status === "accepted"
-                          ? "bg-success-subtle text-success"
-                          : "bg-muted text-muted-foreground"
-                      }`}
-                    >
+                    <Badge variant={p.status === "accepted" ? "success" : "default"}>
                       {p.status}
-                    </span>
+                    </Badge>
                   </div>
                 ))}
-              </div>
-            </div>
+              </CardPanel>
+            </Card>
           </div>
         </section>
 
-        {/* Feature 2 — dark section — idea audit */}
+        {/* Feature 2 — idea audit (dark) */}
         <section className="bg-primary text-primary-foreground">
           <div className="mx-auto w-full max-w-[1100px] px-5 py-20">
             <div className="grid gap-12 lg:grid-cols-2 lg:items-center lg:gap-20">
@@ -228,44 +182,46 @@ export default async function LandingPage({ searchParams }: Props) {
                     { n: "05", title: "Security review", sub: "OWASP threat model, trust boundaries, risk register." },
                   ].map((s) => (
                     <li key={s.n} className="flex gap-4">
-                      <span className="mt-0.5 shrink-0 text-[0.72rem] font-black text-accent/70">{s.n}</span>
+                      <span className="mt-0.5 shrink-0 text-xs font-black text-accent/70">{s.n}</span>
                       <div>
-                        <p className="text-[0.88rem] font-semibold text-primary-foreground">{s.title}</p>
-                        <p className="text-[0.8rem] leading-relaxed text-primary-foreground/50">{s.sub}</p>
+                        <p className="text-sm font-semibold text-primary-foreground">{s.title}</p>
+                        <p className="text-sm leading-relaxed text-primary-foreground/50">{s.sub}</p>
                       </div>
                     </li>
                   ))}
                 </ol>
               </div>
               <div className="order-1 lg:order-2">
-                <p className="text-[0.72rem] font-black uppercase tracking-[0.18em] text-accent/70">
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-accent/70">
                   Idea audit
                 </p>
-                <h2 className="mt-4 text-balance text-[clamp(2rem,4vw,3rem)] font-black leading-[1.05] tracking-tight">
+                <h2 className="mt-4 text-balance text-[clamp(1.9rem,3.8vw,2.8rem)] font-black leading-[1.05] tracking-tight">
                   Pressure-test the idea before you write a line of spec.
                 </h2>
-                <p className="mt-4 max-w-[44ch] leading-[1.7] text-primary-foreground/55">
-                  G-Stack-inspired planning stages run before any spec authoring. Each stage produces a governed patch proposal — nothing auto-applies.
+                <p className="mt-4 max-w-[44ch] text-base leading-[1.7] text-primary-foreground/55">
+                  G-Stack-inspired planning stages run before any spec authoring. Each stage
+                  produces a governed patch proposal — nothing auto-applies.
                 </p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Feature 3 — launch packet */}
+        {/* Feature 3 — handoff */}
         <section className="mx-auto w-full max-w-[1100px] px-5 py-20">
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center lg:gap-20">
             <div>
-              <p className="text-[0.72rem] font-black uppercase tracking-[0.18em] text-amber">
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-amber">
                 Handoff
               </p>
-              <h2 className="mt-4 text-balance text-[clamp(2rem,4vw,3rem)] font-black leading-[1.05] tracking-tight">
+              <h2 className="mt-4 text-balance text-[clamp(1.9rem,3.8vw,2.8rem)] font-black leading-[1.05] tracking-tight">
                 One packet. PRD, SPEC, TASKS, and agent brief.
               </h2>
-              <p className="mt-4 max-w-[46ch] leading-[1.7] text-muted-foreground">
-                Export a single governed bundle that downstream builders consume without reconstructing context from chat history.
+              <p className="mt-4 max-w-[46ch] text-base leading-[1.7] text-muted-foreground">
+                Export a single governed bundle that downstream builders consume without
+                reconstructing context from chat history.
               </p>
-              <div className="mt-6 flex flex-wrap gap-3 text-[0.82rem] text-muted-foreground">
+              <div className="mt-6 flex flex-wrap gap-4 text-sm text-muted-foreground">
                 <span className="inline-flex items-center gap-1.5">
                   <Users size={13} className="text-accent" /> Multiplayer canvas
                 </span>
@@ -277,9 +233,9 @@ export default async function LandingPage({ searchParams }: Props) {
                 </span>
               </div>
             </div>
-            <div className="rounded-[var(--radius-lg)] border border-border bg-card p-1 shadow-[var(--shadow-card)]">
-              <div className="rounded-[var(--radius-panel)] border border-border bg-surface-light p-4">
-                <p className="mb-3 text-[0.7rem] font-black uppercase tracking-[0.14em] text-muted-mid">
+            <Card className="p-1">
+              <CardPanel>
+                <p className="mb-3 text-xs font-black uppercase tracking-[0.14em] text-muted-foreground">
                   handoff.json
                 </p>
                 <div className="space-y-2">
@@ -287,51 +243,47 @@ export default async function LandingPage({ searchParams }: Props) {
                     (f) => (
                       <div
                         key={f}
-                        className="flex items-center justify-between rounded-[var(--radius-sm)] border border-border bg-card px-3 py-2"
+                        className="flex items-center justify-between rounded-xl border border-border bg-card px-3 py-2"
                       >
-                        <span className="font-mono text-[0.75rem] text-foreground">{f}</span>
-                        <span className="text-[0.65rem] text-success">✓ ready</span>
+                        <span className="font-mono text-sm text-foreground">{f}</span>
+                        <Badge variant="success">ready</Badge>
                       </div>
-                    )
+                    ),
                   )}
                 </div>
-              </div>
-            </div>
+              </CardPanel>
+            </Card>
           </div>
         </section>
 
         {/* CTA */}
         <section className="border-t border-border-mid bg-secondary">
           <div className="mx-auto flex w-full max-w-[1100px] flex-col items-center px-5 py-20 text-center">
-            <h2 className="text-balance text-[clamp(2rem,4vw,3rem)] font-black leading-tight tracking-tight">
+            <h2 className="text-balance text-[clamp(1.9rem,3.8vw,2.8rem)] font-black leading-tight tracking-tight">
               Apply for hosted pilot access.
             </h2>
-            <p className="mt-3 max-w-[44ch] text-[1rem] leading-relaxed text-muted-foreground">
+            <p className="mt-3 max-w-[44ch] text-base leading-relaxed text-muted-foreground">
               Demo workspace is open now. Hosted team access is reviewed from the intake queue.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-              <Link
-                href="/pilot-access?source=landing_cta"
-                className="inline-flex min-h-[2.85rem] items-center gap-2 rounded-full bg-accent px-6 text-[0.9rem] font-semibold text-accent-foreground shadow-[var(--shadow-accent)] transition hover:-translate-y-[1px] hover:bg-teal-hover hover:shadow-[var(--shadow-accent-hover)] active:scale-[0.97]"
-              >
-                Request pilot access
-                <ArrowRight size={15} />
-              </Link>
-              <Link
-                href="/workspace?source=landing_cta"
-                className="inline-flex min-h-[2.85rem] items-center rounded-full border border-border-mid bg-card px-6 text-[0.9rem] font-semibold text-foreground transition-colors hover:bg-background active:scale-[0.97]"
-              >
-                Try demo workspace
-              </Link>
+              <Button asChild variant="default" size="lg">
+                <Link href="/pilot-access?source=landing_cta">
+                  Request pilot access
+                  <ArrowRight size={15} />
+                </Link>
+              </Button>
+              <Button asChild variant="secondary" size="lg">
+                <Link href="/workspace?source=landing_cta">Try demo workspace</Link>
+              </Button>
             </div>
           </div>
         </section>
 
       </div>
 
-      <footer className="bg-background border-t border-border">
+      <footer className="border-t border-border bg-background">
         <div className="mx-auto flex w-full max-w-[1100px] flex-col gap-4 px-5 py-5 sm:flex-row sm:items-center sm:justify-between">
-          <span className="text-[0.7rem] font-black uppercase tracking-[0.22em] text-muted-foreground">
+          <span className="text-xs font-black uppercase tracking-[0.22em] text-muted-foreground">
             SpecForge Studio
           </span>
           <nav className="flex flex-wrap items-center gap-x-5 gap-y-2">
@@ -348,7 +300,7 @@ export default async function LandingPage({ searchParams }: Props) {
                   href={l.href}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-[0.82rem] text-muted-foreground transition-colors hover:text-foreground"
+                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                 >
                   {l.label}
                 </a>
@@ -356,14 +308,14 @@ export default async function LandingPage({ searchParams }: Props) {
                 <Link
                   key={l.href}
                   href={l.href}
-                  className="text-[0.82rem] text-muted-foreground transition-colors hover:text-foreground"
+                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                 >
                   {l.label}
                 </Link>
               ),
             )}
           </nav>
-          <span className="text-[0.82rem] text-muted-foreground">
+          <span className="text-sm text-muted-foreground">
             &copy; {new Date().getFullYear()} SpecForge
           </span>
         </div>
