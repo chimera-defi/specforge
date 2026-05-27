@@ -1,6 +1,11 @@
+const path = require("node:path");
+
+// Load .env from workspace root so SPECFORGE_COLLAB_SECRET (and other env vars)
+// are available regardless of which directory the server is started from.
+require("dotenv").config({ path: path.join(__dirname, "..", "..", ".env") });
+
 const http = require("node:http");
 const fs = require("node:fs/promises");
-const path = require("node:path");
 
 const { Server } = require("@hocuspocus/server");
 const Y = require("yjs");
@@ -135,8 +140,24 @@ const server = new Server({
   port,
 });
 
+function setCorsHeaders(response, request) {
+  const origin = request.headers.origin ?? "*";
+  response.setHeader("Access-Control-Allow-Origin", origin);
+  response.setHeader("Vary", "Origin");
+  response.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+  response.setHeader("Access-Control-Allow-Headers", "Content-Type");
+}
+
 const healthServer = http.createServer(async (request, response) => {
+  if (request.method === "OPTIONS") {
+    setCorsHeaders(response, request);
+    response.writeHead(204);
+    response.end();
+    return;
+  }
+
   if (request.url !== "/health" && request.url !== "/metrics") {
+    setCorsHeaders(response, request);
     response.writeHead(404, { "content-type": "application/json" });
     response.end(JSON.stringify({ status: "not_found" }));
     return;
@@ -165,6 +186,7 @@ const healthServer = http.createServer(async (request, response) => {
     room_snapshot_count: roomSnapshots,
   };
 
+  setCorsHeaders(response, request);
   response.writeHead(200, { "content-type": "application/json" });
   response.end(JSON.stringify(payload));
 });

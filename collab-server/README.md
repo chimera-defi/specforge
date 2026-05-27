@@ -1,16 +1,42 @@
 # SpecForge Collaboration Server
 
-This is the dedicated collaboration runtime for the SpecForge MVP.
+Real-time collaborative document editing powered by Yjs and Hocuspocus.
 
-Current state:
-- Hocuspocus server scaffold is runnable
-- default port is `4321`
-- document rooms are created on demand by Hocuspocus
-- signed room tokens are verified before websocket clients join
-- structured JSON room logs make reconnect/auth failures debuggable locally
-- the web editor connects to rooms keyed by `document_id`
-- room snapshots are persisted locally under `.data/collab-rooms/` so collaboration state survives server restarts
+## Ports
 
-Planned next slice:
-- deeper reconnect and stale-room recovery
-- stronger integration tests with the web app editor client
+- **WebSocket server**: `4321` (default)
+- **Health/metrics server**: `4322` (WebSocket port + 1)
+
+## Environment Variables
+
+The server loads `.env` automatically from the workspace root via `dotenv`.
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `SPECFORGE_COLLAB_SECRET` | Yes | Shared secret used to sign and verify room tokens |
+
+## Dependencies
+
+- `@hocuspocus/server`
+- `yjs`
+- `dotenv`
+
+## How to Start
+
+```bash
+bun install
+node src/index.js
+```
+
+Or from the workspace root:
+
+```bash
+bun run dev:collab
+```
+
+## Notes
+
+- CORS headers are served on health/metrics endpoints for cross-origin browser checks.
+- Document rooms are created on demand by Hocuspocus.
+- Signed room tokens are verified before WebSocket clients can join.
+- Room snapshots are persisted locally under `.data/collab-rooms/` so collaboration state survives server restarts.

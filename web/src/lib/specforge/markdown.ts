@@ -25,7 +25,7 @@ function slugify(value: string): string {
 }
 
 function parseMarkdownStructure(markdown: string): ParsedDocument {
-  const lines = markdown.split("\n");
+  const lines = markdown.replaceAll("\r\n", "\n").split("\n");
   const preambleLines: string[] = [];
   const sections: ParsedSection[] = [];
   let current: ParsedSection | null = null;

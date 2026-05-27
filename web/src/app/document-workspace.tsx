@@ -559,6 +559,11 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
     const editorJson = editor.getJSON();
     const markdown = tiptapJsonToMarkdown(editorJson);
 
+    if (!markdown || markdown.trim().length === 0) {
+      updateSyncState("error", `Cannot save empty document: ${roomName}`);
+      return;
+    }
+
     startTransition(async () => {
       updateSyncState("saving", `Saving ${roomName}...`);
       const response = await fetch(`/api/documents/${document.document_id}`, {

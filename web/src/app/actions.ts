@@ -338,6 +338,7 @@ export async function createDocumentAction(formData: FormData) {
 }
 
 export async function createPatchAction(formData: FormData) {
+  const { actorRef } = await getActionActorRef();
   const [block_id = "", section_id = "", target_fingerprint = ""] = String(
     formData.get("target_descriptor") ?? "",
   ).split("||");
@@ -354,10 +355,7 @@ export async function createPatchAction(formData: FormData) {
       | "task_export_change",
     content: String(formData.get("content") ?? ""),
     rationale: "Queued from the SpecForge review workspace.",
-    proposed_by: {
-      actor_type: "agent",
-      actor_id: "specforge_agent",
-    },
+    proposed_by: actorRef,
     base_version: Number(formData.get("base_version") ?? 1),
     target_fingerprint,
     confidence: 0.82,
