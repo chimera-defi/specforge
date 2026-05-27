@@ -131,7 +131,7 @@ bun run state:backup
 - The collaboration runtime lives in `../collab-server/`.
 - `docker compose up --build` brings up web, collab, and postgres with health checks plus a shared collab secret for deployment rehearsal.
 - The web client connects to `NEXT_PUBLIC_COLLAB_URL` and defaults to `ws://127.0.0.1:4321`.
-- The collab handshake is signed by `POST /api/collab/session`; override `SPECFORGE_COLLAB_SECRET` only if both the web app and collab server share it.
+- The collab handshake is signed by `POST /api/collab/session`. Set `SPECFORGE_COLLAB_SECRET` in `.env` (repo root). The collab server loads it automatically via dotenv; the web app reads it at runtime to sign room tokens.
 - The final handoff stage exposes `/export`, `/handoff`, `/execution`, and `/launch-packet` routes for downstream build agents.
 - The app also exposes `/api/parity/status` and `/api/parity/brief` so the backlog driver is visible inside the product, not only from the CLI.
 - The local parity runner lives at `../tools/specforge-parity-runner.mjs` and can drive bounded `codex exec` passes from the remaining backlog.

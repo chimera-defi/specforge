@@ -18,9 +18,12 @@ type Props = {
 };
 
 export function LocalAdminPanel({ authMode, activeDocumentId }: Props) {
-  const [isPending, startTransition] = useTransition();
+  const [isResetPending, startResetTransition] = useTransition();
+  const [isSeedPending, startSeedTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [pendingAction, setPendingAction] = useState<string | null>(null);
+
+  const isPending = isResetPending || isSeedPending;
 
   if (authMode !== "local") {
     return null;
@@ -37,14 +40,16 @@ export function LocalAdminPanel({ authMode, activeDocumentId }: Props) {
     setError(null);
     setPendingAction("reset");
 
-    startTransition(async () => {
+    startResetTransition(async () => {
       try {
         await resetWorkspaceDocumentsAction(formData);
       } catch (err) {
         if (isRedirectError(err)) {
           throw err;
         }
+        console.error("Reset workspace failed:", err);
         setError("Failed to reset workspace. Please try again.");
+      } finally {
         setPendingAction(null);
       }
     });
@@ -54,14 +59,16 @@ export function LocalAdminPanel({ authMode, activeDocumentId }: Props) {
     setError(null);
     setPendingAction("seed");
 
-    startTransition(async () => {
+    startSeedTransition(async () => {
       try {
         await seedReviewDemoAction(formData);
       } catch (err) {
         if (isRedirectError(err)) {
           throw err;
         }
+        console.error("Seed review activity failed:", err);
         setError("Failed to seed review activity. Please try again.");
+      } finally {
         setPendingAction(null);
       }
     });

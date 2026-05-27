@@ -143,6 +143,7 @@ const server = new Server({
 function setCorsHeaders(response, request) {
   const origin = request.headers.origin ?? "*";
   response.setHeader("Access-Control-Allow-Origin", origin);
+  response.setHeader("Vary", "Origin");
   response.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
   response.setHeader("Access-Control-Allow-Headers", "Content-Type");
 }
