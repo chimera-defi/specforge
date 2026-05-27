@@ -43,13 +43,17 @@ const statusColors: Record<AcceptanceTest["status"], string> = {
 export function AcceptanceTestMatrix({
   tests,
   onAddTest,
-  // onUpdateTest — reserved for future inline-edit UI
+  onUpdateTest,
   onDeleteTest,
   onRunTests,
 }: AcceptanceTestMatrixProps) {
   const [draft, setDraft] = useState<AcceptanceTestDraft>(EMPTY_DRAFT);
   const [adding, setAdding] = useState(false);
   const [running, setRunning] = useState(false);
+
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editDraft, setEditDraft] = useState<AcceptanceTestDraft>(EMPTY_DRAFT);
+  const [saving, setSaving] = useState(false);
 
   const handleAdd = useCallback(async () => {
     if (!draft.feature.trim() || !draft.test_case.trim()) return;
@@ -70,6 +74,53 @@ export function AcceptanceTestMatrix({
       setRunning(false);
     }
   }, [onRunTests]);
+
+  const startEdit = useCallback((test: AcceptanceTest) => {
+    setEditingId(test.test_id);
+    setEditDraft({
+      feature: test.feature,
+      test_case: test.test_case,
+      expected_result: test.expected_result,
+    });
+  }, []);
+
+  const cancelEdit = useCallback(() => {
+    setEditingId(null);
+    setEditDraft(EMPTY_DRAFT);
+  }, []);
+
+  const handleSave = useCallback(
+    async (testId: string) => {
+      if (!editDraft.feature.trim() || !editDraft.test_case.trim()) return;
+      setSaving(true);
+      try {
+        await onUpdateTest(testId, editDraft);
+        setEditingId(null);
+        setEditDraft(EMPTY_DRAFT);
+      } finally {
+        setSaving(false);
+      }
+    },
+    [editDraft, onUpdateTest]
+  );
+
+  const inputStyle: React.CSSProperties = {
+    padding: "6px 10px",
+    fontSize: "13px",
+    border: "1px solid #d1d5db",
+    borderRadius: "6px",
+    width: "100%",
+    boxSizing: "border-box",
+  };
+
+  const actionButtonStyle: React.CSSProperties = {
+    fontSize: "12px",
+    color: "#9ca3af",
+    background: "none",
+    border: "none",
+    cursor: "pointer",
+    marginRight: "8px",
+  };
 
   return (
     <div>
@@ -125,48 +176,183 @@ export function AcceptanceTestMatrix({
                   >
                     {header}
                   </th>
-                ),
+                )
               )}
             </tr>
           </thead>
           <tbody>
-            {tests.map((test) => (
-              <tr key={test.test_id}>
-                <td style={{ padding: "6px 8px", borderBottom: "1px solid #f3f4f6" }}>
-                  {test.feature}
-                </td>
-                <td style={{ padding: "6px 8px", borderBottom: "1px solid #f3f4f6" }}>
-                  {test.test_case}
-                </td>
-                <td style={{ padding: "6px 8px", borderBottom: "1px solid #f3f4f6" }}>
-                  {test.expected_result}
-                </td>
-                <td style={{ padding: "6px 8px", borderBottom: "1px solid #f3f4f6" }}>
-                  <span
-                    style={{
-                      color: statusColors[test.status],
-                      fontWeight: 500,
-                    }}
-                  >
-                    {test.status}
-                  </span>
-                </td>
-                <td style={{ padding: "6px 8px", borderBottom: "1px solid #f3f4f6" }}>
-                  <button
-                    onClick={() => onDeleteTest(test.test_id)}
-                    style={{
-                      fontSize: "12px",
-                      color: "#9ca3af",
-                      background: "none",
-                      border: "none",
-                      cursor: "pointer",
-                    }}
-                  >
-                    remove
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {tests.map((test) => {
+              const isEditing = editingId === test.test_id;
+              return (
+                <tr key={test.test_id}>
+                  {isEditing ? (
+                    <>
+                      <td
+                        style={{
+                          padding: "6px 8px",
+                          borderBottom: "1px solid #f3f4f6",
+                        }}
+                      >
+                        <input
+                          value={editDraft.feature}
+                          onChange={(e) =>
+                            setEditDraft({
+                              ...editDraft,
+                              feature: e.target.value,
+                            })
+                          }
+                          style={inputStyle}
+                        />
+                      </td>
+                      <td
+                        style={{
+                          padding: "6px 8px",
+                          borderBottom: "1px solid #f3f4f6",
+                        }}
+                      >
+                        <input
+                          value={editDraft.test_case}
+                          onChange={(e) =>
+                            setEditDraft({
+                              ...editDraft,
+                              test_case: e.target.value,
+                            })
+                          }
+                          style={inputStyle}
+                        />
+                      </td>
+                      <td
+                        style={{
+                          padding: "6px 8px",
+                          borderBottom: "1px solid #f3f4f6",
+                        }}
+                      >
+                        <input
+                          value={editDraft.expected_result}
+                          onChange={(e) =>
+                            setEditDraft({
+                              ...editDraft,
+                              expected_result: e.target.value,
+                            })
+                          }
+                          style={inputStyle}
+                        />
+                      </td>
+                      <td
+                        style={{
+                          padding: "6px 8px",
+                          borderBottom: "1px solid #f3f4f6",
+                        }}
+                      >
+                        <span
+                          style={{
+                            color: statusColors[test.status],
+                            fontWeight: 500,
+                          }}
+                        >
+                          {test.status}
+                        </span>
+                      </td>
+                      <td
+                        style={{
+                          padding: "6px 8px",
+                          borderBottom: "1px solid #f3f4f6",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        <button
+                          onClick={() => handleSave(test.test_id)}
+                          disabled={saving}
+                          style={{
+                            ...actionButtonStyle,
+                            color: saving ? "#d1d5db" : "#16a34a",
+                            cursor: saving ? "wait" : "pointer",
+                          }}
+                        >
+                          {saving ? "Saving..." : "Save"}
+                        </button>
+                        <button
+                          onClick={cancelEdit}
+                          disabled={saving}
+                          style={{
+                            ...actionButtonStyle,
+                            color: saving ? "#d1d5db" : "#6b7280",
+                            cursor: saving ? "not-allowed" : "pointer",
+                          }}
+                        >
+                          Cancel
+                        </button>
+                      </td>
+                    </>
+                  ) : (
+                    <>
+                      <td
+                        style={{
+                          padding: "6px 8px",
+                          borderBottom: "1px solid #f3f4f6",
+                        }}
+                      >
+                        {test.feature}
+                      </td>
+                      <td
+                        style={{
+                          padding: "6px 8px",
+                          borderBottom: "1px solid #f3f4f6",
+                        }}
+                      >
+                        {test.test_case}
+                      </td>
+                      <td
+                        style={{
+                          padding: "6px 8px",
+                          borderBottom: "1px solid #f3f4f6",
+                        }}
+                      >
+                        {test.expected_result}
+                      </td>
+                      <td
+                        style={{
+                          padding: "6px 8px",
+                          borderBottom: "1px solid #f3f4f6",
+                        }}
+                      >
+                        <span
+                          style={{
+                            color: statusColors[test.status],
+                            fontWeight: 500,
+                          }}
+                        >
+                          {test.status}
+                        </span>
+                      </td>
+                      <td
+                        style={{
+                          padding: "6px 8px",
+                          borderBottom: "1px solid #f3f4f6",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        <button
+                          onClick={() => startEdit(test)}
+                          style={actionButtonStyle}
+                        >
+                          edit
+                        </button>
+                        <button
+                          onClick={() => onDeleteTest(test.test_id)}
+                          style={{
+                            ...actionButtonStyle,
+                            marginRight: 0,
+                          }}
+                        >
+                          remove
+                        </button>
+                      </td>
+                    </>
+                  )}
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       )}

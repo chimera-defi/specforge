@@ -16,6 +16,7 @@ import {
   setWorkspacePlanAction,
   switchWorkspaceActorAction,
 } from "../actions";
+import { CollapsibleWorkspaceNav } from "./collapsible-nav";
 import { ClarificationQueue } from "@/components/specforge/ClarificationQueue";
 import { DocumentWorkspace } from "../document-workspace";
 import { GuidedDraftBuilder } from "../guided-draft-builder";
@@ -472,23 +473,11 @@ export default async function Home({ searchParams }: Props) {
 
   return (
     <div className={styles.shell}>
-      <header className={styles.workspaceNav}>
-        <Link href="/" className={styles.workspaceNavBrand}>SpecForge</Link>
-        <div className={styles.workspaceNavCenter}>
-          <span className={styles.workspaceNavDoc}>
-            {activeDocument ? activeDocument.title : "No active document"}
-          </span>
-          {activeDocument && (
-            <span className={styles.workspaceNavStage}>{stageMeta.title}</span>
-          )}
-        </div>
-        <nav className={styles.workspaceNavLinks}>
-          <Link href="/" className={styles.workspaceNavLink}>Home</Link>
-          <Link href="/pricing" className={styles.workspaceNavLink}>Pricing</Link>
-          <Link href="/download" className={styles.workspaceNavLink}>Download</Link>
-          <Link href="/pilot-access" className={styles.workspaceNavLinkAccent}>Pilot access</Link>
-        </nav>
-      </header>
+      <CollapsibleWorkspaceNav
+        docTitle={activeDocument ? activeDocument.title : "No active document"}
+        stageLabel={activeDocument ? stageMeta.title : null}
+        shareUrl={shareUrl}
+      />
 
       <main className={styles.focusLayout}>
         <aside className={styles.focusSidebar}>
@@ -1233,7 +1222,7 @@ export default async function Home({ searchParams }: Props) {
           {activeStage === "plan" ? (
             <section className={styles.panel}>
               <div className={styles.panelHeader}>
-                <h2>Sprint planning</h2>
+                <h2>Planning stages</h2>
                 <span>Act 1 — optional</span>
               </div>
               {activeDocument ? (
@@ -1333,6 +1322,8 @@ export default async function Home({ searchParams }: Props) {
                     <input type="hidden" name="document_id" value={activeDocument.document_id} />
                     <button type="submit">Accept all patches</button>
                   </form>
+                ) : activeDocument && actionablePatches.length === 0 ? (
+                  <p className={styles.empty}>No pending patches. Queue a patch from the review stage or continue to handoff.</p>
                 ) : null}
                 <ul className={styles.patchList} data-testid="patch-queue">
                   {actionablePatches.map((patch) => {
