@@ -87,14 +87,23 @@ export function ExportStage({
             <div className={styles.exportActions}>
               <Link
                 href={`/api/documents/${activeDocument?.document_id}/launch-packet?template=${selectedTemplateId}`}
-                className={styles.exportLink}
+                className={`${styles.exportLink} ${readinessReport.score < 70 ? styles.exportLinkWarning : ''}`}
                 target="_blank"
                 rel="noreferrer"
                 data-testid="open-launch-packet-json"
+                style={{
+                  ...(readinessReport.score < 70 ? {
+                    background: 'var(--sf-warning)',
+                    color: 'var(--sf-surface-warm)',
+                    fontWeight: 'bold',
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                  } : {})
+                }}
               >
-                Open launch packet
+                {readinessReport.score < 70 ? '⚠️ Open launch packet (low readiness)' : 'Open launch packet'}
               </Link>
-              <span>One JSON payload for the build agent</span>
+              <span>{readinessReport.score < 70 ? 'Score below 70 - review recap below' : 'One JSON payload for the build agent'}</span>
             </div>
             <div className={styles.readinessCard}>
               <strong>{readinessReport.score}/100</strong>

@@ -115,6 +115,7 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
   const surfaceRef = useRef<HTMLDivElement | null>(null);
   const isMountedRef = useRef(false);
   const editorRef = useRef<any>(null);
+  const lastKnownVersionRef = useRef(document.version);
   // Track whether the collab provider has already fired its first `synced`
   // event. We use a ref so that the value survives across useEffect re-runs
   // without causing additional re-renders.
@@ -133,6 +134,7 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
       if (latestDocument && latestDocument.markdown && editorRef.current) {
         editorRef.current.commands.setContent(markdownToEditorHtml(latestDocument.markdown));
         console.log(`Refreshed from database: v${latestDocument.version}`);
+        lastKnownVersionRef.current = latestDocument.version;
       }
     } catch (error) {
       console.error("Refresh failed:", error);
@@ -140,6 +142,20 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
       setIsRefreshing(false);
     }
   };
+
+  // Auto-refresh when component mounts or document version changes
+  useEffect(() => {
+    if (!isMountedRef.current) {
+      isMountedRef.current = true;
+      return;
+    }
+
+    // Only auto-refresh if version changed (not on initial mount)
+    if (document.version !== lastKnownVersionRef.current) {
+      console.log(`Document version changed from ${lastKnownVersionRef.current} to ${document.version}, auto-refreshing...`);
+      handleRefreshFromDatabase();
+    }
+  }, [document.version]);
   const collab = useMemo(() => {
     collabSyncedRef.current = false; // reset on new provider
     const ydoc = new Y.Doc();
