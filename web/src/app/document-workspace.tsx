@@ -111,12 +111,35 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
   const [connDiag, setConnDiag] = useState<ConnDiag | null>(null);
   const connAttemptsRef = useRef(0);
   const [isPending, startTransition] = useTransition();
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const surfaceRef = useRef<HTMLDivElement | null>(null);
   const isMountedRef = useRef(false);
+  const editorRef = useRef<any>(null);
   // Track whether the collab provider has already fired its first `synced`
   // event. We use a ref so that the value survives across useEffect re-runs
   // without causing additional re-renders.
   const collabSyncedRef = useRef(false);
+
+  const handleRefreshFromDatabase = async () => {
+    setIsRefreshing(true);
+    try {
+      const response = await fetch(`/api/documents/${document.document_id}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch document from database");
+      }
+      const data = await response.json();
+      const latestDocument = data.document;
+
+      if (latestDocument && latestDocument.markdown && editorRef.current) {
+        editorRef.current.commands.setContent(markdownToEditorHtml(latestDocument.markdown));
+        console.log(`Refreshed from database: v${latestDocument.version}`);
+      }
+    } catch (error) {
+      console.error("Refresh failed:", error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
   const collab = useMemo(() => {
     collabSyncedRef.current = false; // reset on new provider
     const ydoc = new Y.Doc();
@@ -178,6 +201,12 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
       },
     },
   });
+
+  useEffect(() => {
+    if (editor) {
+      editorRef.current = editor;
+    }
+  }, [editor]);
 
   function updateSyncState(nextState: SyncState, message: string) {
     if (!isMountedRef.current) return;
@@ -717,6 +746,26 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
         </div>
       </div>
       <div className="editorToolbar">
+        <button
+          type="button"
+          onClick={handleRefreshFromDatabase}
+          disabled={isRefreshing}
+          style={{
+            padding: "6px 12px",
+            borderRadius: "999px",
+            fontSize: "0.84rem",
+            fontWeight: 600,
+            color: "var(--sf-surface-warm)",
+            background: "var(--sf-teal)",
+            border: "none",
+            cursor: isRefreshing ? "not-allowed" : "pointer",
+            transition: "opacity 0.15s",
+            opacity: isRefreshing ? 0.6 : 1,
+          }}
+          title="Refresh document from database"
+        >
+          {isRefreshing ? "Refreshing..." : "🔄 Refresh from DB"}
+        </button>
         <AIAssistButton
           mode="panel"
           preset="block-iteration"
@@ -745,7 +794,7 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
           contextPrompt="Document: {documentTitle}. Sections: {sectionCount}. Blocks: {blockCount}. Current selection: {currentContent}"
         />
         <span style={{ fontSize: "0.78rem", color: "var(--sf-muted-light)", marginLeft: "auto" }}>
-          Select text and use AI assist to improve this section
+          Use refresh if content seems stale after accepting patches
         </span>
       </div>
       <div className="editorSurface" ref={surfaceRef}>
