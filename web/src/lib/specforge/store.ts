@@ -1212,6 +1212,20 @@ async function createSchema(database: QuerySession) {
       updated_at TEXT NOT NULL,
       UNIQUE(document_id, filename)
     );
+
+    CREATE TABLE IF NOT EXISTS file_versions (
+      version_id TEXT PRIMARY KEY,
+      file_id TEXT NOT NULL REFERENCES workspace_files(file_id) ON DELETE CASCADE,
+      document_id TEXT NOT NULL,
+      filename TEXT NOT NULL,
+      content TEXT NOT NULL,
+      content_json JSONB,
+      file_type TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      created_by TEXT,
+      version_number INTEGER NOT NULL,
+      UNIQUE(file_id, version_number)
+    );
   `);
 }
 
@@ -2817,8 +2831,13 @@ export async function updateWorkspaceFile(
     params,
   );
 
+  const updatedFile = rows[0]!;
+
+  // Create a version record after successful update
+  await createFileVersion(fileId, updatedFile, options);
+
   await persistSnapshot(database, dbPath);
-  return rows[0]!;
+  return updatedFile;
 }
 
 export async function deleteWorkspaceFile(
@@ -2830,6 +2849,117 @@ export async function deleteWorkspaceFile(
 
   await database.query(`DELETE FROM workspace_files WHERE file_id = $1`, [fileId]);
   await persistSnapshot(database, dbPath);
+}
+
+interface FileVersionRecord {
+  version_id: string;
+  file_id: string;
+  document_id: string;
+  filename: string;
+  content: string;
+  content_json: any;
+  file_type: string;
+  created_at: string;
+  created_by: string;
+  version_number: number;
+}
+
+export async function createFileVersion(
+  fileId: string,
+  file: WorkspaceFileRecord,
+  options?: StoreOptions,
+): Promise<void> {
+  const database = await getDatabase(options);
+  const { dbPath } = resolveOptions(options);
+  const now = new Date().toISOString();
+
+  // Get the current version number for this file
+  const { rows: existingVersions } = await database.query<{ version_number: number }>(
+    `SELECT COALESCE(MAX(version_number), 0) as version_number FROM file_versions WHERE file_id = $1`,
+    [fileId]
+  );
+  const nextVersion = (existingVersions[0]?.version_number ?? 0) + 1;
+
+  await database.query(
+    `INSERT INTO file_versions (
+      version_id,
+      file_id,
+      document_id,
+      filename,
+      content,
+      content_json,
+      file_type,
+      created_at,
+      created_by,
+      version_number
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+    [
+      randomUUID(),
+      fileId,
+      file.document_id,
+      file.filename,
+      file.content,
+      file.content_json ? JSON.stringify(file.content_json) : null,
+      file.file_type,
+      now,
+      "system", // Can be replaced with actual user ID
+      nextVersion,
+    ],
+  );
+
+  await persistSnapshot(database, dbPath);
+}
+
+export async function listFileVersions(
+  fileId: string,
+  options?: StoreOptions,
+): Promise<FileVersionRecord[]> {
+  const database = await getDatabase(options);
+
+  const { rows } = await database.query<FileVersionRecord>(
+    `SELECT * FROM file_versions WHERE file_id = $1 ORDER BY version_number DESC`,
+    [fileId],
+  );
+
+  return rows;
+}
+
+export async function getFileVersion(
+  versionId: string,
+  options?: StoreOptions,
+): Promise<FileVersionRecord | null> {
+  const database = await getDatabase(options);
+
+  const { rows } = await database.query<FileVersionRecord>(
+    `SELECT * FROM file_versions WHERE version_id = $1`,
+    [versionId],
+  );
+
+  return rows[0] ?? null;
+}
+
+export async function restoreFileVersion(
+  fileId: string,
+  versionId: string,
+  options?: StoreOptions,
+): Promise<void> {
+  const database = await getDatabase(options);
+  const { dbPath } = resolveOptions(options);
+
+  const version = await getFileVersion(versionId, options);
+  if (!version) {
+    throw new Error(`Version ${versionId} not found`);
+  }
+
+  // Update the file with the version content
+  await updateWorkspaceFile(
+    fileId,
+    {
+      content: version.content,
+      content_json: version.content_json,
+    },
+    options,
+  );
 }
 
 export async function initializeDefaultWorkspaceFiles(
