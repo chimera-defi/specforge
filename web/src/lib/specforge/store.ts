@@ -2558,6 +2558,24 @@ export async function exportDocument(documentId: string, options?: StoreOptions)
     throw new Error(`Document ${documentId} not found`);
   }
 
+  // Try to read from workspace files first
+  const workspaceFiles = await listWorkspaceFiles(documentId, options);
+  
+  if (workspaceFiles.length > 0) {
+    // Build export bundle from workspace files
+    const files: Record<string, string> = {};
+    for (const file of workspaceFiles) {
+      files[file.filename] = file.content;
+    }
+    
+    return {
+      document_id: document.document_id,
+      version: document.version,
+      files,
+    };
+  }
+
+  // Fallback to generation if no workspace files exist
   const [patches, clarifications, planningStages] = await Promise.all([
     listPatches(documentId, options),
     listClarifications(documentId, options),
