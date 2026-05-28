@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { HocuspocusProvider } from "@hocuspocus/provider";
 import Collaboration from "@tiptap/extension-collaboration";
@@ -121,7 +121,7 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
   // without causing additional re-renders.
   const collabSyncedRef = useRef(false);
 
-  const handleRefreshFromDatabase = async () => {
+  const handleRefreshFromDatabase = useCallback(async () => {
     setIsRefreshing(true);
     try {
       const response = await fetch(`/api/documents/${document.document_id}`);
@@ -141,7 +141,7 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
     } finally {
       setIsRefreshing(false);
     }
-  };
+  }, [document.document_id]);
 
   // Auto-refresh when component mounts or document version changes
   useEffect(() => {
@@ -221,8 +221,37 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
   useEffect(() => {
     if (editor) {
       editorRef.current = editor;
+
+      // Keyboard shortcuts
+      const handleKeyDown = (event: KeyboardEvent) => {
+        // Ctrl/Cmd + S: Refresh from database
+        if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+          event.preventDefault();
+          handleRefreshFromDatabase();
+        }
+        // Ctrl/Cmd + Shift + A: Open AI assist
+        if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'A') {
+          event.preventDefault();
+          const assistButton = window.document.querySelector('button:has-text("Improve with AI")') as HTMLButtonElement;
+          if (assistButton) {
+            assistButton.click();
+          }
+        }
+        // Escape: Close any open panels
+        if (event.key === 'Escape') {
+          const closeButton = window.document.querySelector('button[aria-label="Close"]') as HTMLButtonElement;
+          if (closeButton) {
+            closeButton.click();
+          }
+        }
+      };
+
+      window.document.addEventListener('keydown', handleKeyDown);
+      return () => {
+        window.document.removeEventListener('keydown', handleKeyDown);
+      };
     }
-  }, [editor]);
+  }, [editor, handleRefreshFromDatabase]);
 
   function updateSyncState(nextState: SyncState, message: string) {
     if (!isMountedRef.current) return;
