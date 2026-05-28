@@ -1,6 +1,6 @@
 ## SpecForge Technical Spec (MVP)
 
-**Status**: Scoped MVP/spec parity reached on the current build branch.
+**Status**: Multi-file workspace with real-time collaboration added to scoped MVP.
 
 ### Summary
 Build a real-time collaborative spec IDE with:
@@ -12,7 +12,8 @@ Build a real-time collaborative spec IDE with:
 6. deterministic export into execution-ready spec bundles (`PRD.md`, `SPEC.md`, `TASKS.md`, `agent_spec.json`, starter handoff, execution brief, launch packet),
 7. a delivery loop that keeps driving a minimum extensible product toward parity with the approved spec (implemented for status/context/handoffs, but not yet a trusted unattended finisher),
 8. landing and pricing surfaces that route users into the working SaaS workspace,
-9. a shared OpenSpec core, now partially extracted, that powers both the web app and a terminal-native `specforge` wizard.
+9. a shared OpenSpec core, now partially extracted, that powers both the web app and a terminal-native `specforge` wizard,
+10. **multi-file workspace with per-file real-time collaboration** (each file has its own Yjs document and collaboration room, supporting simultaneous editing of PRD.md, SPEC.md, TASKS.md, and custom files).
 
 The current branch satisfies the scoped MVP target. The remaining work is broader SaaS/platform parity work like hosted ops, billing, deeper terminal UX, and runner hardening, not missing core MVP behavior.
 
@@ -40,12 +41,33 @@ The current branch also includes a first explicit entitlement layer:
 ### Core Components
 
 ### 1) Realtime Editor Layer
-**MVP Status**: Partial
+**MVP Status**: Enhanced with Multi-File Workspace
 - ✓ Markdown editor with Tiptap.
 - ✓ CRDT infrastructure (Yjs + Hocuspocus server, room tokens, persistence).
 - ✓ Presence: shared cursor rendering and collaborator awareness are visible in the workspace.
 - ✓ Comment threads: database schema, APIs, and frontend review UI are implemented.
+- ✓ Multi-file workspace: Users can now edit multiple files (PRD.md, SPEC.md, TASKS.md, etc.) in a single collaborative workspace
+- ✓ Per-file collaboration: Each file has its own Yjs document and collaboration room for real-time multi-user editing
+- ✓ File management: Add, delete, and switch between files in the workspace
+- ✓ AI assist per file: AI assistance available on any file in the workspace
+- ✓ Smart export: Export reads actual file content from workspace (no stub/placeholder files)
 - ⚠️ Multiplayer sync: browser-covered locally, but not yet validated in production/pilot usage.
+
+**Multi-File Workspace Architecture**:
+- Database: `workspace_files` table stores multiple files per document
+- Each file: file_id, document_id, filename, content, content_json (for CRDT), file_type
+- Collaboration rooms: `${documentId}:${filename}` per file
+- Markdown files: Tiptap editor with Collaboration extension
+- Code files: Yjs Text type with textarea binding
+- Auto-sync: Debounced saves (1 second) to database
+- Export: Reads from workspace_files table, falls back to generation if no workspace files exist
+
+**File Types Supported**:
+- Markdown (.md) - Rich text editing with Tiptap
+- JSON (.json) - Code editing with syntax highlighting
+- YAML (.yaml, .yml) - Code editing with syntax highlighting
+- TypeScript (.ts, .tsx) - Code editing with syntax highlighting
+- Bash (.sh) - Code editing with syntax highlighting
 
 ### 2) Agent Patch Engine
 - Agents propose structured patches (insert/replace/delete) against stable block or section IDs.
