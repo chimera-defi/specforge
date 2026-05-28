@@ -6,7 +6,15 @@ import hljsJson from "highlight.js/lib/languages/json";
 import hljsMarkdown from "highlight.js/lib/languages/markdown";
 import hljsTypescript from "highlight.js/lib/languages/typescript";
 import hljsYaml from "highlight.js/lib/languages/yaml";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { EditorContent, useEditor } from "@tiptap/react";
+import Collaboration from "@tiptap/extension-collaboration";
+import StarterKit from "@tiptap/starter-kit";
+import * as Y from "yjs";
+import { HocuspocusProvider } from "@hocuspocus/provider";
+import { WebsocketProvider } from "y-websocket";
+
+import { markdownToEditorHtml, tiptapJsonToMarkdown } from "@/lib/specforge/editor";
 
 // Register languages
 hljs.registerLanguage("json", hljsJson);
@@ -24,6 +32,10 @@ function getLanguage(filename: string): string {
   return "plaintext";
 }
 
+function isMarkdown(filename: string): boolean {
+  return filename.endsWith(".md");
+}
+
 function highlight(code: string, filename: string): string {
   const lang = getLanguage(filename);
   if (lang === "plaintext") return escapeHtml(code);
@@ -39,6 +51,68 @@ function escapeHtml(text: string): string {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
+}
+
+interface CodeEditorProps {
+  ytext: Y.Text;
+  filename: string;
+}
+
+function CodeEditor({ ytext, filename }: CodeEditorProps) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    // Initialize textarea with Yjs content
+    textarea.value = ytext.toString();
+
+    // Sync textarea -> Yjs (user typing)
+    const handleChange = () => {
+      const cursorPosition = textarea.selectionStart;
+      const currentContent = ytext.toString();
+      const newContent = textarea.value;
+
+      if (currentContent !== newContent) {
+        ytext.delete(0, currentContent.length);
+        ytext.insert(0, newContent);
+      }
+    };
+
+    textarea.addEventListener("input", handleChange);
+
+    // Sync Yjs -> textarea (remote changes)
+    const handleYjsChange = () => {
+      const cursorPosition = textarea.selectionStart;
+      const newContent = ytext.toString();
+      
+      // Only update if content actually changed
+      if (textarea.value !== newContent) {
+        textarea.value = newContent;
+        // Restore cursor position
+        textarea.setSelectionRange(
+          Math.min(cursorPosition, newContent.length),
+          Math.min(cursorPosition, newContent.length)
+        );
+      }
+    };
+
+    ytext.observe(handleYjsChange);
+
+    return () => {
+      textarea.removeEventListener("input", handleChange);
+      ytext.unobserve(handleYjsChange);
+    };
+  }, [ytext]);
+
+  return (
+    <textarea
+      ref={textareaRef}
+      className="w-full h-full p-4 font-mono text-sm resize-none bg-background border-0 focus:outline-none"
+      spellCheck={false}
+    />
+  );
 }
 
 interface WorkspaceFile {
@@ -64,15 +138,160 @@ export function CollaborativeFileBrowser({
 }: CollaborativeFileBrowserProps) {
   const [files, setFiles] = useState<WorkspaceFile[]>([]);
   const [selected, setSelected] = useState<WorkspaceFile | null>(null);
-  const [editMode, setEditMode] = useState(false);
-  const [editedContent, setEditedContent] = useState("");
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [syncState, setSyncState] = useState<"connecting" | "live" | "offline">("connecting");
+
+  // Yjs document and provider for the selected file
+  const ydocRef = useRef<Y.Doc | null>(null);
+  const providerRef = useRef<HocuspocusProvider | WebsocketProvider | null>(null);
+  const ytextRef = useRef<Y.Text | null>(null);
+
+  // Tiptap editor for markdown files
+  const editor = useEditor({
+    extensions: [
+      StarterKit,
+      Collaboration.configure({
+        document: ydocRef.current!,
+      }),
+    ],
+    content: selected ? markdownToEditorHtml(selected.content) : "",
+    editable: true,
+    editorProps: {
+      attributes: {
+        class: "prose prose-sm max-w-none focus:outline-none min-h-full",
+      },
+    },
+    immediatelyRender: false,
+  }, [selected, ydocRef.current]);
 
   // Fetch files on mount
   useEffect(() => {
     fetchFiles();
   }, [documentId]);
+
+  // Cleanup Yjs resources when switching files
+  useEffect(() => {
+    return () => {
+      if (providerRef.current) {
+        providerRef.current.destroy();
+        providerRef.current = null;
+      }
+      if (ydocRef.current) {
+        ydocRef.current.destroy();
+        ydocRef.current = null;
+      }
+    };
+  }, []);
+
+  // Setup Yjs collaboration when file is selected
+  useEffect(() => {
+    if (!selected) return;
+
+    // Cleanup previous resources
+    if (providerRef.current) {
+      providerRef.current.destroy();
+      providerRef.current = null;
+    }
+    if (ydocRef.current) {
+      ydocRef.current.destroy();
+      ydocRef.current = null;
+    }
+
+    // Create new Yjs document for this file
+    const ydoc = new Y.Doc();
+    ydocRef.current = ydoc;
+
+    const roomName = `${documentId}:${selected.filename}`;
+
+    if (isMarkdown(selected.filename)) {
+      // Markdown files use Tiptap with Collaboration
+      // Provider is managed by Collaboration extension
+      setSyncState("connecting");
+      
+      const provider = new HocuspocusProvider({
+        url: process.env.NEXT_PUBLIC_COLLAB_SERVER_URL || "ws://localhost:3001",
+        name: roomName,
+        document: ydoc,
+      });
+      providerRef.current = provider;
+
+      provider.on("status", (status: any) => {
+        setSyncState(status.status === "connected" ? "live" : "offline");
+      });
+    } else {
+      // Code files use Yjs Text type
+      const ytext = ydoc.getText("content");
+      ytextRef.current = ytext;
+      
+      // Initialize with current content
+      if (ytext.length === 0) {
+        ytext.insert(0, selected.content);
+      }
+
+      setSyncState("connecting");
+
+      // Use WebsocketProvider for code files
+      const provider = new WebsocketProvider(
+        process.env.NEXT_PUBLIC_COLLAB_SERVER_URL || "ws://localhost:3001",
+        roomName,
+        ydoc,
+      );
+      providerRef.current = provider;
+
+      provider.on("status", (status: any) => {
+        setSyncState(status.status === "connected" ? "live" : "offline");
+      });
+
+      // Sync changes back to database
+      ytext.observe(() => {
+        const content = ytext.toString();
+        debouncedSave(selected.file_id, content);
+      });
+    }
+  }, [selected, documentId]);
+
+  // Debounced save to avoid excessive API calls
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const debouncedSave = (fileId: string, content: string) => {
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+    saveTimeoutRef.current = setTimeout(() => {
+      saveFileContent(fileId, content);
+    }, 1000); // Save after 1 second of inactivity
+  };
+
+  async function saveFileContent(fileId: string, content: string) {
+    try {
+      const res = await fetch(`/api/documents/${fileId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content }),
+      });
+      if (!res.ok) throw new Error("Failed to save file");
+      // Update local state
+      setFiles((prev) =>
+        prev.map((f) => (f.file_id === fileId ? { ...f, content } : f)),
+      );
+    } catch (error) {
+      console.error("Failed to save file:", error);
+    }
+  }
+
+  // Save Tiptap markdown changes
+  useEffect(() => {
+    if (!editor || !selected || !isMarkdown(selected.filename)) return;
+
+    const handleUpdate = () => {
+      const markdown = tiptapJsonToMarkdown(editor.getJSON());
+      debouncedSave(selected.file_id, markdown);
+    };
+
+    editor.on("update", handleUpdate);
+    return () => {
+      editor.off("update", handleUpdate);
+    };
+  }, [editor, selected]);
 
   async function fetchFiles() {
     try {
@@ -100,29 +319,6 @@ export function CollaborativeFileBrowser({
     } catch (error) {
       console.error("Failed to initialize files:", error);
       alert("Failed to initialize files");
-    }
-  }
-
-  async function saveFile() {
-    if (!selected) return;
-    setSaving(true);
-    try {
-      const res = await fetch(`/api/documents/${selected.file_id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: editedContent }),
-      });
-      if (!res.ok) throw new Error("Failed to save file");
-      const data = await res.json();
-      setSelected(data.file);
-      setEditMode(false);
-      // Refresh files list
-      await fetchFiles();
-    } catch (error) {
-      console.error("Failed to save file:", error);
-      alert("Failed to save file");
-    } finally {
-      setSaving(false);
     }
   }
 
@@ -168,11 +364,10 @@ export function CollaborativeFileBrowser({
 
   function selectFile(file: WorkspaceFile) {
     setSelected(file);
-    setEditMode(false);
-    setEditedContent(file.content);
   }
 
   const highlighted = selected ? highlight(selected.content, selected.filename) : "";
+  const isMarkdownFile = selected && isMarkdown(selected.filename);
 
   if (loading) {
     return (
@@ -237,59 +432,22 @@ export function CollaborativeFileBrowser({
               <div>
                 <h2 className="text-lg font-semibold">{selected.filename}</h2>
                 <p className="text-sm text-muted-foreground">
-                  {editMode ? "Editing mode" : "View mode"}
+                  {syncState === "live" ? "🟢 Live collaboration" : syncState === "connecting" ? "🟡 Connecting..." : "🔴 Offline"}
                 </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setEditMode((e) => !e)}
-                  className="px-3 py-1.5 rounded-md border border-border hover:bg-muted"
-                >
-                  {editMode ? "View" : "Edit"}
-                </button>
               </div>
             </div>
 
-            {/* Editor/Viewer */}
+            {/* Editor */}
             <div className="flex-1 overflow-hidden">
-              {editMode ? (
-                <div className="h-full flex flex-col">
-                  <textarea
-                    className="flex-1 w-full p-4 font-mono text-sm resize-none bg-background border-0 focus:outline-none"
-                    value={editedContent}
-                    onChange={(e) => setEditedContent(e.target.value)}
-                    spellCheck={false}
-                  />
-                  <div className="p-4 border-t border-border flex justify-end gap-2">
-                    <button
-                      onClick={() => {
-                        setEditMode(false);
-                        setEditedContent(selected.content);
-                      }}
-                      className="px-4 py-2 rounded-md border border-border hover:bg-muted"
-                      disabled={saving}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={saveFile}
-                      className="px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
-                      disabled={saving}
-                    >
-                      {saving ? "Saving..." : "Save"}
-                    </button>
-                  </div>
-                </div>
-              ) : (
+              {isMarkdownFile && editor ? (
+                // Markdown files use Tiptap editor with Yjs collaboration
                 <div className="h-full overflow-y-auto p-4">
-                  <pre>
-                    <code
-                      dangerouslySetInnerHTML={{ __html: highlighted }}
-                      className="text-sm"
-                    />
-                  </pre>
+                  <EditorContent editor={editor} />
                 </div>
-              )}
+              ) : ytextRef.current ? (
+                // Code files use textarea bound to Yjs Text
+                <CodeEditor ytext={ytextRef.current} filename={selected.filename} />
+              ) : null}
             </div>
           </>
         ) : (
