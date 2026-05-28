@@ -1,6 +1,7 @@
 import { mkdir, readFile, rename, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
+import { fileURLToPath } from "node:url";
 import { randomUUID } from "node:crypto";
 
 import { PGlite } from "@electric-sql/pglite";
@@ -313,7 +314,7 @@ function normalizePathLike(value: unknown) {
 
 const currentWorkingDirectory = normalizePathLike(process.cwd());
 const defaultDbPath = path.resolve(currentWorkingDirectory, ".data", "specforge-store.json");
-const defaultFixturesDir = path.resolve(currentWorkingDirectory, "..", "fixtures");
+const defaultFixturesDir = path.resolve(fileURLToPath(import.meta.url), "..", "..", "..", "..", "..", "fixtures");
 
 function resolveOptions(options: StoreOptions = {}) {
   const envBackend = process.env.SPECFORGE_PERSISTENCE_BACKEND;

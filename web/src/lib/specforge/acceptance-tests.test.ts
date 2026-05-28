@@ -4,6 +4,7 @@
 import { mkdtemp } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, it, expect } from "vitest";
 
 import {
@@ -19,7 +20,7 @@ async function makeOptions() {
   const baseDir = await mkdtemp(path.join(os.tmpdir(), "specforge-at-"));
   return {
     dbPath: path.join(baseDir, "specforge-db"),
-    fixturesDir: path.resolve(process.cwd(), "..", "fixtures"),
+    fixturesDir: path.resolve(fileURLToPath(import.meta.url), "..", "..", "..", "..", "..", "fixtures"),
   };
 }
 
