@@ -35,6 +35,7 @@ import styles from "./CollaborativeFileBrowser.module.css";
 import { FILE_TEMPLATES } from "./fileTemplates";
 import { getFileIcon } from "./fileIcons";
 import { SortableFileItem } from "./SortableFileItem";
+import { FileHistoryModal } from "./FileHistoryModal";
 
 // Register languages
 hljs.registerLanguage("json", hljsJson);
@@ -165,6 +166,9 @@ export function CollaborativeFileBrowser({
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFileIds, setSelectedFileIds] = useState<Set<string>>(new Set());
   const [connectedUsers, setConnectedUsers] = useState<number>(1);
+  const [showHistory, setShowHistory] = useState(false);
+  const [fileVersions, setFileVersions] = useState<any[]>([]);
+  const [loadingVersions, setLoadingVersions] = useState(false);
 
   // Yjs document and provider for the selected file
   const ydocRef = useRef<Y.Doc | null>(null);
@@ -492,6 +496,37 @@ export function CollaborativeFileBrowser({
     await fetchFiles();
   }
 
+  async function fetchFileVersions(fileId: string) {
+    setLoadingVersions(true);
+    try {
+      const res = await fetch(`/api/documents/${documentId}/files/${fileId}/versions`);
+      if (!res.ok) throw new Error("Failed to fetch versions");
+      const data = await res.json();
+      setFileVersions(data.versions || []);
+    } catch (error) {
+      console.error("Failed to fetch versions:", error);
+    } finally {
+      setLoadingVersions(false);
+    }
+  }
+
+  async function restoreVersion(versionId: string) {
+    if (!selected) return;
+    if (!confirm("Restore this version? Current content will be replaced.")) return;
+
+    try {
+      const res = await fetch(`/api/documents/${documentId}/files/${selected.file_id}/versions/${versionId}/restore`, {
+        method: "POST",
+      });
+      if (!res.ok) throw new Error("Failed to restore version");
+      await fetchFiles();
+      setShowHistory(false);
+    } catch (error) {
+      console.error("Failed to restore version:", error);
+      alert("Failed to restore version");
+    }
+  }
+
   async function handleAiAssist() {
     if (!selected) return;
 
@@ -663,6 +698,26 @@ export function CollaborativeFileBrowser({
                   {syncState === "live" ? "● Live" : syncState === "connecting" ? "● Connecting..." : "● Offline"}
                 </span>
                 <button
+                  onClick={() => {
+                    if (selected) {
+                      fetchFileVersions(selected.file_id);
+                      setShowHistory(true);
+                    }
+                  }}
+                  style={{
+                    padding: "4px 12px",
+                    borderRadius: "999px",
+                    fontSize: "0.78rem",
+                    fontWeight: 500,
+                    cursor: "pointer",
+                    border: "1px solid var(--sf-border)",
+                    background: "var(--sf-surface-elevated)",
+                    color: "var(--sf-ink)",
+                  }}
+                >
+                  📜 History
+                </button>
+                <button
                   className={styles.aiAssistBtn}
                   onClick={handleAiAssist}
                   disabled={aiAssisting}
@@ -693,6 +748,14 @@ export function CollaborativeFileBrowser({
           </div>
         )}
       </main>
+
+      <FileHistoryModal
+        isOpen={showHistory}
+        onClose={() => setShowHistory(false)}
+        versions={fileVersions}
+        loading={loadingVersions}
+        onRestore={restoreVersion}
+      />
     </div>
   );
 }
