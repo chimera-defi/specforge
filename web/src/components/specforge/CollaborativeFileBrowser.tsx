@@ -17,6 +17,8 @@ import { WebsocketProvider } from "y-websocket";
 import { markdownToEditorHtml, tiptapJsonToMarkdown } from "@/lib/specforge/editor";
 
 import styles from "./CollaborativeFileBrowser.module.css";
+import { FILE_TEMPLATES } from "./fileTemplates";
+import { getFileIcon } from "./fileIcons";
 
 // Register languages
 hljs.registerLanguage("json", hljsJson);
@@ -144,6 +146,8 @@ export function CollaborativeFileBrowser({
   const [syncState, setSyncState] = useState<"connecting" | "live" | "offline">("connecting");
   const [aiAssisting, setAiAssisting] = useState(false);
   const [ideaValidationSession, setIdeaValidationSession] = useState<{ completed: number; total: number } | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedFileIds, setSelectedFileIds] = useState<Set<string>>(new Set());
 
   // Yjs document and provider for the selected file
   const ydocRef = useRef<Y.Doc | null>(null);
@@ -344,26 +348,37 @@ export function CollaborativeFileBrowser({
   }
 
   async function addFile() {
-    const filename = prompt("Enter filename (e.g., NOTES.md):");
-    if (!filename) return;
+  const filename = prompt("Enter filename (e.g., NOTES.md):");
+  if (!filename) return;
 
-    try {
-      const res = await fetch(`/api/documents/${documentId}/files`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          filename,
-          content: "",
-          file_type: filename.endsWith(".json") ? "json" : "markdown",
-        }),
-      });
-      if (!res.ok) throw new Error("Failed to create file");
-      await fetchFiles();
-    } catch (error) {
-      console.error("Failed to create file:", error);
-      alert("Failed to create file");
+  let content = "";
+  
+  // Check if there's a template for this filename
+  const template = FILE_TEMPLATES[filename];
+  if (template) {
+    const useTemplate = confirm(`Use template for ${filename}?\n\n${template.description}`);
+    if (useTemplate) {
+      content = template.content;
     }
   }
+
+  try {
+    const res = await fetch(`/api/documents/${documentId}/files`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        filename,
+        content,
+        file_type: filename.endsWith(".json") ? "json" : "markdown",
+      }),
+    });
+    if (!res.ok) throw new Error("Failed to create file");
+    await fetchFiles();
+  } catch (error) {
+    console.error("Failed to create file:", error);
+    alert("Failed to create file");
+  }
+}
 
   async function deleteFile(fileId: string) {
     if (!confirm("Are you sure you want to delete this file?")) return;
@@ -385,6 +400,41 @@ export function CollaborativeFileBrowser({
 
   function selectFile(file: WorkspaceFile) {
     setSelected(file);
+  }
+
+  function toggleFileSelection(fileId: string) {
+    setSelectedFileIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(fileId)) {
+        next.delete(fileId);
+      } else {
+        next.add(fileId);
+      }
+      return next;
+    });
+  }
+
+  function toggleSelectAll() {
+    if (selectedFileIds.size === filteredFiles.length) {
+      setSelectedFileIds(new Set());
+    } else {
+      setSelectedFileIds(new Set(filteredFiles.map((f) => f.file_id)));
+    }
+  }
+
+  async function batchDeleteFiles() {
+    if (selectedFileIds.size === 0) return;
+    if (!confirm(`Delete ${selectedFileIds.size} file(s)?`)) return;
+
+    for (const fileId of selectedFileIds) {
+      try {
+        await fetch(`/api/documents/${fileId}`, { method: "DELETE" });
+      } catch (error) {
+        console.error(`Failed to delete file ${fileId}:`, error);
+      }
+    }
+    setSelectedFileIds(new Set());
+    await fetchFiles();
   }
 
   async function handleAiAssist() {
@@ -433,6 +483,11 @@ export function CollaborativeFileBrowser({
   const highlighted = selected ? highlight(selected.content, selected.filename) : "";
   const isMarkdownFile = selected && isMarkdown(selected.filename);
 
+  // Filter files based on search query
+  const filteredFiles = files.filter((file) =>
+    file.filename.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   if (loading) {
     return (
       <div className={styles.loading}>
@@ -461,27 +516,77 @@ export function CollaborativeFileBrowser({
           </div>
         ) : null}
         <div className={styles.fileListHeader}>
-          <span>{files.length} files</span>
-          <button
-            className={styles.addFileBtn}
-            onClick={addFile}
-            title="Add new file"
-          >
-            + Add File
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1 }}>
+            <input
+              type="checkbox"
+              checked={selectedFileIds.size === filteredFiles.length && filteredFiles.length > 0}
+              onChange={toggleSelectAll}
+              style={{ cursor: "pointer" }}
+            />
+            <span>{filteredFiles.length} files</span>
+            <input
+              type="text"
+              placeholder="Search files..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{
+                padding: "4px 8px",
+                fontSize: "0.75rem",
+                borderRadius: "6px",
+                border: "1px solid var(--sf-border-faint)",
+                background: "var(--sf-surface-input)",
+                color: "var(--sf-ink)",
+                width: "100px",
+              }}
+            />
+          </div>
+          <div style={{ display: "flex", gap: "8px" }}>
+            {selectedFileIds.size > 0 && (
+              <button
+                onClick={batchDeleteFiles}
+                style={{
+                  padding: "4px 12px",
+                  borderRadius: "999px",
+                  fontSize: "0.78rem",
+                  fontWeight: 500,
+                  cursor: "pointer",
+                  border: "1px solid var(--sf-danger)",
+                  background: "var(--sf-danger-subtle)",
+                  color: "var(--sf-danger)",
+                }}
+              >
+                Delete ({selectedFileIds.size})
+              </button>
+            )}
+            <button
+              className={styles.addFileBtn}
+              onClick={addFile}
+              title="Add new file"
+            >
+              + Add File
+            </button>
+          </div>
         </div>
 
         <ul className={styles.fileListScroll} aria-label="Files">
-          {files.map((file) => (
+          {filteredFiles.map((file) => (
             <li
               key={file.file_id}
               className={`${styles.fileItem} ${selected?.file_id === file.file_id ? styles.fileItemActive : ""}`}
             >
+              <input
+                type="checkbox"
+                checked={selectedFileIds.has(file.file_id)}
+                onChange={() => toggleFileSelection(file.file_id)}
+                onClick={(e) => e.stopPropagation()}
+                style={{ cursor: "pointer", marginRight: "8px" }}
+              />
               <button
                 className={styles.fileNameBtn}
                 onClick={() => selectFile(file)}
                 title={file.filename}
               >
+                <span style={{ marginRight: "6px" }}>{getFileIcon(file.filename)}</span>
                 {file.filename}
               </button>
               <button
