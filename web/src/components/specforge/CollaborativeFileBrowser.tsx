@@ -13,12 +13,28 @@ import StarterKit from "@tiptap/starter-kit";
 import * as Y from "yjs";
 import { HocuspocusProvider } from "@hocuspocus/provider";
 import { WebsocketProvider } from "y-websocket";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 
 import { markdownToEditorHtml, tiptapJsonToMarkdown } from "@/lib/specforge/editor";
 
 import styles from "./CollaborativeFileBrowser.module.css";
 import { FILE_TEMPLATES } from "./fileTemplates";
 import { getFileIcon } from "./fileIcons";
+import { SortableFileItem } from "./SortableFileItem";
 
 // Register languages
 hljs.registerLanguage("json", hljsJson);
@@ -148,11 +164,33 @@ export function CollaborativeFileBrowser({
   const [ideaValidationSession, setIdeaValidationSession] = useState<{ completed: number; total: number } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFileIds, setSelectedFileIds] = useState<Set<string>>(new Set());
+  const [connectedUsers, setConnectedUsers] = useState<number>(1);
 
   // Yjs document and provider for the selected file
   const ydocRef = useRef<Y.Doc | null>(null);
   const providerRef = useRef<HocuspocusProvider | WebsocketProvider | null>(null);
   const ytextRef = useRef<Y.Text | null>(null);
+
+  // Drag and drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      setFiles((items) => {
+        const oldIndex = items.findIndex((item) => item.file_id === active.id);
+        const newIndex = items.findIndex((item) => item.file_id === over.id);
+
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  }
 
   // Tiptap editor for markdown files
   const editor = useEditor({
@@ -230,8 +268,8 @@ export function CollaborativeFileBrowser({
 
     if (isMarkdown(selected.filename)) {
       // Markdown files use Tiptap with Collaboration
-      // Provider is managed by Collaboration extension
       setSyncState("connecting");
+      setConnectedUsers(1);
       
       const provider = new HocuspocusProvider({
         url: process.env.NEXT_PUBLIC_COLLAB_SERVER_URL || "ws://localhost:3001",
@@ -243,6 +281,14 @@ export function CollaborativeFileBrowser({
       provider.on("status", (status: any) => {
         setSyncState(status.status === "connected" ? "live" : "offline");
       });
+
+      // Track connected users using awareness
+      if (provider.awareness) {
+        provider.awareness.on("change", () => {
+          const states = Array.from(provider.awareness!.getStates().values());
+          setConnectedUsers(Math.max(1, states.length));
+        });
+      }
     } else {
       // Code files use Yjs Text type
       const ytext = ydoc.getText("content");
@@ -254,6 +300,7 @@ export function CollaborativeFileBrowser({
       }
 
       setSyncState("connecting");
+      setConnectedUsers(1);
 
       // Use WebsocketProvider for code files
       const provider = new WebsocketProvider(
@@ -266,6 +313,14 @@ export function CollaborativeFileBrowser({
       provider.on("status", (status: any) => {
         setSyncState(status.status === "connected" ? "live" : "offline");
       });
+
+      // Track connected users using awareness
+      if (provider.awareness) {
+        provider.awareness.on("change", () => {
+          const states = Array.from(provider.awareness!.getStates().values());
+          setConnectedUsers(Math.max(1, states.length));
+        });
+      }
 
       // Sync changes back to database
       ytext.observe(() => {
@@ -568,38 +623,24 @@ export function CollaborativeFileBrowser({
           </div>
         </div>
 
-        <ul className={styles.fileListScroll} aria-label="Files">
-          {filteredFiles.map((file) => (
-            <li
-              key={file.file_id}
-              className={`${styles.fileItem} ${selected?.file_id === file.file_id ? styles.fileItemActive : ""}`}
-            >
-              <input
-                type="checkbox"
-                checked={selectedFileIds.has(file.file_id)}
-                onChange={() => toggleFileSelection(file.file_id)}
-                onClick={(e) => e.stopPropagation()}
-                style={{ cursor: "pointer", marginRight: "8px" }}
-              />
-              <button
-                className={styles.fileNameBtn}
-                onClick={() => selectFile(file)}
-                title={file.filename}
-              >
-                <span style={{ marginRight: "6px" }}>{getFileIcon(file.filename)}</span>
-                {file.filename}
-              </button>
-              <button
-                className={styles.removeBtn}
-                onClick={() => deleteFile(file.file_id)}
-                aria-label={`Remove ${file.filename}`}
-                title={`Remove ${file.filename}`}
-              >
-                ✕
-              </button>
-            </li>
-          ))}
-        </ul>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={filteredFiles.map(f => f.file_id)} strategy={verticalListSortingStrategy}>
+            <ul className={styles.fileListScroll} aria-label="Files">
+              {filteredFiles.map((file) => (
+                <SortableFileItem
+                  key={file.file_id}
+                  file={file}
+                  isSelected={selected?.file_id === file.file_id}
+                  isSelectionEnabled={true}
+                  isFileSelected={selectedFileIds.has(file.file_id)}
+                  onSelect={() => selectFile(file)}
+                  onToggleSelection={() => toggleFileSelection(file.file_id)}
+                  onDelete={() => deleteFile(file.file_id)}
+                />
+              ))}
+            </ul>
+          </SortableContext>
+        </DndContext>
       </aside>
 
       {/* ---- viewer / editor ---- */}
@@ -609,6 +650,15 @@ export function CollaborativeFileBrowser({
             <div className={styles.viewerHeader}>
               <span className={styles.filename}>{selected.filename}</span>
               <div className={styles.viewerActions}>
+                <span style={{ 
+                  fontSize: "0.75rem", 
+                  color: "var(--sf-muted-mid)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "4px"
+                }}>
+                  👥 {connectedUsers} {connectedUsers === 1 ? "user" : "users"}
+                </span>
                 <span className={`${styles.syncStatus} ${styles[syncState]}`}>
                   {syncState === "live" ? "● Live" : syncState === "connecting" ? "● Connecting..." : "● Offline"}
                 </span>
