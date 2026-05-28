@@ -75,12 +75,9 @@ function buildReadme(document: DocumentRecord): string {
     "- FIRST_60_MINUTES.md — local runbook",
     "- RISK_REGISTER.md — risk table",
     "- ACCEPTANCE_TEST_MATRIX.md — acceptance test cases",
-    "- ARCHITECTURE_DECISIONS.md — ADR stubs",
     "- DECISIONS.md — recorded decisions",
     "- USER_FLOWS.md — actor flows",
     "- VALIDATION_PLAN.md — signal checkpoints",
-    "- ADVERSARIAL_TESTS.md — hardening tests",
-    "- SUBAGENT_PROMPT_PACK.md — bounded sub-agent prompts",
     "- agent_spec.json — machine-readable spec",
   ].join("\n");
 }
@@ -541,46 +538,6 @@ function buildAcceptanceTestMatrix(document: DocumentRecord): string {
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
-// ARCHITECTURE_DECISIONS.md
-// ──────────────────────────────────────────────────────────────────────────────
-
-function buildArchitectureDecisions(document: DocumentRecord): string {
-  const constraints = metaField(document, "constraints");
-
-  const stack = sparse(constraints, 1)
-    ? "TBD — no constraints provided yet."
-    : constraints.split("\n")[0].trim().replace(/^-+\s*/, "");
-
-  return [
-    `# Architecture Decisions — ${document.title}`,
-    "",
-    "## Persistence",
-    "",
-    `**Decision:** TBD`,
-    `**Context:** ${stack}`,
-    `**Status:** Pending`,
-    "",
-    "## Auth",
-    "",
-    `**Decision:** TBD`,
-    `**Context:** Authentication strategy not yet specified.`,
-    `**Status:** Pending`,
-    "",
-    "## Collaboration",
-    "",
-    `**Decision:** TBD`,
-    `**Context:** Real-time collaboration model not yet specified.`,
-    `**Status:** Pending`,
-    "",
-    "## Export",
-    "",
-    `**Decision:** TBD`,
-    `**Context:** Export format and delivery mechanism not yet specified.`,
-    `**Status:** Pending`,
-  ].join("\n");
-}
-
-// ──────────────────────────────────────────────────────────────────────────────
 // DECISIONS.md
 // ──────────────────────────────────────────────────────────────────────────────
 
@@ -689,90 +646,6 @@ function buildValidationPlan(document: DocumentRecord): string {
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
-// ADVERSARIAL_TESTS.md
-// ──────────────────────────────────────────────────────────────────────────────
-
-function buildAdversarialTests(document: DocumentRecord): string {
-  return [
-    `# Adversarial Tests — ${document.title}`,
-    "",
-    "These tests harden the spec against common failure modes.",
-    "",
-    "## AT-001: Incomplete inputs",
-    "- Submit spec with all optional fields empty.",
-    "- Expected: System accepts and flags missing fields; does not crash.",
-    "",
-    "## AT-002: Concurrent edits",
-    "- Two actors submit patches to the same block simultaneously.",
-    "- Expected: Both patches are queued; human review resolves conflict.",
-    "",
-    "## AT-003: Export with unresolved critical clarifications",
-    "- Attempt export when critical clarifications are unanswered.",
-    "- Expected: Export is blocked with a 409 and clear error message.",
-    "",
-    "## AT-004: Agent hallucination",
-    "- Agent proposes a patch referencing a block that does not exist.",
-    "- Expected: Patch is rejected at creation with a validation error.",
-    "",
-    "## AT-005: Stale patches",
-    "- Document is updated after a patch is proposed.",
-    "- Expected: Patch is marked stale; human must re-review before accepting.",
-    "",
-    "## AT-006: Large document",
-    "- Document with 50+ sections and 100+ patches.",
-    "- Expected: Export completes within 5 seconds; no truncation.",
-  ].join("\n");
-}
-
-// ──────────────────────────────────────────────────────────────────────────────
-// SUBAGENT_PROMPT_PACK.md
-// ──────────────────────────────────────────────────────────────────────────────
-
-function buildSubagentPromptPack(document: DocumentRecord): string {
-  return [
-    `# Sub-Agent Prompt Pack — ${document.title}`,
-    "",
-    "These prompts are self-contained and can be run in parallel by independent agents.",
-    "",
-    "## Prompt 1: Spec Author",
-    "",
-    "```",
-    `You are a senior product manager. Read PRD.md for the project "${document.title}".`,
-    `Your task: identify any gaps in requirements, scope, or success signals.`,
-    `Output a numbered list of gaps and a revised section for each gap found.`,
-    `Constraint: do not add features outside the stated scope.`,
-    "```",
-    "",
-    "## Prompt 2: Reviewer",
-    "",
-    "```",
-    `You are a critical product reviewer. Read PRD.md and SPEC.md for "${document.title}".`,
-    `Your task: identify contradictions, missing edge cases, and underspecified requirements.`,
-    `Output: list of issues, each with section reference and suggested fix.`,
-    `Constraint: focus only on correctness and completeness — not style.`,
-    "```",
-    "",
-    "## Prompt 3: Technical Architect",
-    "",
-    "```",
-    `You are a software architect. Read SPEC.md and ARCHITECTURE_DECISIONS.md for "${document.title}".`,
-    `Your task: propose concrete ADR entries for the Persistence, Auth, and Export sections.`,
-    `Output: one ADR per section in the standard format: Context / Decision / Status / Consequences.`,
-    `Constraint: prefer off-the-shelf solutions; justify any custom builds.`,
-    "```",
-    "",
-    "## Prompt 4: Risk Analyst",
-    "",
-    "```",
-    `You are a risk analyst. Read RISK_REGISTER.md and ADVERSARIAL_TESTS.md for "${document.title}".`,
-    `Your task: add 3 additional risks not covered by existing entries.`,
-    `Output: risk table rows in format: Risk | Likelihood | Impact | Mitigation.`,
-    `Constraint: risks must be specific to this project — no generic filler.`,
-    "```",
-  ].join("\n");
-}
-
-// ──────────────────────────────────────────────────────────────────────────────
 // agent_spec.json
 // ──────────────────────────────────────────────────────────────────────────────
 
@@ -850,12 +723,9 @@ export function exportDocumentBundle(
     "FIRST_60_MINUTES.md": buildFirst60Minutes(document),
     "RISK_REGISTER.md": buildRiskRegister(document),
     "ACCEPTANCE_TEST_MATRIX.md": buildAcceptanceTestMatrix(document),
-    "ARCHITECTURE_DECISIONS.md": buildArchitectureDecisions(document),
     "DECISIONS.md": buildDecisions(document, patches),
     "USER_FLOWS.md": buildUserFlows(document),
     "VALIDATION_PLAN.md": buildValidationPlan(document),
-    "ADVERSARIAL_TESTS.md": buildAdversarialTests(document),
-    "SUBAGENT_PROMPT_PACK.md": buildSubagentPromptPack(document),
     "agent_spec.json": buildAgentSpecJson(document, patches, clarifications, planningStages),
   };
 

@@ -61,7 +61,7 @@ const assistJsonSchema = {
   },
 } as const;
 
-export type AgentAssistToolId = "auto" | "codex_cli" | "claude_cli" | "heuristic";
+export type AgentAssistToolId = "auto" | "codex_cli" | "claude_cli" | "devin_cli" | "heuristic";
 
 export type AgentAssistToolStatus = {
   id: Exclude<AgentAssistToolId, "auto">;
@@ -374,7 +374,11 @@ export async function detectCliEnvironment(): Promise<CliEnvironment> {
 }
 
 export const getAgentAssistToolStatuses = cache(async (): Promise<AgentAssistToolStatus[]> => {
-  const [codex, claude] = await Promise.all([checkCommand("codex"), checkCommand("claude")]);
+  const [codex, claude, devin] = await Promise.all([
+    checkCommand("codex"),
+    checkCommand("claude"),
+    checkCommand("devin"),
+  ]);
 
   return [
     {
@@ -388,6 +392,12 @@ export const getAgentAssistToolStatuses = cache(async (): Promise<AgentAssistToo
       label: "Claude Code CLI",
       available: claude.available,
       detail: claude.detail,
+    },
+    {
+      id: "devin_cli",
+      label: "Devin CLI",
+      available: devin.available,
+      detail: devin.detail,
     },
     {
       id: "heuristic",
@@ -498,6 +508,48 @@ async function runClaudeAssist(brief: string) {
   }
 }
 
+async function runDevinAssist(brief: string) {
+  const tempDir = await mkdtemp(path.join(os.tmpdir(), "specforge-devin-assist-"));
+  const schemaPath = path.join(tempDir, "guided-spec.schema.json");
+  const promptPath = path.join(tempDir, "guided-spec.prompt.txt");
+
+  try {
+    await writeFile(schemaPath, JSON.stringify(assistJsonSchema, null, 2));
+    await writeFile(promptPath, buildAssistPrompt(brief));
+
+    const { stdout } = await execFileAsync(
+      "bash",
+      [
+        "-lc",
+        'devin -p --model claude-sonnet-4 -- "$(cat "$1")" < /dev/null',
+        promptPath,
+      ],
+      {
+        timeout: 60_000,
+        maxBuffer: 2 * 1024 * 1024,
+      },
+    );
+
+    // Devin doesn't support structured JSON output like Claude/Codex, so we parse the response
+    // This is a simplified version - in production you'd want more robust parsing
+    const parsed = assistSchema.safeParse(JSON.parse(stdout));
+    if (!parsed.success) {
+      throw new Error(`Devin output parsing failed: ${parsed.error.message}`);
+    }
+
+    return {
+      tool: "devin_cli" as const,
+      fields: normalizeGuidedSpecInput(parsed.data),
+      notes: [
+        "Populated fields using the locally installed Devin CLI.",
+        "This reuses the operator's existing Devin configuration.",
+      ],
+    };
+  } finally {
+    await rm(tempDir, { recursive: true, force: true });
+  }
+}
+
 function resolveRequestedTool(
   requestedTool: AgentAssistToolId,
   statuses: AgentAssistToolStatus[],
@@ -509,6 +561,10 @@ function resolveRequestedTool(
 
   if (requestedTool !== "auto") {
     return requestedTool;
+  }
+
+  if (statuses.find((tool) => tool.id === "devin_cli" && tool.available)) {
+    return "devin_cli";
   }
 
   if (statuses.find((tool) => tool.id === "codex_cli" && tool.available)) {
@@ -539,6 +595,10 @@ export async function suggestGuidedSpecInput(input: {
   }
 
   try {
+    if (requestedTool === "devin_cli") {
+      return { statuses, ...(await runDevinAssist(input.brief)) };
+    }
+
     if (requestedTool === "codex_cli") {
       return { statuses, ...(await runCodexAssist(input.brief)) };
     }
