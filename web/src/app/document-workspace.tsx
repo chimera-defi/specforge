@@ -114,7 +114,7 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
   const [isPending, startTransition] = useTransition();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
-  const { showToast, ToastContainer } = useToast();
+  const { showToast, removeToast, ToastContainer } = useToast();
   const surfaceRef = useRef<HTMLDivElement | null>(null);
   const isMountedRef = useRef(false);
   const editorRef = useRef<any>(null);
@@ -847,17 +847,26 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
           placeholder="Describe what to improve (e.g., 'Make this section more specific', 'Add technical details')..."
           toolStatuses={toolStatuses}
           onAssist={async (tool, input, systemPrompt, contextPrompt) => {
-            const response = await fetch("/api/agent/assist", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ tool, input, systemPrompt, contextPrompt }),
-            });
-            if (!response.ok) {
-              throw new Error("AI assist failed");
-            }
-            const payload = await response.json();
-            if (payload.notes && Array.isArray(payload.notes)) {
-              alert(payload.notes.join("\n"));
+            const loadingToastId = showToast("AI assist running...", "info", 0);
+            try {
+              const response = await fetch("/api/agent/assist", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ tool, input, systemPrompt, contextPrompt }),
+              });
+              if (!response.ok) {
+                throw new Error("AI assist failed");
+              }
+              const payload = await response.json();
+              if (payload.notes && Array.isArray(payload.notes)) {
+                alert(payload.notes.join("\n"));
+              }
+              removeToast(loadingToastId);
+              showToast("AI assist completed successfully", "success");
+            } catch (error) {
+              removeToast(loadingToastId);
+              showToast("AI assist failed", "error");
+              throw error;
             }
           }}
           contextVars={{
