@@ -1,13 +1,13 @@
 ---
 name: specforge-handoff
-description: Use when a user wants to emit the final SpecForge handoff.json — a build-agnostic artifact containing the full export bundle (PRD, SPEC, TASKS, agent_spec.json, optional DESIGN_SYSTEM.md and SECURITY.md) plus sprint planning stage provenance (which stages were completed or skipped, with their structured outputs). This is the terminal output of the SpecForge workflow. Build tooling is not specified.
+description: Use when a user wants to emit the final SpecForge handoff.json — a build-agnostic artifact containing the full export bundle (PRD, SPEC, TASKS, agent_spec.json, optional DESIGN_SYSTEM.md and SECURITY.md) plus idea validation stage provenance (which stages were completed or skipped, with their structured outputs). This is the terminal output of the SpecForge workflow. Build tooling is not specified.
 ---
 
 # SpecForge Handoff Skill
 
 Use this skill when the user wants to:
 - emit the final `handoff.json` after spec generation is complete
-- include sprint planning stage provenance in the handoff (which stages were done vs. skipped)
+- include idea validation stage provenance in the handoff (which stages were done vs. skipped)
 - get a machine-readable artifact for downstream build pipelines, CI, or agent workflows
 - mark the document as "build-ready" in the workspace
 
@@ -19,13 +19,15 @@ Use this skill when the user wants to:
   "documentId": "...",
   "workspaceId": "...",
   "generatedAt": "...",
-  "planningSession": {
+  "ideaValidationSession": {
+    "mode": "startup",
     "stages": [
-      { "name": "discovery",      "status": "completed", "patchId": "...", "outputs": { ... } },
-      { "name": "ceo-review",     "status": "completed", "patchId": "...", "outputs": { ... } },
-      { "name": "eng-review",     "status": "skipped",   "patchId": null,  "outputs": null    },
-      { "name": "design-review",  "status": "completed", "patchId": "...", "outputs": { ... } },
-      { "name": "security-review","status": "skipped",   "patchId": null,  "outputs": null    }
+      { "name": "demand-reality",         "status": "completed", "patchId": "...", "question": "...", "systemPrompt": "...", "outputs": { ... }, "answers": { ... } },
+      { "name": "status-quo",             "status": "completed", "patchId": "...", "question": "...", "systemPrompt": "...", "outputs": { ... }, "answers": { ... } },
+      { "name": "desperate-specificity",   "status": "completed", "patchId": "...", "question": "...", "systemPrompt": "...", "outputs": { ... }, "answers": { ... } },
+      { "name": "narrowest-wedge",         "status": "skipped",   "patchId": null,  "question": "...", "systemPrompt": "...", "outputs": null,    "answers": null },
+      { "name": "observation",             "status": "completed", "patchId": "...", "question": "...", "systemPrompt": "...", "outputs": { ... }, "answers": { ... } },
+      { "name": "future-fit",              "status": "skipped",   "patchId": null,  "question": "...", "systemPrompt": "...", "outputs": null,    "answers": null }
     ]
   },
   "exportBundle": {
@@ -33,8 +35,14 @@ Use this skill when the user wants to:
     "spec":         "SPEC.md contents",
     "tasks":        "TASKS.md contents",
     "agentSpec":    { ... },
-    "designSystem": "DESIGN_SYSTEM.md contents (present if design-review completed)",
-    "security":     "SECURITY.md contents (present if security-review completed)"
+    "ideaValidation": {
+      "demandReality": { "answers": { ... }, "outputs": { ... }, "question": "..." },
+      "statusQuo": { "answers": { ... }, "outputs": { ... }, "question": "..." },
+      "desperateSpecificity": { "answers": { ... }, "outputs": { ... }, "question": "..." },
+      "narrowestWedge": { "answers": { ... }, "outputs": { ... }, "question": "..." },
+      "observation": { "answers": { ... }, "outputs": { ... }, "question": "..." },
+      "futureFit": { "answers": { ... }, "outputs": { ... }, "question": "..." }
+    }
   },
   "executionBrief": "...",
   "launchPacket":   { ... }
@@ -70,7 +78,7 @@ Before emitting handoff, the CLI checks:
 - The export bundle can be generated without errors
 
 Warnings (not hard blocks) are shown for:
-- No sprint planning stages completed (handoff will have all stages as `null`)
+- No idea validation stages completed (handoff will have all stages as `null`)
 - Clarification queue has unresolved items
 - Readiness score below threshold
 
@@ -92,8 +100,8 @@ The `handoff.json` is the input to whatever build pipeline the user has chosen. 
 ## Verification
 
 ```bash
-bun run specforge -- handoff --json | jq '.planningSession.stages | length'
-# should return 5 (all stages present, completed or skipped)
+bun run specforge -- handoff --json | jq '.ideaValidationSession.stages | length'
+# should return 6 (all stages present, completed or skipped)
 bun run specforge -- handoff --json | jq '.exportBundle.prd | length'
 # should return > 0 (non-empty PRD)
 ```

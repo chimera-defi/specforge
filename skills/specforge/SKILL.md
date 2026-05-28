@@ -93,7 +93,7 @@ bun run specforge -- audit --stage design-review     # design system, interactio
 bun run specforge -- audit --stage security-review   # OWASP threat model
 ```
 
-1. Walk through sprint planning stages:
+1. Walk through idea validation stages:
 ```bash
 bun run specforge -- plan
 # or a specific stage:

@@ -1232,7 +1232,7 @@ export default async function Home({ searchParams }: Props) {
                   specWizardHref={buildStageHref(activeDocument.document_id, "draft")}
                 />
               ) : (
-                <p className={styles.empty}>Create a document first, then run sprint planning.</p>
+                <p className={styles.empty}>Create a document first, then run idea validation.</p>
               )}
             </section>
           ) : null}

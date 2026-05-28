@@ -381,9 +381,9 @@ async function runAutoplanCommand(options) {
   }
   await runAuditCommand({ ...options, idea, json: true });
 
-  // Step 2: Run plan stages
+  // Step 2: Run idea validation stages
   if (!options.json) {
-    process.stdout.write("\nStep 2: Running sprint planning stages...\n");
+    process.stdout.write("\nStep 2: Running idea validation stages...\n");
   }
 
   // For autoplan, we need a document ID - this would normally come from creating a document first
