@@ -140,6 +140,7 @@ export function CollaborativeFileBrowser({
   const [selected, setSelected] = useState<WorkspaceFile | null>(null);
   const [loading, setLoading] = useState(true);
   const [syncState, setSyncState] = useState<"connecting" | "live" | "offline">("connecting");
+  const [aiAssisting, setAiAssisting] = useState(false);
 
   // Yjs document and provider for the selected file
   const ydocRef = useRef<Y.Doc | null>(null);
@@ -366,6 +367,49 @@ export function CollaborativeFileBrowser({
     setSelected(file);
   }
 
+  async function handleAiAssist() {
+    if (!selected) return;
+
+    setAiAssisting(true);
+    alert(`AI Assist: Processing ${selected.filename}...`);
+
+    try {
+      const res = await fetch("/api/agent/assist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          document_id: documentId,
+          block_id: selected.filename,
+          section_id: selected.filename,
+          context: {
+            filename: selected.filename,
+            content: selected.content,
+            file_type: selected.file_type,
+          },
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("AI assist request failed");
+      }
+
+      const data = await res.json();
+      
+      if (data.suggestion) {
+        // Apply the suggestion to the file
+        await saveFileContent(selected.file_id, data.suggestion);
+        alert(`AI Assist: Updated ${selected.filename}`);
+      } else {
+        alert("AI Assist: No changes suggested");
+      }
+    } catch (error) {
+      console.error("AI assist failed:", error);
+      alert("AI Assist: Could not process request");
+    } finally {
+      setAiAssisting(false);
+    }
+  }
+
   const highlighted = selected ? highlight(selected.content, selected.filename) : "";
   const isMarkdownFile = selected && isMarkdown(selected.filename);
 
@@ -434,6 +478,15 @@ export function CollaborativeFileBrowser({
                 <p className="text-sm text-muted-foreground">
                   {syncState === "live" ? "🟢 Live collaboration" : syncState === "connecting" ? "🟡 Connecting..." : "🔴 Offline"}
                 </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleAiAssist}
+                  disabled={aiAssisting}
+                  className="px-3 py-1.5 rounded-md border border-border hover:bg-muted disabled:opacity-50"
+                >
+                  {aiAssisting ? "AI Processing..." : "✨ AI Assist"}
+                </button>
               </div>
             </div>
 
