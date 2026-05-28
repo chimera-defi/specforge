@@ -192,6 +192,7 @@ type PlanSessionRow = {
   session_id: string;
   document_id: string;
   workspace_id: string;
+  mode: string;
   status: string;
   created_at: string;
   updated_at: string;
@@ -204,6 +205,8 @@ type PlanStageRow = {
   name: string;
   status: string;
   patch_id: string | null;
+  question_prompt: string | null;
+  system_prompt: string | null;
   outputs_json: Record<string, unknown> | null;
   answers_json: Record<string, string> | null;
   created_at: string;
@@ -217,24 +220,26 @@ type PlanStageRow = {
 export async function createPlanSession(
   documentId: string,
   workspaceId: string,
+  mode: "startup" | "builder" = "startup",
 ): Promise<PlanSession> {
   const db = await getDatabase({ workspaceId });
   const now = new Date().toISOString();
-  const sessionId = `psession_${randomUUID()}`;
+  const sessionId = `ivsession_${randomUUID()}`;
 
   await db.query(
-    `INSERT INTO plan_sessions (session_id, document_id, workspace_id, status, created_at, updated_at)
-     VALUES ($1, $2, $3, $4, $5, $6)`,
-    [sessionId, documentId, workspaceId, "active", now, now],
+    `INSERT INTO idea_validation_sessions (session_id, document_id, workspace_id, mode, status, created_at, updated_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+    [sessionId, documentId, workspaceId, mode, "active", now, now],
   );
 
-  // Pre-create all stage rows as 'pending'
-  for (const name of PLAN_STAGE_NAMES) {
-    const stageId = `pstage_${randomUUID()}`;
+  // Pre-create all stage rows as 'pending' with their questions and system prompts
+  for (const name of IDEA_VALIDATION_STAGE_NAMES) {
+    const stageDef = STAGE_DEFINITIONS[name];
+    const stageId = `ivstage_${randomUUID()}`;
     await db.query(
-      `INSERT INTO plan_stages (stage_id, session_id, document_id, name, status, patch_id, outputs_json, answers_json, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, $5, NULL, NULL, NULL, $6, $7)`,
-      [stageId, sessionId, documentId, name, "pending", now, now],
+      `INSERT INTO idea_validation_stages (stage_id, session_id, document_id, name, status, patch_id, question_prompt, system_prompt, outputs_json, answers_json, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, NULL, $6, $7, NULL, NULL, $8, $9)`,
+      [stageId, sessionId, documentId, name, "pending", stageDef.question, stageDef.systemPrompt || null, now, now],
     );
   }
 
@@ -248,14 +253,14 @@ export async function getPlanSession(
   const db = await getDatabase({ workspaceId });
 
   const { rows: sessionRows } = await db.query<PlanSessionRow>(
-    `SELECT * FROM plan_sessions WHERE session_id = $1`,
+    `SELECT * FROM idea_validation_sessions WHERE session_id = $1`,
     [sessionId],
   );
   const session = sessionRows[0];
-  if (!session) throw new Error(`Plan session not found: ${sessionId}`);
+  if (!session) throw new Error(`Idea validation session not found: ${sessionId}`);
 
   const { rows: stageRows } = await db.query<PlanStageRow>(
-    `SELECT * FROM plan_stages WHERE session_id = $1 ORDER BY created_at ASC`,
+    `SELECT * FROM idea_validation_stages WHERE session_id = $1 ORDER BY created_at ASC`,
     [sessionId],
   );
 
@@ -269,14 +274,14 @@ export async function listPlanSessions(
   const db = await getDatabase({ workspaceId });
 
   const { rows: sessionRows } = await db.query<PlanSessionRow>(
-    `SELECT * FROM plan_sessions WHERE document_id = $1 ORDER BY created_at DESC`,
+    `SELECT * FROM idea_validation_sessions WHERE document_id = $1 ORDER BY created_at DESC`,
     [documentId],
   );
 
   const sessions: PlanSession[] = [];
   for (const row of sessionRows) {
     const { rows: stageRows } = await db.query<PlanStageRow>(
-      `SELECT * FROM plan_stages WHERE session_id = $1 ORDER BY created_at ASC`,
+      `SELECT * FROM idea_validation_stages WHERE session_id = $1 ORDER BY created_at ASC`,
       [row.session_id],
     );
     sessions.push(assembleSession(row, stageRows));
@@ -295,7 +300,7 @@ export async function advancePlanSession(
   const now = new Date().toISOString();
 
   const stageRow = await db.query<PlanStageRow>(
-    `SELECT * FROM plan_stages WHERE session_id = $1 AND name = $2`,
+    `SELECT * FROM idea_validation_stages WHERE session_id = $1 AND name = $2`,
     [sessionId, input.stage_name],
   );
   const stage = stageRow.rows[0];
@@ -325,7 +330,7 @@ export async function advancePlanSession(
         operation: "replace",
         content: patchContent,
         patch_type: "structural_edit",
-        rationale: `Planning stage: ${def.label}`,
+        rationale: `Idea validation stage: ${def.label}`,
         proposed_by: {
           actor_type: input.actor_type,
           actor_id: input.actor_id,
@@ -339,13 +344,13 @@ export async function advancePlanSession(
     patchId = patch.patch_id;
   }
 
-  const outputs = def.questions.reduce<Record<string, string>>((acc, q) => {
+  const outputs = def.subQuestions.reduce<Record<string, string>>((acc, q) => {
     acc[q.key] = input.answers[q.key] ?? "";
     return acc;
   }, {});
 
   await db.query(
-    `UPDATE plan_stages
+    `UPDATE idea_validation_stages
      SET status = 'completed', patch_id = $1, outputs_json = $2::jsonb, answers_json = $3::jsonb, updated_at = $4
      WHERE session_id = $5 AND name = $6`,
     [
@@ -359,7 +364,7 @@ export async function advancePlanSession(
   );
 
   await db.query(
-    `UPDATE plan_sessions SET updated_at = $1 WHERE session_id = $2`,
+    `UPDATE idea_validation_sessions SET updated_at = $1 WHERE session_id = $2`,
     [now, sessionId],
   );
 
@@ -376,13 +381,13 @@ export async function skipPlanStage(
   const now = new Date().toISOString();
 
   await db.query(
-    `UPDATE plan_stages SET status = 'skipped', updated_at = $1
+    `UPDATE idea_validation_stages SET status = 'skipped', updated_at = $1
      WHERE session_id = $2 AND name = $3`,
     [now, sessionId, input.stage_name],
   );
 
   await db.query(
-    `UPDATE plan_sessions SET updated_at = $1 WHERE session_id = $2`,
+    `UPDATE idea_validation_sessions SET updated_at = $1 WHERE session_id = $2`,
     [now, sessionId],
   );
 
@@ -394,7 +399,7 @@ export function getStageDefinition(name: PlanStageName): StageDefinition {
 }
 
 export function getAllStageDefinitions(): StageDefinition[] {
-  return PLAN_STAGE_NAMES.map((n) => STAGE_DEFINITIONS[n]);
+  return IDEA_VALIDATION_STAGE_NAMES.map((n) => STAGE_DEFINITIONS[n]);
 }
 
 // ---------------------------------------------------------------------------
@@ -405,7 +410,7 @@ function assembleSession(
   session: PlanSessionRow,
   stageRows: PlanStageRow[],
 ): PlanSession {
-  const stages: PlanStage[] = PLAN_STAGE_NAMES.map((name) => {
+  const stages: PlanStage[] = IDEA_VALIDATION_STAGE_NAMES.map((name) => {
     const row = stageRows.find((r) => r.name === name);
     if (row) {
       return {
@@ -415,6 +420,8 @@ function assembleSession(
         name: name as PlanStageName,
         status: row.status as PlanStage["status"],
         patch_id: row.patch_id,
+        question_prompt: row.question_prompt,
+        system_prompt: row.system_prompt,
         outputs: row.outputs_json ?? null,
         answers: row.answers_json ?? null,
         created_at: row.created_at,
@@ -430,6 +437,8 @@ function assembleSession(
       name: name as PlanStageName,
       status: "pending" as const,
       patch_id: null,
+      question_prompt: null,
+      system_prompt: null,
       outputs: null,
       answers: null,
       created_at: now,
@@ -441,6 +450,7 @@ function assembleSession(
     session_id: session.session_id,
     document_id: session.document_id,
     workspace_id: session.workspace_id,
+    mode: session.mode as "startup" | "builder",
     status: session.status as PlanSession["status"],
     stages,
     created_at: session.created_at,
