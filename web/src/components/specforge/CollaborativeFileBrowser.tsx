@@ -151,9 +151,9 @@ export function CollaborativeFileBrowser({
   const editor = useEditor({
     extensions: [
       StarterKit,
-      Collaboration.configure({
-        document: ydocRef.current!,
-      }),
+      ...(ydocRef.current ? [Collaboration.configure({
+        document: ydocRef.current,
+      })] : []),
     ],
     content: selected ? markdownToEditorHtml(selected.content) : "",
     editable: true,
