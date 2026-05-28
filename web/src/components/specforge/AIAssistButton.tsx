@@ -333,7 +333,7 @@ export function AIAssistButton({
         fontSize: "0.78rem",
         fontWeight: 500,
         display: "flex",
-        alignItems: center",
+        alignItems: "center",
         gap: "0.35rem",
         ...style,
       }}
@@ -374,7 +374,7 @@ export function AIAssistButton({
           fontSize: "0.78rem",
           fontWeight: 500,
           display: "flex",
-          alignItems: center",
+          alignItems: "center",
           gap: "0.35rem",
           opacity: disabled ? 0.5 : 1,
           ...style,
@@ -599,7 +599,7 @@ export function AIAssistButton({
               background: "rgba(28,26,23,0.04)",
               borderRadius: "6px",
               fontSize: "0.75rem",
-              opacity: 0.7",
+              opacity: "0.7",
               marginBottom: "0.5rem",
             }}
           >

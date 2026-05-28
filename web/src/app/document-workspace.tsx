@@ -266,14 +266,10 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
     const handleSynced = () => {
       setConnDiag(null);
       connAttemptsRef.current = 0;
-      const hasContent = editor.getText().trim().length > 0;
 
-      if (!hasContent) {
-        editor.commands.setContent(markdownToEditorHtml(document.markdown));
-        updateSyncState("live", `Seeded live room: ${roomName}`);
-        return;
-      }
-
+      // Always seed with document markdown to ensure the editor shows the actual document content
+      // This prevents showing stale or empty content from previous collab sessions
+      editor.commands.setContent(markdownToEditorHtml(document.markdown));
       updateSyncState("live", `Live room synced: ${roomName}`);
     };
 
