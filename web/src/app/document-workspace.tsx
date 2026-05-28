@@ -114,6 +114,7 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
   const [isPending, startTransition] = useTransition();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const { showToast, removeToast, ToastContainer } = useToast();
   const surfaceRef = useRef<HTMLDivElement | null>(null);
   const isMountedRef = useRef(false);
@@ -138,6 +139,7 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
         editorRef.current.commands.setContent(markdownToEditorHtml(latestDocument.markdown));
         console.log(`Refreshed from database: v${latestDocument.version}`);
         lastKnownVersionRef.current = latestDocument.version;
+        setHasUnsavedChanges(false);
         showToast(`Refreshed from database (v${latestDocument.version})`, "success");
       }
     } catch (error) {
@@ -220,6 +222,9 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
       attributes: {
         class: "specforgeEditor",
       },
+    },
+    onUpdate: ({ editor }) => {
+      setHasUnsavedChanges(true);
     },
   });
 
@@ -824,6 +829,23 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
         >
           {isRefreshing ? "Refreshing..." : "🔄 Refresh from DB"}
         </button>
+        {hasUnsavedChanges && (
+          <span
+            style={{
+              padding: "6px 12px",
+              borderRadius: "999px",
+              fontSize: "0.84rem",
+              fontWeight: 600,
+              color: "var(--sf-surface-warm)",
+              background: "#f59e0b",
+              border: "none",
+              display: "inline-flex",
+              alignItems: "center",
+            }}
+          >
+            ⚠️ Unsaved changes
+          </span>
+        )}
         <button
           type="button"
           onClick={() => setShowHelp(true)}
