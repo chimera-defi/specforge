@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import {
+  autoAcceptIdeaValidationPatches,
   initializeDefaultWorkspaceFiles,
   getDocument,
 } from "@/lib/specforge/store";
@@ -22,6 +23,10 @@ export async function POST(_request: Request, { params }: Params) {
         return NextResponse.json({ error: "Document not found" }, { status: 404 });
       }
 
+      // Auto-accept patches from idea validation before initializing files
+      await autoAcceptIdeaValidationPatches(id, { workspaceId });
+
+      // Initialize workspace files from the updated document
       await initializeDefaultWorkspaceFiles(id, document, { workspaceId });
       
       return NextResponse.json({ success: true });
