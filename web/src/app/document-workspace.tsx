@@ -112,6 +112,7 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
   const connAttemptsRef = useRef(0);
   const [isPending, startTransition] = useTransition();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const surfaceRef = useRef<HTMLDivElement | null>(null);
   const isMountedRef = useRef(false);
   const editorRef = useRef<any>(null);
@@ -243,6 +244,12 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
           if (closeButton) {
             closeButton.click();
           }
+          setShowHelp(false);
+        }
+        // Ctrl/Cmd + ?: Show help
+        if ((event.ctrlKey || event.metaKey) && event.key === '?') {
+          event.preventDefault();
+          setShowHelp(prev => !prev);
         }
       };
 
@@ -807,9 +814,27 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
             transition: "opacity 0.15s",
             opacity: isRefreshing ? 0.6 : 1,
           }}
-          title="Refresh document from database"
+          title="Refresh document from database (Ctrl+S)"
         >
           {isRefreshing ? "Refreshing..." : "🔄 Refresh from DB"}
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowHelp(true)}
+          style={{
+            padding: "6px 12px",
+            borderRadius: "999px",
+            fontSize: "0.84rem",
+            fontWeight: 600,
+            color: "var(--sf-surface-warm)",
+            background: "var(--sf-muted-light)",
+            border: "none",
+            cursor: "pointer",
+            transition: "opacity 0.15s",
+          }}
+          title="Keyboard shortcuts (Ctrl+?)"
+        >
+          ⌨️ Help
         </button>
         <AIAssistButton
           mode="panel"
@@ -842,6 +867,59 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
           Use refresh if content seems stale after accepting patches
         </span>
       </div>
+
+      {/* Help Overlay */}
+      {showHelp && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "rgba(0,0,0,0.5)",
+            zIndex: 9999,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          onClick={() => setShowHelp(false)}
+        >
+          <div
+            style={{
+              background: "var(--sf-surface-warm)",
+              padding: "2rem",
+              borderRadius: "12px",
+              maxWidth: "500px",
+              boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 style={{ margin: "0 0 1rem 0" }}>Keyboard Shortcuts</h2>
+            <ul style={{ margin: 0, paddingLeft: "1.5rem" }}>
+              <li style={{ marginBottom: "0.5rem" }}><strong>Ctrl/Cmd + S</strong> - Refresh from database</li>
+              <li style={{ marginBottom: "0.5rem" }}><strong>Ctrl/Cmd + Shift + A</strong> - Open AI assist</li>
+              <li style={{ marginBottom: "0.5rem" }}><strong>Ctrl/Cmd + ?</strong> - Show this help</li>
+              <li style={{ marginBottom: "0.5rem" }}><strong>Escape</strong> - Close panels / dialogs</li>
+            </ul>
+            <button
+              type="button"
+              onClick={() => setShowHelp(false)}
+              style={{
+                padding: "0.55rem 1.2rem",
+                borderRadius: "999px",
+                background: "#1c1a17",
+                color: "#fffbf6",
+                border: "none",
+                cursor: "pointer",
+                fontSize: "0.875rem",
+              }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
       <div className="editorSurface" ref={surfaceRef}>
         {blockMarkers.map((marker) => (
           <div key={marker.block_id} className="blockMarker" style={{ top: `${marker.top}px` }}>
