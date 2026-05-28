@@ -174,6 +174,7 @@ type PlanStage = {
   name: string;
   status: StageStatus;
   patch_id: string | null;
+  answers: Record<string, string> | null;
 };
 
 type PlanSession = {
@@ -215,6 +216,14 @@ export function SprintPlanningPanel({ documentId, actorId, specWizardHref }: Pro
         const sessions: PlanSession[] = data.sessions ?? [];
         if (sessions.length > 0) {
           setSession(sessions[0]);
+          // Load persisted answers from completed stages
+          const persistedAnswers: Record<string, Record<string, string>> = {};
+          for (const stage of sessions[0].stages) {
+            if (stage.status === "completed" && stage.answers) {
+              persistedAnswers[stage.name] = stage.answers;
+            }
+          }
+          setAnswers(persistedAnswers);
         }
       } catch {
         // Silently ignore — user can create a new session
