@@ -16,6 +16,8 @@ import { WebsocketProvider } from "y-websocket";
 
 import { markdownToEditorHtml, tiptapJsonToMarkdown } from "@/lib/specforge/editor";
 
+import styles from "./CollaborativeFileBrowser.module.css";
+
 // Register languages
 hljs.registerLanguage("json", hljsJson);
 hljs.registerLanguage("markdown", hljsMarkdown);
@@ -109,7 +111,7 @@ function CodeEditor({ ytext, filename }: CodeEditorProps) {
   return (
     <textarea
       ref={textareaRef}
-      className="w-full h-full p-4 font-mono text-sm resize-none bg-background border-0 focus:outline-none"
+      className={styles.codeTextarea}
       spellCheck={false}
     />
   );
@@ -415,100 +417,88 @@ export function CollaborativeFileBrowser({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-muted-foreground">Loading files...</div>
+      <div className={styles.loading}>
+        Loading files...
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-screen bg-background">
-      {/* File list sidebar */}
-      <aside className="w-64 border-r border-border bg-card flex flex-col">
-        <div className="p-4 border-b border-border">
-          <h2 className="text-lg font-semibold">Files</h2>
-          <p className="text-sm text-muted-foreground">{files.length} files</p>
-        </div>
-        <ul className="flex-1 overflow-y-auto p-2" role="list">
-          {files.map((file) => (
-            <li
-              key={file.file_id}
-              className={`mb-1 rounded-md ${
-                selected?.file_id === file.file_id
-                  ? "bg-accent text-accent-foreground"
-                  : "bg-muted hover:bg-muted/80"
-              }`}
-            >
-              <button
-                className="w-full text-left px-3 py-2 flex items-center justify-between group"
-                onClick={() => selectFile(file)}
-              >
-                <span className="truncate flex-1">{file.filename}</span>
-                <button
-                  className="opacity-0 group-hover:opacity-100 ml-2 text-red-500 hover:text-red-700"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    deleteFile(file.file_id);
-                  }}
-                >
-                  ✕
-                </button>
-              </button>
-            </li>
-          ))}
-        </ul>
-        <div className="p-4 border-t border-border space-y-2">
+    <div className={styles.browser}>
+      {/* ---- file list ---- */}
+      <aside className={styles.fileList} aria-label="Workspace files">
+        <div className={styles.fileListHeader}>
+          <span>{files.length} files</span>
           <button
+            className={styles.addFileBtn}
             onClick={addFile}
-            className="w-full bg-secondary text-secondary-foreground py-2 px-4 rounded-md hover:bg-secondary/80"
+            title="Add new file"
           >
             + Add File
           </button>
         </div>
+
+        <ul className={styles.fileListScroll} aria-label="Files">
+          {files.map((file) => (
+            <li
+              key={file.file_id}
+              className={`${styles.fileItem} ${selected?.file_id === file.file_id ? styles.fileItemActive : ""}`}
+            >
+              <button
+                className={styles.fileNameBtn}
+                onClick={() => selectFile(file)}
+                title={file.filename}
+              >
+                {file.filename}
+              </button>
+              <button
+                className={styles.removeBtn}
+                onClick={() => deleteFile(file.file_id)}
+                aria-label={`Remove ${file.filename}`}
+                title={`Remove ${file.filename}`}
+              >
+                ✕
+              </button>
+            </li>
+          ))}
+        </ul>
       </aside>
 
-      {/* Main editor area */}
-      <main className="flex-1 flex flex-col">
+      {/* ---- viewer / editor ---- */}
+      <main className={styles.viewer}>
         {selected ? (
           <>
-            {/* Header */}
-            <div className="p-4 border-b border-border flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-semibold">{selected.filename}</h2>
-                <p className="text-sm text-muted-foreground">
-                  {syncState === "live" ? "🟢 Live collaboration" : syncState === "connecting" ? "🟡 Connecting..." : "🔴 Offline"}
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
+            <div className={styles.viewerHeader}>
+              <span className={styles.filename}>{selected.filename}</span>
+              <div className={styles.viewerActions}>
+                <span className={`${styles.syncStatus} ${styles[syncState]}`}>
+                  {syncState === "live" ? "● Live" : syncState === "connecting" ? "● Connecting..." : "● Offline"}
+                </span>
                 <button
+                  className={styles.aiAssistBtn}
                   onClick={handleAiAssist}
                   disabled={aiAssisting}
-                  className="px-3 py-1.5 rounded-md border border-border hover:bg-muted disabled:opacity-50"
+                  title="AI Assist"
                 >
-                  {aiAssisting ? "AI Processing..." : "✨ AI Assist"}
+                  {aiAssisting ? "Processing..." : "✨ AI Assist"}
                 </button>
               </div>
             </div>
 
-            {/* Editor */}
-            <div className="flex-1 overflow-hidden">
+            <div className={styles.editorArea}>
               {isMarkdownFile && editor ? (
-                // Markdown files use Tiptap editor with Yjs collaboration
-                <div className="h-full overflow-y-auto p-4">
-                  <EditorContent editor={editor} />
-                </div>
+                <EditorContent editor={editor} />
               ) : ytextRef.current ? (
-                // Code files use textarea bound to Yjs Text
                 <CodeEditor ytext={ytextRef.current} filename={selected.filename} />
               ) : null}
             </div>
           </>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground p-8">
-            <p className="mb-4">No files in workspace yet.</p>
+          <div className={styles.empty}>
+            <p>No files in workspace yet.</p>
             <button
+              className={styles.initBtn}
               onClick={initializeFiles}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
             >
               Initialize Default Files
             </button>
