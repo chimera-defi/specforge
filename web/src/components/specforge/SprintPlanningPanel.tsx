@@ -1,15 +1,17 @@
 "use client";
 
 /**
- * SprintPlanningPanel
+ * IdeaValidationPanel
  *
  * Act 1 of the SpecForge two-act model. Walks the user (or team) through
- * 5 optional planning stages inspired by G-Stack:
- *   Discovery → CEO Review → Eng Review → Design Review → Security Review
+ * 6 rigorous idea validation stages inspired by G-Stack's office-hours skill:
+ *   Demand Reality → Status Quo → Desperate Specificity → Narrowest Wedge → Observation → Future-Fit
  *
  * Each stage produces a governed PatchProposal targeting the relevant
  * document section. Stages can be skipped — skips are recorded in the
  * session for handoff.json provenance.
+ *
+ * This implements YC's six forcing questions for rigorous product diagnostics.
  */
 
 import { useCallback, useEffect, useState } from "react";
@@ -24,140 +26,104 @@ type StageDef = {
   name: string;
   label: string;
   description: string;
-  questions: QuestionDef[];
+  question: string; // Main forcing question
+  subQuestions: QuestionDef[]; // Follow-up questions for depth
 };
 
 const STAGE_DEFS: StageDef[] = [
   {
-    name: "discovery",
-    label: "Discovery",
-    description: "Problem framing, user segments, and success signals.",
-    questions: [
+    name: "demand-reality",
+    label: "Demand Reality",
+    description: "Strongest evidence that someone actually wants this — not interest, but demand.",
+    question: "What's the strongest evidence you have that someone actually wants this — not 'is interested,' not 'signed up for a waitlist,' but would be genuinely upset if it disappeared tomorrow?",
+    subQuestions: [
       {
-        key: "problem",
-        prompt: "What specific problem does this product solve? Be concrete about the pain.",
+        key: "specific_behavior",
+        prompt: "What specific behavior shows demand? (paying, expanding usage, building workflow around it, panic when it breaks)",
       },
       {
-        key: "users",
-        prompt: "Who are the 1-3 primary user segments? What is their job-to-be-done?",
-      },
-      {
-        key: "success_signals",
-        prompt:
-          "How will you know the product succeeded in 6 months? List 2-3 measurable signals.",
-      },
-      {
-        key: "anti_problems",
-        prompt: "What adjacent problems are explicitly NOT in scope?",
+        key: "evidence",
+        prompt: "Name a specific person who would be affected if this vanished. What would they have to do?",
       },
     ],
   },
   {
-    name: "ceo-review",
-    label: "CEO Review",
-    description: "10-star product vision, scope hardening, and anti-goals.",
-    questions: [
+    name: "status-quo",
+    label: "Status Quo",
+    description: "What users are doing right now to solve this problem — even badly.",
+    question: "What are your users doing right now to solve this problem — even badly? What does that workaround cost them?",
+    subQuestions: [
       {
-        key: "vision",
-        prompt:
-          "If this product were a 10/10 experience — what would users say about it? Write the 10-star review.",
+        key: "workflow",
+        prompt: "Describe the specific workflow in detail. What tools are they duct-taping together?",
       },
       {
-        key: "scope_hardening",
-        prompt: "What must be true for v1 to ship? List the 3 non-negotiable scope items.",
-      },
-      {
-        key: "anti_goals",
-        prompt: "What are we explicitly NOT building? List 3-5 anti-goals to guard the team.",
-      },
-      {
-        key: "competitive_insight",
-        prompt: "What does this product do that no existing solution does well?",
+        key: "cost",
+        prompt: "How much time or money are they wasting on this workaround? Be specific.",
       },
     ],
   },
   {
-    name: "eng-review",
-    label: "Engineering Review",
-    description: "Architecture decisions, data flow, tech stack, and failure modes.",
-    questions: [
+    name: "desperate-specificity",
+    label: "Desperate Specificity",
+    description: "Specific pain point, not vague problems. One specific person with a specific need.",
+    question: "What's the specific pain point? Can you name one specific person at one specific company who has this problem right now?",
+    subQuestions: [
       {
-        key: "architecture",
-        prompt:
-          "Describe the high-level architecture in 3-5 sentences. What are the main components?",
+        key: "pain_severity",
+        prompt: "How often does this pain occur? Daily, weekly, monthly?",
       },
       {
-        key: "data_flow",
-        prompt: "Walk through the critical data flow for the primary user action.",
-      },
-      {
-        key: "tech_stack",
-        prompt:
-          "What is the proposed tech stack and why? Call out any non-obvious choices.",
-      },
-      {
-        key: "failure_modes",
-        prompt:
-          "What are the top 3 failure modes and how will the system handle each?",
-      },
-      {
-        key: "test_matrix",
-        prompt: "What are the must-have test scenarios? List 3-5 acceptance criteria.",
+        key: "urgency",
+        prompt: "What happens if they don't solve this? What's the consequence?",
       },
     ],
   },
   {
-    name: "design-review",
-    label: "Design Review",
-    description: "Design system constraints, interaction model, and accessibility.",
-    questions: [
+    name: "narrowest-wedge",
+    label: "Narrowest Wedge",
+    description: "Smallest version someone would pay real money for this week.",
+    question: "What's the one thing a user would pay for this week? Not the full platform vision — the smallest version that delivers value.",
+    subQuestions: [
       {
-        key: "design_principles",
-        prompt: "What are the 2-3 core design principles for this product?",
+        key: "wedge_value",
+        prompt: "What specific problem does this wedge solve that the user would pay to solve immediately?",
       },
       {
-        key: "interaction_model",
-        prompt:
-          "Describe the primary interaction pattern. How does the user move through the core flow?",
-      },
-      {
-        key: "accessibility",
-        prompt:
-          "What accessibility requirements apply? (WCAG level, keyboard nav, screen reader support)",
-      },
-      {
-        key: "design_constraints",
-        prompt:
-          "What existing design system, brand, or platform constraints must be respected?",
+        key: "expansion_path",
+        prompt: "How does this expand from the wedge into the full vision? What comes next?",
       },
     ],
   },
   {
-    name: "security-review",
-    label: "Security Review",
-    description: "OWASP threat model, trust boundaries, and security requirements.",
-    questions: [
+    name: "observation",
+    label: "Observation",
+    description: "Watch real users struggle — guided walkthroughs teach you nothing.",
+    question: "Have you watched a real user struggle with this problem? If not, that's assignment #1.",
+    subQuestions: [
       {
-        key: "trust_boundaries",
-        prompt: "Where are the trust boundaries? What data crosses them?",
+        key: "observation_method",
+        prompt: "Describe what you observed. Where did they get stuck? What workarounds did they use?",
       },
       {
-        key: "threat_model",
-        prompt: "List the top 3 threats (OWASP-aligned) relevant to this product.",
+        key: "insights",
+        prompt: "What did you learn that contradicted your assumptions?",
+      },
+    ],
+  },
+  {
+    name: "future-fit",
+    label: "Future-Fit",
+    description: "Does this survive reorg or when your champion leaves?",
+    question: "Does this survive a reorg — or does it die when your champion leaves? Is this a feature or a product?",
+    subQuestions: [
+      {
+        key: "survival_mechanism",
+        prompt: "What makes this product essential, not just nice-to-have?",
       },
       {
-        key: "auth_model",
-        prompt: "Describe the authentication and authorization model.",
-      },
-      {
-        key: "sensitive_data",
-        prompt:
-          "What sensitive data is stored or processed? How is it protected?",
-      },
-      {
-        key: "security_requirements",
-        prompt:
-          "List 3-5 non-functional security requirements (e.g., rate limiting, audit logging).",
+        key: "champion_risk",
+        prompt: "Who is your champion? What happens if they leave?",
       },
     ],
   },
@@ -174,11 +140,16 @@ type PlanStage = {
   name: string;
   status: StageStatus;
   patch_id: string | null;
+  question_prompt: string | null;
+  system_prompt: string | null;
+  answers: Record<string, string> | null;
 };
 
 type PlanSession = {
   session_id: string;
   document_id: string;
+  workspace_id: string;
+  mode: string;
   status: string;
   stages: PlanStage[];
 };
@@ -193,14 +164,14 @@ type Props = {
 // Component
 // ---------------------------------------------------------------------------
 
-export function SprintPlanningPanel({ documentId, actorId, specWizardHref }: Props) {
+export function IdeaValidationPanel({ documentId, actorId, specWizardHref }: Props) {
   const [session, setSession] = useState<PlanSession | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [authRequired, setAuthRequired] = useState(false);
   // Answers keyed by stage name → question key → answer text
   const [answers, setAnswers] = useState<Record<string, Record<string, string>>>({});
-  // Which question we're on within the current stage (0-indexed)
+  // Which sub-question we're on within the current stage (0-indexed)
   const [questionIdx, setQuestionIdx] = useState(0);
   // Patch IDs created during this session (to show a breadcrumb)
   const [createdPatches, setCreatedPatches] = useState<string[]>([]);
@@ -209,12 +180,20 @@ export function SprintPlanningPanel({ documentId, actorId, specWizardHref }: Pro
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch(`/api/documents/${documentId}/plan-sessions`);
+        const res = await fetch(`/api/documents/${documentId}/idea-validation-sessions`);
         if (!res.ok) return;
         const data = await res.json();
         const sessions: PlanSession[] = data.sessions ?? [];
         if (sessions.length > 0) {
           setSession(sessions[0]);
+          // Load persisted answers from completed stages
+          const loadedAnswers: Record<string, Record<string, string>> = {};
+          sessions[0].stages.forEach((stage) => {
+            if (stage.status === "completed" && stage.answers) {
+              loadedAnswers[stage.name] = stage.answers;
+            }
+          });
+          setAnswers(loadedAnswers);
         }
       } catch {
         // Silently ignore — user can create a new session
@@ -228,9 +207,9 @@ export function SprintPlanningPanel({ documentId, actorId, specWizardHref }: Pro
   const activeStageDef = activeStage
     ? STAGE_DEFS.find((d) => d.name === activeStage.name)
     : null;
-  const currentQuestion = activeStageDef?.questions[questionIdx] ?? null;
+  const currentQuestion = activeStageDef?.subQuestions[questionIdx] ?? null;
   const isLastQuestion =
-    activeStageDef ? questionIdx === activeStageDef.questions.length - 1 : false;
+    activeStageDef ? questionIdx === activeStageDef.subQuestions.length - 1 : false;
   const allDone =
     session !== null &&
     session.stages.every((s) => s.status === "completed" || s.status === "skipped");
@@ -240,10 +219,10 @@ export function SprintPlanningPanel({ documentId, actorId, specWizardHref }: Pro
     setError(null);
     setAuthRequired(false);
     try {
-      const res = await fetch(`/api/documents/${documentId}/plan-sessions`, {
+      const res = await fetch(`/api/documents/${documentId}/idea-validation-sessions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ actor_id: actorId, actor_type: "human" }),
+        body: JSON.stringify({ actor_id: actorId, actor_type: "human", mode: "startup" }),
       });
       if (res.status === 401) {
         setAuthRequired(true);
@@ -284,7 +263,7 @@ export function SprintPlanningPanel({ documentId, actorId, specWizardHref }: Pro
     try {
       const stageAnswers = answers[activeStage.name] ?? {};
       const res = await fetch(
-        `/api/documents/${documentId}/plan-sessions/${session.session_id}/advance`,
+        `/api/documents/${documentId}/idea-validation-sessions/${session.session_id}/advance`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -319,7 +298,7 @@ export function SprintPlanningPanel({ documentId, actorId, specWizardHref }: Pro
     setError(null);
     try {
       const res = await fetch(
-        `/api/documents/${documentId}/plan-sessions/${session.session_id}/skip-stage`,
+        `/api/documents/${documentId}/idea-validation-sessions/${session.session_id}/skip-stage`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -560,7 +539,7 @@ export function SprintPlanningPanel({ documentId, actorId, specWizardHref }: Pro
       ) : null}
 
       {/* Active stage Q&A */}
-      {session && activeStage && activeStageDef && currentQuestion && !loading ? (
+      {session && activeStage && activeStageDef && (currentQuestion || activeStageDef.subQuestions.length === 0) && !loading ? (
         <div
           style={{
             border: "1px solid rgba(28,26,23,0.12)",
@@ -597,25 +576,45 @@ export function SprintPlanningPanel({ documentId, actorId, specWizardHref }: Pro
                   marginLeft: "1rem",
                 }}
               >
-                {questionIdx + 1} / {activeStageDef.questions.length}
+                {activeStageDef.subQuestions.length > 0
+                  ? `${questionIdx + 1} / ${activeStageDef.subQuestions.length}`
+                  : "1 / 1"}
               </span>
             </div>
           </div>
 
-          {/* Question body */}
-          <div style={{ padding: "1.25rem" }}>
-            <label
-              htmlFor={`q-${currentQuestion.key}`}
+          {/* Main forcing question */}
+          <div style={{ padding: "1.25rem", borderBottom: activeStageDef.subQuestions.length > 0 ? "1px solid rgba(28,26,23,0.08)" : "none" }}>
+            <div
               style={{
-                display: "block",
-                fontWeight: 500,
-                fontSize: "0.9rem",
-                marginBottom: "0.65rem",
+                fontWeight: 600,
+                fontSize: "1rem",
+                marginBottom: "0.5rem",
                 lineHeight: 1.4,
               }}
             >
-              {currentQuestion.prompt}
-            </label>
+              {activeStageDef.question}
+            </div>
+            <p style={{ margin: 0, fontSize: "0.85rem", opacity: 0.6, fontStyle: "italic" }}>
+              This is the main forcing question for this stage.
+            </p>
+          </div>
+
+          {/* Sub-questions body */}
+          {activeStageDef.subQuestions.length > 0 && currentQuestion ? (
+            <div style={{ padding: "1.25rem" }}>
+              <label
+                htmlFor={`q-${currentQuestion.key}`}
+                style={{
+                  display: "block",
+                  fontWeight: 500,
+                  fontSize: "0.9rem",
+                  marginBottom: "0.65rem",
+                  lineHeight: 1.4,
+                }}
+              >
+                {currentQuestion.prompt}
+              </label>
             <textarea
               id={`q-${currentQuestion.key}`}
               rows={4}
@@ -698,7 +697,28 @@ export function SprintPlanningPanel({ documentId, actorId, specWizardHref }: Pro
                 Skip this stage
               </button>
             </div>
-          </div>
+            </div>
+          ) : (
+            <div style={{ padding: "1.25rem" }}>
+              <button
+                type="button"
+                onClick={completeStage}
+                disabled={loading}
+                style={{
+                  padding: "0.5rem 1.1rem",
+                  borderRadius: "999px",
+                  background: "#1c1a17",
+                  color: "#fffbf6",
+                  border: "none",
+                  cursor: loading ? "not-allowed" : "pointer",
+                  fontSize: "0.85rem",
+                  fontWeight: 500,
+                }}
+              >
+                Complete {activeStageDef.label}
+              </button>
+            </div>
+          )}
         </div>
       ) : null}
 

@@ -49,7 +49,7 @@ import {
   loadActiveWorkspaceDocumentState,
 } from "@/lib/specforge/workspace-document-state";
 import { loadWorkspaceSummary } from "@/lib/specforge/workspace-summary";
-import { SprintPlanningPanel } from "@/components/specforge/SprintPlanningPanel";
+import { IdeaValidationPanel } from "@/components/specforge/SprintPlanningPanel";
 import { AcceptanceTestSection } from "@/components/specforge/AcceptanceTestSection";
 import { getTestMatrix } from "@/lib/specforge/acceptance-tests";
 import { getAcceptanceTestDb } from "@/lib/specforge/acceptance-test-db";
@@ -1226,7 +1226,7 @@ export default async function Home({ searchParams }: Props) {
                 <span>Act 1 — optional</span>
               </div>
               {activeDocument ? (
-                <SprintPlanningPanel
+                <IdeaValidationPanel
                   documentId={activeDocument.document_id}
                   actorId={activeWorkspaceActor.actor_id}
                   specWizardHref={buildStageHref(activeDocument.document_id, "draft")}
