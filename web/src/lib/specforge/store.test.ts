@@ -10,8 +10,10 @@ import {
   createCommentThread,
   createClarification,
   createDocument,
+  createWorkspaceFile,
   createWorkspaceMembership,
   createPilotAccessRequest,
+  deleteWorkspaceFile,
   deleteWorkspaceMembership,
   decidePatch,
   createPatchProposal,
@@ -20,10 +22,13 @@ import {
   getWorkspaceActivityMetrics,
   getWorkspaceUsageSummary,
   getDocument,
+  getWorkspaceFile,
+  getWorkspaceFileByName,
   listAuditEvents,
   listCommentThreads,
   listClarifications,
   listDocuments,
+  listWorkspaceFiles,
   listWorkspaceMemberships,
   listWorkspaceRecords,
   listPatches,
@@ -32,6 +37,7 @@ import {
   resetStoreCacheForTests,
   resetWorkspaceDocuments,
   resolveCommentThread,
+  updateWorkspaceFile,
   updateWorkspaceMembershipRole,
   updateWorkspacePlan,
   updateDocument,
@@ -613,5 +619,166 @@ describe("specforge store", () => {
     expect(config.backend).toBe("postgres");
     expect(config.database_url_configured).toBe(true);
     expect(config.mode).toBe("postgres_pool");
+  });
+
+  it("creates and retrieves workspace files", async () => {
+    const options = await makeOptions();
+    const document = await createDocument(
+      { workspace_id: "test-ws", title: "Test Doc", initial_markdown: "# Test" },
+      options,
+    );
+
+    const file = await createWorkspaceFile(
+      {
+        document_id: document!.document_id,
+        filename: "TEST.md",
+        content: "# Test File",
+        file_type: "markdown",
+      },
+      options,
+    );
+
+    expect(file).toBeDefined();
+    expect(file.filename).toBe("TEST.md");
+    expect(file.content).toBe("# Test File");
+
+    const retrieved = await getWorkspaceFile(file.file_id, options);
+    expect(retrieved?.filename).toBe("TEST.md");
+  });
+
+  it("lists workspace files for a document", async () => {
+    const options = await makeOptions();
+    const document = await createDocument(
+      { workspace_id: "test-ws", title: "Test Doc", initial_markdown: "# Test" },
+      options,
+    );
+
+    await createWorkspaceFile(
+      {
+        document_id: document!.document_id,
+        filename: "FILE1.md",
+        content: "Content 1",
+        file_type: "markdown",
+      },
+      options,
+    );
+    await createWorkspaceFile(
+      {
+        document_id: document!.document_id,
+        filename: "FILE2.md",
+        content: "Content 2",
+        file_type: "markdown",
+      },
+      options,
+    );
+
+    const files = await listWorkspaceFiles(document!.document_id, options);
+    expect(files).toHaveLength(2);
+    expect(files.map((f) => f.filename)).toEqual(expect.arrayContaining(["FILE1.md", "FILE2.md"]));
+  });
+
+  it("gets workspace file by name", async () => {
+    const options = await makeOptions();
+    const document = await createDocument(
+      { workspace_id: "test-ws", title: "Test Doc", initial_markdown: "# Test" },
+      options,
+    );
+
+    await createWorkspaceFile(
+      {
+        document_id: document!.document_id,
+        filename: "SPECIFIC.md",
+        content: "Specific content",
+        file_type: "markdown",
+      },
+      options,
+    );
+
+    const file = await getWorkspaceFileByName(document!.document_id, "SPECIFIC.md", options);
+    expect(file?.content).toBe("Specific content");
+  });
+
+  it("updates workspace file content", async () => {
+    const options = await makeOptions();
+    const document = await createDocument(
+      { workspace_id: "test-ws", title: "Test Doc", initial_markdown: "# Test" },
+      options,
+    );
+
+    const file = await createWorkspaceFile(
+      {
+        document_id: document!.document_id,
+        filename: "UPDATE.md",
+        content: "Original",
+        file_type: "markdown",
+      },
+      options,
+    );
+
+    const updated = await updateWorkspaceFile(
+      file.file_id,
+      { content: "Updated content" },
+      options,
+    );
+
+    expect(updated?.content).toBe("Updated content");
+
+    const retrieved = await getWorkspaceFile(file.file_id, options);
+    expect(retrieved?.content).toBe("Updated content");
+  });
+
+  it("deletes workspace files", async () => {
+    const options = await makeOptions();
+    const document = await createDocument(
+      { workspace_id: "test-ws", title: "Test Doc", initial_markdown: "# Test" },
+      options,
+    );
+
+    const file = await createWorkspaceFile(
+      {
+        document_id: document!.document_id,
+        filename: "DELETE.md",
+        content: "To delete",
+        file_type: "markdown",
+      },
+      options,
+    );
+
+    await deleteWorkspaceFile(file.file_id, options);
+
+    const retrieved = await getWorkspaceFile(file.file_id, options);
+    expect(retrieved).toBeNull();
+  });
+
+  it("upserts workspace files on duplicate filename", async () => {
+    const options = await makeOptions();
+    const document = await createDocument(
+      { workspace_id: "test-ws", title: "Test Doc", initial_markdown: "# Test" },
+      options,
+    );
+
+    const first = await createWorkspaceFile(
+      {
+        document_id: document!.document_id,
+        filename: "UPSERT.md",
+        content: "First",
+        file_type: "markdown",
+      },
+      options,
+    );
+
+    const second = await createWorkspaceFile(
+      {
+        document_id: document!.document_id,
+        filename: "UPSERT.md",
+        content: "Second",
+        file_type: "markdown",
+      },
+      options,
+    );
+
+    // Should have updated the content but kept the same file_id
+    expect(second.content).toBe("Second");
+    expect(second.file_id).toBe(first.file_id); // Same file_id on upsert
   });
 });
