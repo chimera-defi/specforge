@@ -140,51 +140,65 @@ export const storeSchema = z.object({
   patches: z.array(storedPatchSchema),
 });
 
-export const PLAN_STAGE_NAMES = [
-  "discovery",
-  "ceo-review",
-  "eng-review",
-  "design-review",
-  "security-review",
+export const IDEA_VALIDATION_STAGE_NAMES = [
+  "demand-reality",
+  "status-quo",
+  "desperate-specificity",
+  "narrowest-wedge",
+  "observation",
+  "future-fit",
 ] as const;
-export type PlanStageName = (typeof PLAN_STAGE_NAMES)[number];
+export type IdeaValidationStageName = (typeof IDEA_VALIDATION_STAGE_NAMES)[number];
 
-export const planStageSchema = z.object({
+// Legacy aliases for backward compatibility
+export const PLAN_STAGE_NAMES = IDEA_VALIDATION_STAGE_NAMES;
+export type PlanStageName = IdeaValidationStageName;
+
+export const ideaValidationStageSchema = z.object({
   stage_id: z.string().min(1),
   session_id: z.string().min(1),
   document_id: z.string().min(1),
-  name: z.enum(PLAN_STAGE_NAMES),
+  name: z.enum(IDEA_VALIDATION_STAGE_NAMES),
   status: z.enum(["pending", "in_progress", "completed", "skipped"]),
   patch_id: z.string().nullable(),
+  question_prompt: z.string().nullable(),
+  system_prompt: z.string().nullable(),
   outputs: z.record(z.string(), z.unknown()).nullable(),
   answers: z.record(z.string(), z.string()).nullable(),
   created_at: z.string().min(1),
   updated_at: z.string().min(1),
 });
 
-export const planSessionSchema = z.object({
+// Legacy alias
+export const planStageSchema = ideaValidationStageSchema;
+
+export const ideaValidationSessionSchema = z.object({
   session_id: z.string().min(1),
   document_id: z.string().min(1),
   workspace_id: z.string().min(1),
+  mode: z.enum(["startup", "builder"]).default("startup"),
   status: z.enum(["active", "completed", "abandoned"]),
-  stages: z.array(planStageSchema),
+  stages: z.array(ideaValidationStageSchema),
   created_at: z.string().min(1),
   updated_at: z.string().min(1),
 });
+
+// Legacy alias
+export const planSessionSchema = ideaValidationSessionSchema;
 
 export const planSessionCreateSchema = z.object({
   document_id: z.string().min(1),
 });
 
 export const planStageAdvanceSchema = z.object({
-  stage_name: z.enum(PLAN_STAGE_NAMES),
+  stage_name: z.enum(IDEA_VALIDATION_STAGE_NAMES),
   answers: z.record(z.string(), z.string()),
   actor_id: z.string().min(1),
   actor_type: z.enum(["human", "agent"]).default("human"),
 });
 
 export const planStageSkipSchema = z.object({
-  stage_name: z.enum(PLAN_STAGE_NAMES),
+  stage_name: z.enum(IDEA_VALIDATION_STAGE_NAMES),
   actor_id: z.string().min(1),
 });
 
@@ -200,6 +214,10 @@ export type PlanSessionCreateInput = z.infer<typeof planSessionCreateSchema>;
 export type PlanStageAdvanceInput = z.infer<typeof planStageAdvanceSchema>;
 export type PlanStageSkipInput = z.infer<typeof planStageSkipSchema>;
 export type IterationRequestInput = z.infer<typeof iterationRequestSchema>;
+
+// New type exports for idea validation
+export type IdeaValidationStage = z.infer<typeof ideaValidationStageSchema>;
+export type IdeaValidationSession = z.infer<typeof ideaValidationSessionSchema>;
 
 export type DocumentCreateInput = z.infer<typeof documentCreateSchema>;
 export type DocumentUpdateInput = z.infer<typeof documentUpdateSchema>;

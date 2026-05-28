@@ -60,9 +60,13 @@ export async function POST(_request: Request, { params }: Params) {
             stages: [],
           };
 
-      // Determine whether design/security sections are present based on stage completion
-      const designStage = session?.stages.find((s) => s.name === "design-review");
-      const securityStage = session?.stages.find((s) => s.name === "security-review");
+      // Determine which idea validation stages are completed and include their outputs
+      const demandRealityStage = session?.stages.find((s) => s.name === "demand-reality");
+      const statusQuoStage = session?.stages.find((s) => s.name === "status-quo");
+      const desperateSpecificityStage = session?.stages.find((s) => s.name === "desperate-specificity");
+      const narrowestWedgeStage = session?.stages.find((s) => s.name === "narrowest-wedge");
+      const observationStage = session?.stages.find((s) => s.name === "observation");
+      const futureFitStage = session?.stages.find((s) => s.name === "future-fit");
 
       const exportBundle: Record<string, unknown> = {
         prd: bundle.files["PRD.md"],
@@ -71,12 +75,53 @@ export async function POST(_request: Request, { params }: Params) {
         agentSpec: bundle.files["agent_spec.json"],
       };
 
-      if (designStage?.status === "completed" && designStage.outputs) {
-        exportBundle.designSystem = Object.values(designStage.outputs).join("\n\n");
+      // Include idea validation outputs in the export
+      const ideaValidationOutputs: Record<string, unknown> = {};
+      if (demandRealityStage?.status === "completed") {
+        ideaValidationOutputs.demandReality = {
+          answers: demandRealityStage.answers,
+          outputs: demandRealityStage.outputs,
+          question: demandRealityStage.question_prompt,
+        };
+      }
+      if (statusQuoStage?.status === "completed") {
+        ideaValidationOutputs.statusQuo = {
+          answers: statusQuoStage.answers,
+          outputs: statusQuoStage.outputs,
+          question: statusQuoStage.question_prompt,
+        };
+      }
+      if (desperateSpecificityStage?.status === "completed") {
+        ideaValidationOutputs.desperateSpecificity = {
+          answers: desperateSpecificityStage.answers,
+          outputs: desperateSpecificityStage.outputs,
+          question: desperateSpecificityStage.question_prompt,
+        };
+      }
+      if (narrowestWedgeStage?.status === "completed") {
+        ideaValidationOutputs.narrowestWedge = {
+          answers: narrowestWedgeStage.answers,
+          outputs: narrowestWedgeStage.outputs,
+          question: narrowestWedgeStage.question_prompt,
+        };
+      }
+      if (observationStage?.status === "completed") {
+        ideaValidationOutputs.observation = {
+          answers: observationStage.answers,
+          outputs: observationStage.outputs,
+          question: observationStage.question_prompt,
+        };
+      }
+      if (futureFitStage?.status === "completed") {
+        ideaValidationOutputs.futureFit = {
+          answers: futureFitStage.answers,
+          outputs: futureFitStage.outputs,
+          question: futureFitStage.question_prompt,
+        };
       }
 
-      if (securityStage?.status === "completed" && securityStage.outputs) {
-        exportBundle.security = Object.values(securityStage.outputs).join("\n\n");
+      if (Object.keys(ideaValidationOutputs).length > 0) {
+        exportBundle.ideaValidation = ideaValidationOutputs;
       }
 
       const handoff = {
