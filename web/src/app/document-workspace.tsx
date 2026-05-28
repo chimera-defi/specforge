@@ -239,26 +239,14 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
           event.preventDefault();
           handleRefreshFromDatabase();
         }
-        // Ctrl/Cmd + Shift + A: Open AI assist
-        if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'A') {
-          event.preventDefault();
-          const assistButton = window.document.querySelector('button:has-text("Improve with AI")') as HTMLButtonElement;
-          if (assistButton) {
-            assistButton.click();
-          }
-        }
-        // Escape: Close any open panels
-        if (event.key === 'Escape') {
-          const closeButton = window.document.querySelector('button[aria-label="Close"]') as HTMLButtonElement;
-          if (closeButton) {
-            closeButton.click();
-          }
-          setShowHelp(false);
-        }
-        // Ctrl/Cmd + ?: Show help
-        if ((event.ctrlKey || event.metaKey) && event.key === '?') {
+        // Ctrl/Cmd + ?: Show help (handle both ? and / for different keyboard layouts)
+        if ((event.ctrlKey || event.metaKey) && (event.key === '?' || event.key === '/')) {
           event.preventDefault();
           setShowHelp(prev => !prev);
+        }
+        // Escape: Close help overlay
+        if (event.key === 'Escape') {
+          setShowHelp(false);
         }
       };
 
@@ -860,7 +848,7 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
             cursor: "pointer",
             transition: "opacity 0.15s",
           }}
-          title="Keyboard shortcuts (Ctrl+?)"
+          title="Keyboard shortcuts (Ctrl+/)"
         >
           ⌨️ Help
         </button>
@@ -935,9 +923,8 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
             <h2 style={{ margin: "0 0 1rem 0" }}>Keyboard Shortcuts</h2>
             <ul style={{ margin: 0, paddingLeft: "1.5rem" }}>
               <li style={{ marginBottom: "0.5rem" }}><strong>Ctrl/Cmd + S</strong> - Refresh from database</li>
-              <li style={{ marginBottom: "0.5rem" }}><strong>Ctrl/Cmd + Shift + A</strong> - Open AI assist</li>
-              <li style={{ marginBottom: "0.5rem" }}><strong>Ctrl/Cmd + ?</strong> - Show this help</li>
-              <li style={{ marginBottom: "0.5rem" }}><strong>Escape</strong> - Close panels / dialogs</li>
+              <li style={{ marginBottom: "0.5rem" }}><strong>Ctrl/Cmd + ?</strong> - Show/hide this help</li>
+              <li style={{ marginBottom: "0.5rem" }}><strong>Escape</strong> - Close help overlay</li>
             </ul>
             <button
               type="button"
