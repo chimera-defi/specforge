@@ -768,6 +768,8 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
             <strong>Blocks:</strong> {document.blocks.length}
             {" · "}
             <strong>Version:</strong> {document.version}
+            {" · "}
+            <strong>Last updated:</strong> {new Date(document.updated_at).toLocaleDateString()}
           </div>
           {document.sections.length > 0 && (
             <div className="documentSections">
