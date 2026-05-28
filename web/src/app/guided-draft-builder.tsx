@@ -11,6 +11,73 @@ import {
   type GuidedSpecInput,
 } from "@/lib/specforge/guided";
 
+type AssistPreset = "idea-to-spec" | "block-iteration" | "clarification-answer" | "design-feedback" | "planning-assist";
+
+const PRESET_SYSTEM_PROMPTS: Record<AssistPreset, string> = {
+  "idea-to-spec": `You are an expert product manager and technical architect. Your goal is to transform a rough idea into a comprehensive, actionable product specification.
+
+GUIDELINES:
+- Generate a complete spec covering problem, users, goals, scope, requirements, constraints, UX, success signals, and implementation tasks
+- Be specific and concrete - avoid generic filler
+- Include measurable success criteria
+- Define clear scope boundaries (what's IN and what's OUT)
+- Consider technical feasibility and constraints
+- Structure the output to be immediately useful for implementation planning
+
+QUALITY CHECKLIST:
+- Problem: Is it concrete? Does it describe real pain?
+- Goals: Are they measurable? Can you tell when they're achieved?
+- Users: Are they specific personas, not "everyone"?
+- Scope: Is it bounded? What's explicitly OUT of scope?
+- Requirements: Are they actionable and testable?
+- Tasks: Can a developer execute these without clarification?
+
+Return structured JSON with all spec fields populated.`,
+  "block-iteration": `You are a technical editor helping improve a specific section of a product specification.
+
+GUIDELINES:
+- Keep the same structure and tone as the existing content
+- Make changes concrete and actionable
+- Preserve the original intent while improving clarity and completeness
+- Add missing details that would be helpful for implementation
+- Remove ambiguity where possible
+- Maintain consistency with the rest of the spec
+
+Return the improved section content.`,
+  "clarification-answer": `You are a product specification expert helping answer clarification questions.
+
+GUIDELINES:
+- Answer the question directly and concisely
+- Provide enough detail to resolve the ambiguity
+- If the question reveals a gap in the spec, acknowledge it and suggest how to fill it
+- Keep answers implementation-focused
+- Avoid scope creep - stay within the stated product boundaries
+
+Return the answer.`,
+  "design-feedback": `You are a UX/UI design expert providing design review feedback.
+
+GUIDELINES:
+- Focus on user experience and interface design
+- Evaluate information architecture and content organization
+- Check for accessibility and usability issues
+- Suggest improvements to visual hierarchy and layout
+- Ensure design supports the stated user goals
+- Provide concrete, actionable recommendations
+
+Return your design feedback.`,
+  "planning-assist": `You are a senior architect helping with implementation planning.
+
+GUIDELINES:
+- Break down complex features into manageable tasks
+- Identify dependencies between tasks
+- Consider technical constraints and feasibility
+- Suggest appropriate implementation order
+- Highlight potential risks and mitigation strategies
+- Ensure tasks are concrete and actionable
+
+Return the implementation plan.`,
+};
+
 type Props = {
   initialValues?: Partial<GuidedSpecInput>;
   toolStatuses: AgentAssistToolStatus[];
@@ -48,6 +115,7 @@ export function GuidedDraftBuilder({
   const [tool, setTool] = useState<"auto" | "codex_cli" | "claude_cli" | "heuristic">(
     preferredTool,
   );
+  const [assistPreset, setAssistPreset] = useState<AssistPreset>("idea-to-spec");
   const [assistNotes, setAssistNotes] = useState<string[]>([]);
   const [assistSource, setAssistSource] = useState<string>("No assist run yet.");
   const [isPending, startTransition] = useTransition();
@@ -68,6 +136,9 @@ export function GuidedDraftBuilder({
     }
 
     startTransition(async () => {
+      // Use the system prompt from the selected preset
+      const systemPrompt = PRESET_SYSTEM_PROMPTS[assistPreset];
+
       const response = await fetch("/api/agent/assist", {
         method: "POST",
         headers: {
@@ -76,6 +147,8 @@ export function GuidedDraftBuilder({
         body: JSON.stringify({
           brief,
           tool,
+          systemPrompt,
+          contextPrompt: "",
         }),
       });
 
@@ -158,6 +231,22 @@ export function GuidedDraftBuilder({
               <option value="codex_cli">Codex CLI</option>
               <option value="claude_cli">Claude Code CLI</option>
               <option value="heuristic">Built-in fallback</option>
+            </select>
+          </label>
+          <label>
+            Assist preset
+            <select
+              value={assistPreset}
+              onChange={(event) =>
+                setAssistPreset(event.target.value as AssistPreset)
+              }
+              className={styles.selectInput}
+            >
+              <option value="idea-to-spec">Idea to Spec (full spec generation)</option>
+              <option value="block-iteration">Block Iteration (improve section)</option>
+              <option value="clarification-answer">Clarification Answer</option>
+              <option value="design-feedback">Design Feedback</option>
+              <option value="planning-assist">Planning Assist</option>
             </select>
           </label>
           <div className={styles.inlineActions}>

@@ -178,7 +178,11 @@ function inferDomain(lower: string): { users: string[]; outOfScope: string[] } {
   };
 }
 
-export function buildHeuristicSuggestion(brief: string): AgentAssistSuggestion {
+export function buildHeuristicSuggestion(
+  brief: string,
+  _systemPrompt?: string,
+  _contextPrompt?: string,
+): AgentAssistSuggestion {
   const normalizedBrief = brief.trim();
   const sentences = normalizedBrief
     .split(/(?<=[.!?])\s+/)
@@ -408,8 +412,12 @@ export const getAgentAssistToolStatuses = cache(async (): Promise<AgentAssistToo
   ];
 });
 
-function buildAssistPrompt(brief: string) {
-  return [
+export function buildAssistPrompt(
+  brief: string,
+  systemPrompt?: string,
+  contextPrompt?: string,
+) {
+  const defaultSystemPrompt = [
     "You are an expert product manager filling structured guided-spec fields for SpecForge.",
     "Your goal: transform the user's rough idea into a concrete, actionable product specification.",
     "",
@@ -429,13 +437,29 @@ function buildAssistPrompt(brief: string) {
     "- Users: Are they specific personas, not 'everyone'?",
     "- Scope: Is it bounded? What's explicitly OUT of scope?",
     "- Tasks: Can a developer execute these without clarification?",
+  ];
+
+  const finalSystemPrompt = systemPrompt || defaultSystemPrompt.join("\n");
+  
+  const parts = [
+    finalSystemPrompt,
     "",
-    "Idea brief:",
-    brief.trim(),
-  ].join("\n");
+  ];
+
+  if (contextPrompt) {
+    parts.push("Context:", contextPrompt, "");
+  }
+
+  parts.push("Idea brief:", brief.trim());
+
+  return parts.join("\n");
 }
 
-async function runCodexAssist(brief: string) {
+async function runCodexAssist(
+  brief: string,
+  systemPrompt?: string,
+  contextPrompt?: string,
+) {
   const tempDir = await mkdtemp(path.join(os.tmpdir(), "specforge-assist-"));
   const schemaPath = path.join(tempDir, "guided-spec.schema.json");
   const outputPath = path.join(tempDir, "guided-spec.output.json");
@@ -453,7 +477,7 @@ async function runCodexAssist(brief: string) {
         schemaPath,
         "-o",
         outputPath,
-        buildAssistPrompt(brief),
+        buildAssistPrompt(brief, systemPrompt, contextPrompt),
       ],
       {
         timeout: 60_000,
@@ -476,14 +500,18 @@ async function runCodexAssist(brief: string) {
   }
 }
 
-async function runClaudeAssist(brief: string) {
+async function runClaudeAssist(
+  brief: string,
+  systemPrompt?: string,
+  contextPrompt?: string,
+) {
   const tempDir = await mkdtemp(path.join(os.tmpdir(), "specforge-claude-assist-"));
   const schemaPath = path.join(tempDir, "guided-spec.schema.json");
   const promptPath = path.join(tempDir, "guided-spec.prompt.txt");
 
   try {
     await writeFile(schemaPath, JSON.stringify(assistJsonSchema, null, 2));
-    await writeFile(promptPath, buildAssistPrompt(brief));
+    await writeFile(promptPath, buildAssistPrompt(brief, systemPrompt, contextPrompt));
 
     const { stdout } = await execFileAsync(
       "bash",
@@ -520,20 +548,24 @@ async function runClaudeAssist(brief: string) {
   }
 }
 
-async function runDevinAssist(brief: string) {
+async function runDevinAssist(
+  brief: string,
+  systemPrompt?: string,
+  contextPrompt?: string,
+) {
   const tempDir = await mkdtemp(path.join(os.tmpdir(), "specforge-devin-assist-"));
   const schemaPath = path.join(tempDir, "guided-spec.schema.json");
   const promptPath = path.join(tempDir, "guided-spec.prompt.txt");
 
   try {
     await writeFile(schemaPath, JSON.stringify(assistJsonSchema, null, 2));
-    await writeFile(promptPath, buildAssistPrompt(brief));
+    await writeFile(promptPath, buildAssistPrompt(brief, systemPrompt, contextPrompt));
 
     const { stdout } = await execFileAsync(
       "bash",
       [
         "-lc",
-        'devin -p --model claude-sonnet-4 -- "$(cat "$1")" < /dev/null',
+        'devin -p --model claude-sonnet-4.6 -- "$(cat "$1")" < /dev/null',
         promptPath,
       ],
       {
@@ -593,6 +625,8 @@ function resolveRequestedTool(
 export async function suggestGuidedSpecInput(input: {
   brief: string;
   requestedTool?: AgentAssistToolId;
+  systemPrompt?: string;
+  contextPrompt?: string;
 }) {
   const session = await getCurrentWorkspaceSession();
   const statuses = await getAgentAssistToolStatuses();
@@ -608,15 +642,15 @@ export async function suggestGuidedSpecInput(input: {
 
   try {
     if (requestedTool === "devin_cli") {
-      return { statuses, ...(await runDevinAssist(input.brief)) };
+      return { statuses, ...(await runDevinAssist(input.brief, input.systemPrompt, input.contextPrompt)) };
     }
 
     if (requestedTool === "codex_cli") {
-      return { statuses, ...(await runCodexAssist(input.brief)) };
+      return { statuses, ...(await runCodexAssist(input.brief, input.systemPrompt, input.contextPrompt)) };
     }
 
     if (requestedTool === "claude_cli") {
-      return { statuses, ...(await runClaudeAssist(input.brief)) };
+      return { statuses, ...(await runClaudeAssist(input.brief, input.systemPrompt, input.contextPrompt)) };
     }
   } catch (error) {
     notes.push(
@@ -626,7 +660,7 @@ export async function suggestGuidedSpecInput(input: {
     );
   }
 
-  const heuristic = buildHeuristicSuggestion(input.brief);
+  const heuristic = buildHeuristicSuggestion(input.brief, input.systemPrompt, input.contextPrompt);
   return {
     statuses,
     tool: heuristic.tool,

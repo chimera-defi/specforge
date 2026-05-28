@@ -3,76 +3,68 @@
 /**
  * AIAssistButton
  *
- * Reusable AI assist button component that can be used in different contexts.
+ * Reusable AI assist button component with configurable prompts and guidance
+ * for different contexts (idea-to-spec, block iteration, clarifications, etc.).
  * 
  * ## Usage Examples
  * 
- * ### Inline Mode (expands to show input)
+ * ### Idea-to-Spec Mode (default guidance included)
+ * ```tsx
+ * <AIAssistButton
+ *   mode="inline"
+ *   preset="idea-to-spec"
+ *   toolStatuses={toolStatuses}
+ *   onAssist={async (tool, input, systemPrompt, contextPrompt) => {
+ *     // API receives all prompts
+ *     await fetch('/api/agent/assist', {
+ *       method: 'POST',
+ *       body: JSON.stringify({ tool, input, systemPrompt, contextPrompt }),
+ *     });
+ *   }}
+ * />
+ * ```
+ * 
+ * ### Custom Prompt Mode with Context Variables
  * ```tsx
  * <AIAssistButton
  *   mode="inline"
  *   label="Iterate with AI"
+ *   systemPrompt="You are a technical reviewer. Focus on code quality."
+ *   contextPrompt="Section: {sectionHeading}. Current content: {currentContent}"
+ *   contextVars={{ sectionHeading: "Architecture", currentContent: "..." }}
  *   toolStatuses={toolStatuses}
- *   selectedTool="auto"
- *   onToolChange={(tool) => setSelectedTool(tool)}
- *   onAssist={async (tool, input) => {
- *     // Call your API endpoint
- *     await fetch('/api/ai/assist', {
- *       method: 'POST',
- *       body: JSON.stringify({ tool, input }),
- *     });
- *   }}
- *   placeholder="Describe what to change..."
- *   cliAssistEnabled={true}
+ *   onAssist={handleAssist}
  * />
  * ```
  * 
- * ### Panel Mode (shows tool selection and input)
+ * ### Block Iteration Mode
  * ```tsx
  * <AIAssistButton
- *   mode="panel"
- *   label="Populate fields with AI"
+ *   mode="inline"
+ *   preset="block-iteration"
+ *   contextPrompt="Section: {heading}. Current: {content}"
+ *   contextVars={{ heading: "Architecture", content: "..." }}
  *   toolStatuses={toolStatuses}
- *   selectedTool="auto"
- *   onAssist={async (tool, input) => {
- *     // Handle AI assist
- *   }}
- *   placeholder="Describe your idea..."
+ *   onAssist={handleIteration}
  * />
  * ```
  * 
- * ### Simple Mode (just a button)
- * ```tsx
- * <AIAssistButton
- *   mode="simple"
- *   label="AI Assist"
- *   onAssist={async (tool, input) => {
- *     // Handle AI assist with predefined input
- *   }}
- *   loading={isLoading}
- * />
- * ```
+ * ## Preset Modes
  * 
- * ## Required API Endpoints
+ * - `idea-to-spec`: Generate full spec from idea (includes comprehensive default guidance)
+ * - `block-iteration`: Iterate on a specific document section
+ * - `clarification-answer`: Answer a clarification question
+ * - `design-feedback`: Provide design review feedback
+ * - `planning-assist`: Help with planning stage questions
+ * - `custom`: Use fully custom prompts
  * 
- * To use this component, you'll need to implement API endpoints that:
- * 1. Accept the tool type and input text
- * 2. Call the appropriate AI CLI (Codex, Claude, Devin, or heuristic)
- * 3. Return the result to update your UI
+ * Each preset includes appropriate default system and context prompts.
+ * Use `systemPrompt` and `contextPrompt` props to override defaults.
  * 
- * See existing implementations:
- * - `/api/agent/assist` - Used by guided-draft-builder
- * - `/api/documents/[id]/sections/[blockId]/iterate` - Used by IterateWithAI
+ * ## Context Variables
  * 
- * ## Future Integration Points
- * 
- * Consider adding AIAssistButton to:
- * - ClarificationQueue - Help draft clarification answers
- * - SprintPlanningPanel - Assist with planning stage answers
- * - document-workspace - Document-level AI assist
- * - design-handoff-panel - AI-powered design feedback
- * 
- * Each integration will require a corresponding API endpoint.
+ * Use `{variableName}` in contextPrompt to interpolate values from contextVars.
+ * This allows dynamic prompt construction based on runtime state.
  */
 
 import { useState } from "react";
@@ -81,6 +73,14 @@ export type AIAssistMode = "inline" | "panel" | "simple";
 
 export type AIAssistTool = "auto" | "codex_cli" | "claude_cli" | "devin_cli" | "heuristic";
 
+export type AIAssistPreset = 
+  | "idea-to-spec"
+  | "block-iteration"
+  | "clarification-answer"
+  | "design-feedback"
+  | "planning-assist"
+  | "custom";
+
 type ToolStatus = {
   id: AIAssistTool;
   label: string;
@@ -88,10 +88,135 @@ type ToolStatus = {
   detail: string;
 };
 
+// Default prompts for each preset
+const PRESET_PROMPTS: Record<
+  AIAssistPreset,
+  { systemPrompt: string; contextPrompt: string; placeholder: string; defaultLabel: string }
+> = {
+  "idea-to-spec": {
+    systemPrompt: `You are an expert product manager and technical architect. Your goal is to transform a rough idea into a comprehensive, actionable product specification.
+
+GUIDELINES:
+- Generate a complete spec covering problem, users, goals, scope, requirements, constraints, UX, success signals, and implementation tasks
+- Be specific and concrete - avoid generic filler
+- Include measurable success criteria
+- Define clear scope boundaries (what's IN and what's OUT)
+- Consider technical feasibility and constraints
+- Structure the output to be immediately useful for implementation planning
+
+QUALITY CHECKLIST:
+- Problem: Is it concrete? Does it describe real pain?
+- Goals: Are they measurable? Can you tell when they're achieved?
+- Users: Are they specific personas, not "everyone"?
+- Scope: Is it bounded? What's explicitly OUT of scope?
+- Requirements: Are they actionable and testable?
+- Tasks: Can a developer execute these without clarification?
+
+Return structured JSON with all spec fields populated.`,
+    contextPrompt: "",
+    placeholder: "Describe your product idea in a few sentences (what it does, who it's for, why it matters)...",
+    defaultLabel: "Generate spec from idea",
+  },
+  "block-iteration": {
+    systemPrompt: `You are a technical editor helping improve a specific section of a product specification.
+
+GUIDELINES:
+- Keep the same structure and tone as the existing content
+- Make changes concrete and actionable
+- Preserve the original intent while improving clarity and completeness
+- Add missing details that would be helpful for implementation
+- Remove ambiguity where possible
+- Maintain consistency with the rest of the spec
+
+Return the improved section content.`,
+    contextPrompt: "",
+    placeholder: "Describe what to change in this section (e.g., 'Make the success criteria more specific', 'Add technical constraints')...",
+    defaultLabel: "Iterate with AI",
+  },
+  "clarification-answer": {
+    systemPrompt: `You are a product specification expert helping answer clarification questions.
+
+GUIDELINES:
+- Answer the question directly and concisely
+- Provide enough detail to resolve the ambiguity
+- If the question reveals a gap in the spec, acknowledge it and suggest how to fill it
+- Keep answers implementation-focused
+- Avoid scope creep - stay within the stated product boundaries
+
+Return a clear, actionable answer that can be written into the spec.`,
+    contextPrompt: "",
+    placeholder: "Describe the clarification answer...",
+    defaultLabel: "Get AI answer",
+  },
+  "design-feedback": {
+    systemPrompt: `You are a UX/UI design reviewer providing feedback on design specifications.
+
+GUIDELINES:
+- Focus on user experience and usability
+- Identify potential friction points or confusing elements
+- Suggest improvements that align with the product goals
+- Consider accessibility and responsive design
+- Be specific about what to change and why
+- Balance creativity with practicality
+
+Return specific, actionable design feedback.`,
+    contextPrompt: "",
+    placeholder: "Describe what aspect of the design to review...",
+    defaultLabel: "Get design feedback",
+  },
+  "planning-assist": {
+    systemPrompt: `You are a senior technical architect helping answer planning stage questions.
+
+GUIDELINES:
+- Provide concrete, specific answers to planning questions
+- Consider technical feasibility and trade-offs
+- Reference industry best practices where appropriate
+- Keep answers aligned with the stated product scope
+- Highlight any risks or dependencies
+- Make recommendations that can be implemented in the current iteration
+
+Return clear, actionable planning answers.`,
+    contextPrompt: "",
+    placeholder: "Provide context about the planning stage and your question...",
+    defaultLabel: "Get planning help",
+  },
+  "custom": {
+    systemPrompt: "",
+    contextPrompt: "",
+    placeholder: "Describe what you need help with...",
+    defaultLabel: "AI Assist",
+  },
+};
+
+/**
+ * Interpolate context variables into a prompt template
+ * Replaces {variableName} with values from contextVars
+ */
+function resolveContextPrompt(
+  template: string,
+  contextVars?: Record<string, string>,
+): string {
+  if (!template || !contextVars) return template;
+  
+  let result = template;
+  for (const [key, value] of Object.entries(contextVars)) {
+    result = result.replaceAll(`{${key}}`, value);
+  }
+  return result;
+}
+
 type Props = {
   /** Mode determines the UI behavior */
   mode?: AIAssistMode;
-  /** Button label */
+  /** Preset mode for default prompts (overrides custom prompts if not provided) */
+  preset?: AIAssistPreset;
+  /** Custom system prompt (overrides preset if provided) */
+  systemPrompt?: string;
+  /** Custom context/prompt to inject (supports {var} interpolation) */
+  contextPrompt?: string;
+  /** Additional context variables for dynamic prompt interpolation */
+  contextVars?: Record<string, string>;
+  /** Button label (overrides preset default) */
   label?: string;
   /** Button icon (optional) */
   icon?: React.ReactNode;
@@ -101,9 +226,14 @@ type Props = {
   selectedTool?: AIAssistTool;
   /** Callback when tool selection changes */
   onToolChange?: (tool: AIAssistTool) => void;
-  /** Callback when assist is triggered */
-  onAssist: (tool: AIAssistTool, input: string) => Promise<void>;
-  /** Placeholder for input field */
+  /** Callback when assist is triggered - receives all prompts */
+  onAssist: (
+    tool: AIAssistTool,
+    input: string,
+    systemPrompt: string,
+    contextPrompt: string,
+  ) => Promise<void>;
+  /** Placeholder for input field (overrides preset) */
   placeholder?: string;
   /** Whether CLI assist is enabled */
   cliAssistEnabled?: boolean;
@@ -117,29 +247,46 @@ type Props = {
   loading?: boolean;
   /** Initial expanded state for inline mode */
   defaultOpen?: boolean;
+  /** Show the system prompt in the UI (for debugging/visibility) */
+  showSystemPrompt?: boolean;
 };
 
 export function AIAssistButton({
   mode = "inline",
-  label = "AI Assist",
+  preset = "custom",
+  systemPrompt: customSystemPrompt,
+  contextPrompt: customContextPrompt,
+  contextVars,
+  label: customLabel,
   icon,
   toolStatuses,
   selectedTool = "auto",
   onToolChange,
   onAssist,
-  placeholder = "Describe what you need help with...",
+  placeholder: customPlaceholder,
   cliAssistEnabled = true,
   className,
   style,
   disabled = false,
   loading = false,
   defaultOpen = false,
+  showSystemPrompt = false,
 }: Props) {
   const [open, setOpen] = useState(defaultOpen);
   const [input, setInput] = useState("");
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<string | null>(null);
+
+  // Resolve prompts from preset or custom values
+  const presetConfig = PRESET_PROMPTS[preset];
+  const finalSystemPrompt = customSystemPrompt ?? presetConfig.systemPrompt;
+  const finalContextPrompt = resolveContextPrompt(
+    customContextPrompt ?? presetConfig.contextPrompt,
+    contextVars,
+  );
+  const finalPlaceholder = customPlaceholder ?? presetConfig.placeholder;
+  const finalLabel = customLabel ?? presetConfig.defaultLabel;
 
   const availableToolCount = toolStatuses.filter((t) => t.available).length;
 
@@ -151,7 +298,7 @@ export function AIAssistButton({
     setResult(null);
 
     try {
-      await onAssist(selectedTool, input.trim());
+      await onAssist(selectedTool, input.trim(), finalSystemPrompt, finalContextPrompt);
       setResult(`${selectedTool === "heuristic" ? "Built-in fallback" : selectedTool} completed successfully.`);
       setInput("");
     } catch (e) {
@@ -190,9 +337,10 @@ export function AIAssistButton({
         gap: "0.35rem",
         ...style,
       }}
+      title={finalSystemPrompt ? `System prompt: ${finalSystemPrompt.slice(0, 100)}...` : undefined}
     >
       {icon}
-      {loading ? "Processing..." : label}
+      {loading ? "Processing..." : finalLabel}
     </button>
   );
   }
@@ -231,10 +379,10 @@ export function AIAssistButton({
           opacity: disabled ? 0.5 : 1,
           ...style,
         }}
-        title={label}
+        title={finalLabel}
       >
         {icon || <span style={{ opacity: 0.7 }}>✦</span>}
-        {label}
+        {finalLabel}
       </button>
 
       {open ? (
@@ -257,6 +405,34 @@ export function AIAssistButton({
               ? `${availableToolCount} AI tools available`
               : "Fallback mode only"}
           </p>
+
+          {showSystemPrompt && finalSystemPrompt && (
+            <div
+              style={{
+                padding: "0.5rem",
+                background: "rgba(28,26,23,0.04)",
+                borderRadius: "6px",
+                fontSize: "0.75rem",
+                opacity: 0.7,
+              }}
+            >
+              <strong>System prompt:</strong> {finalSystemPrompt.slice(0, 200)}...
+            </div>
+          )}
+
+          {finalContextPrompt && (
+            <div
+              style={{
+                padding: "0.5rem",
+                background: "rgba(28,26,23,0.04)",
+                borderRadius: "6px",
+                fontSize: "0.75rem",
+                opacity: 0.7,
+              }}
+            >
+              <strong>Context:</strong> {finalContextPrompt.slice(0, 200)}...
+            </div>
+          )}
 
           {onToolChange && (
             <label>
@@ -291,7 +467,7 @@ export function AIAssistButton({
 
           <textarea
             rows={3}
-            placeholder={placeholder}
+            placeholder={finalPlaceholder}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -401,6 +577,36 @@ export function AIAssistButton({
             : "Fallback mode only"}
         </p>
 
+        {showSystemPrompt && finalSystemPrompt && (
+          <div
+            style={{
+              padding: "0.5rem",
+              background: "rgba(28,26,23,0.04)",
+              borderRadius: "6px",
+              fontSize: "0.75rem",
+              opacity: 0.7,
+              marginBottom: "0.5rem",
+            }}
+          >
+            <strong>System prompt:</strong> {finalSystemPrompt.slice(0, 200)}...
+          </div>
+        )}
+
+        {finalContextPrompt && (
+          <div
+            style={{
+              padding: "0.5rem",
+              background: "rgba(28,26,23,0.04)",
+              borderRadius: "6px",
+              fontSize: "0.75rem",
+              opacity: "0.7",
+              marginBottom: "0.5rem",
+            }}
+          >
+            <strong>Context:</strong> {finalContextPrompt.slice(0, 200)}...
+          </div>
+        )}
+
         {onToolChange && (
           <label style={{ display: "block", marginBottom: "0.5rem" }}>
             AI Tool
@@ -435,7 +641,7 @@ export function AIAssistButton({
           Input
           <textarea
             rows={4}
-            placeholder={placeholder}
+            placeholder={finalPlaceholder}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -468,7 +674,7 @@ export function AIAssistButton({
             fontWeight: 500,
           }}
         >
-          {isPending ? "Processing..." : label}
+          {isPending ? "Processing..." : finalLabel}
         </button>
 
         {error ? (

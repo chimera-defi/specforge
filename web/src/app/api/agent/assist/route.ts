@@ -15,7 +15,9 @@ import {
 
 const requestSchema = z.object({
   brief: z.string().min(1),
-  tool: z.enum(["auto", "codex_cli", "claude_cli", "heuristic"]).optional(),
+  tool: z.enum(["auto", "codex_cli", "claude_cli", "devin_cli", "heuristic"]).optional(),
+  systemPrompt: z.string().optional(),
+  contextPrompt: z.string().optional(),
 });
 
 export async function POST(request: Request) {
@@ -52,6 +54,8 @@ export async function POST(request: Request) {
     brief: payload.brief,
     requestedTool:
       payload.tool && payload.tool !== "auto" ? payload.tool : preferredTool,
+    systemPrompt: payload.systemPrompt,
+    contextPrompt: payload.contextPrompt,
   });
 
   await recordWorkspaceEvent({

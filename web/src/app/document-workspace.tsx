@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { HocuspocusProvider } from "@hocuspocus/provider";
 import Collaboration from "@tiptap/extension-collaboration";
@@ -12,6 +12,9 @@ import type { DocumentRecord } from "@/lib/specforge/contracts";
 import { markdownToEditorHtml, tiptapJsonToMarkdown } from "@/lib/specforge/editor";
 import { buildRoomName } from "@/lib/specforge/collab-auth";
 import { logger } from "@/lib/logger";
+import { AIAssistButton } from "@/components/specforge/AIAssistButton";
+import type { AgentAssistToolStatus } from "@/lib/specforge/agent-assist";
+import { useToast } from "@/components/specforge/useToast";
 
 type Props = {
   document: DocumentRecord;
@@ -28,6 +31,7 @@ type Props = {
     pendingPatches: number;
     touchedBy: string[];
   }[];
+  toolStatuses?: AgentAssistToolStatus[];
 };
 
 type Collaborator = {
@@ -93,7 +97,7 @@ function makeLocalUser(activeActor: Props["activeActor"]) {
   return value;
 }
 
-export function DocumentWorkspace({ document, activeActor, authMode, blockSummaries }: Props) {
+export function DocumentWorkspace({ document, activeActor, authMode, blockSummaries, toolStatuses = [] }: Props) {
   const router = useRouter();
   const collabUrl =
     process.env.NEXT_PUBLIC_COLLAB_URL?.trim() || "ws://127.0.0.1:4321";
@@ -108,12 +112,57 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
   const [connDiag, setConnDiag] = useState<ConnDiag | null>(null);
   const connAttemptsRef = useRef(0);
   const [isPending, startTransition] = useTransition();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const { showToast, removeToast, ToastContainer } = useToast();
   const surfaceRef = useRef<HTMLDivElement | null>(null);
   const isMountedRef = useRef(false);
+  const editorRef = useRef<any>(null);
+  const lastKnownVersionRef = useRef(document.version);
   // Track whether the collab provider has already fired its first `synced`
   // event. We use a ref so that the value survives across useEffect re-runs
   // without causing additional re-renders.
   const collabSyncedRef = useRef(false);
+
+  const handleRefreshFromDatabase = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      const response = await fetch(`/api/documents/${document.document_id}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch document from database");
+      }
+      const data = await response.json();
+      const latestDocument = data.document;
+
+      if (latestDocument && latestDocument.markdown && editorRef.current) {
+        editorRef.current.commands.setContent(markdownToEditorHtml(latestDocument.markdown));
+        console.log(`Refreshed from database: v${latestDocument.version}`);
+        lastKnownVersionRef.current = latestDocument.version;
+        setHasUnsavedChanges(false);
+        showToast(`Refreshed from database (v${latestDocument.version})`, "success");
+      }
+    } catch (error) {
+      console.error("Refresh failed:", error);
+      showToast("Failed to refresh from database", "error");
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [document.document_id, showToast]);
+
+  // Auto-refresh when component mounts or document version changes
+  useEffect(() => {
+    if (!isMountedRef.current) {
+      isMountedRef.current = true;
+      return;
+    }
+
+    // Only auto-refresh if version changed (not on initial mount)
+    if (document.version !== lastKnownVersionRef.current) {
+      console.log(`Document version changed from ${lastKnownVersionRef.current} to ${document.version}, auto-refreshing...`);
+      handleRefreshFromDatabase();
+    }
+  }, [document.version]);
   const collab = useMemo(() => {
     collabSyncedRef.current = false; // reset on new provider
     const ydoc = new Y.Doc();
@@ -174,7 +223,39 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
         class: "specforgeEditor",
       },
     },
+    onUpdate: ({ editor }) => {
+      setHasUnsavedChanges(true);
+    },
   });
+
+  useEffect(() => {
+    if (editor) {
+      editorRef.current = editor;
+
+      // Keyboard shortcuts
+      const handleKeyDown = (event: KeyboardEvent) => {
+        // Ctrl/Cmd + S: Refresh from database
+        if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+          event.preventDefault();
+          handleRefreshFromDatabase();
+        }
+        // Ctrl/Cmd + ?: Show help (handle both ? and / for different keyboard layouts)
+        if ((event.ctrlKey || event.metaKey) && (event.key === '?' || event.key === '/')) {
+          event.preventDefault();
+          setShowHelp(prev => !prev);
+        }
+        // Escape: Close help overlay
+        if (event.key === 'Escape') {
+          setShowHelp(false);
+        }
+      };
+
+      window.document.addEventListener('keydown', handleKeyDown);
+      return () => {
+        window.document.removeEventListener('keydown', handleKeyDown);
+      };
+    }
+  }, [editor, handleRefreshFromDatabase]);
 
   function updateSyncState(nextState: SyncState, message: string) {
     if (!isMountedRef.current) return;
@@ -266,14 +347,10 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
     const handleSynced = () => {
       setConnDiag(null);
       connAttemptsRef.current = 0;
-      const hasContent = editor.getText().trim().length > 0;
 
-      if (!hasContent) {
-        editor.commands.setContent(markdownToEditorHtml(document.markdown));
-        updateSyncState("live", `Seeded live room: ${roomName}`);
-        return;
-      }
-
+      // Always seed with document markdown to ensure the editor shows the actual document content
+      // This prevents showing stale or empty content from previous collab sessions
+      editor.commands.setContent(markdownToEditorHtml(document.markdown));
       updateSyncState("live", `Live room synced: ${roomName}`);
     };
 
@@ -675,6 +752,198 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
           ))}
         </div>
       </div>
+      <div className="documentInfo">
+        <span>Document info</span>
+        <div className="documentInfoContent">
+          <div>
+            <strong>Sections:</strong> {document.sections.length}
+            {" · "}
+            <strong>Blocks:</strong> {document.blocks.length}
+            {" · "}
+            <strong>Version:</strong> {document.version}
+            {" · "}
+            <strong>Last updated:</strong> {new Date(document.updated_at).toLocaleDateString()}
+          </div>
+          {document.sections.length > 0 && (
+            <div className="documentSections">
+              <strong>Sections:</strong>
+              <div className="sectionList">
+                {document.sections.slice(0, 5).map((section) => (
+                  <span key={section.section_id} className="sectionChip">
+                    {section.heading}
+                  </span>
+                ))}
+                {document.sections.length > 5 && (
+                  <span className="sectionChip">+{document.sections.length - 5} more</span>
+                )}
+              </div>
+            </div>
+          )}
+          {Object.keys(document.metadata).length > 0 && (
+            <div className="documentMetadata">
+              <strong>Metadata:</strong>
+              <div className="metadataList">
+                {Object.entries(document.metadata).slice(0, 3).map(([key, value]) => (
+                  <span key={key} className="metadataChip">
+                    <code>{key}</code>: {value}
+                  </span>
+                ))}
+                {Object.keys(document.metadata).length > 3 && (
+                  <span className="metadataChip">+{Object.keys(document.metadata).length - 3} more</span>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+      <div className="editorToolbar">
+        <button
+          type="button"
+          onClick={handleRefreshFromDatabase}
+          disabled={isRefreshing}
+          style={{
+            padding: "6px 12px",
+            borderRadius: "999px",
+            fontSize: "0.84rem",
+            fontWeight: 600,
+            color: "var(--sf-surface-warm)",
+            background: "var(--sf-teal)",
+            border: "none",
+            cursor: isRefreshing ? "not-allowed" : "pointer",
+            transition: "opacity 0.15s",
+            opacity: isRefreshing ? 0.6 : 1,
+          }}
+          title="Refresh document from database (Ctrl+S)"
+        >
+          {isRefreshing ? "Refreshing..." : "🔄 Refresh from DB"}
+        </button>
+        {hasUnsavedChanges && (
+          <span
+            style={{
+              padding: "6px 12px",
+              borderRadius: "999px",
+              fontSize: "0.84rem",
+              fontWeight: 600,
+              color: "var(--sf-surface-warm)",
+              background: "#f59e0b",
+              border: "none",
+              display: "inline-flex",
+              alignItems: "center",
+            }}
+          >
+            ⚠️ Unsaved changes
+          </span>
+        )}
+        <button
+          type="button"
+          onClick={() => setShowHelp(true)}
+          style={{
+            padding: "6px 12px",
+            borderRadius: "999px",
+            fontSize: "0.84rem",
+            fontWeight: 600,
+            color: "var(--sf-surface-warm)",
+            background: "var(--sf-muted-light)",
+            border: "none",
+            cursor: "pointer",
+            transition: "opacity 0.15s",
+          }}
+          title="Keyboard shortcuts (Ctrl+/)"
+        >
+          ⌨️ Help
+        </button>
+        <AIAssistButton
+          mode="panel"
+          preset="block-iteration"
+          label="Improve with AI"
+          placeholder="Describe what to improve (e.g., 'Make this section more specific', 'Add technical details')..."
+          toolStatuses={toolStatuses}
+          onAssist={async (tool, input, systemPrompt, contextPrompt) => {
+            const loadingToastId = showToast("AI assist running...", "info", 0);
+            try {
+              const response = await fetch("/api/agent/assist", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ tool, input, systemPrompt, contextPrompt }),
+              });
+              if (!response.ok) {
+                throw new Error("AI assist failed");
+              }
+              const payload = await response.json();
+              if (payload.notes && Array.isArray(payload.notes)) {
+                alert(payload.notes.join("\n"));
+              }
+              removeToast(loadingToastId);
+              showToast("AI assist completed successfully", "success");
+            } catch (error) {
+              removeToast(loadingToastId);
+              showToast("AI assist failed", "error");
+              throw error;
+            }
+          }}
+          contextVars={{
+            documentTitle: document.title,
+            sectionCount: document.sections.length.toString(),
+            blockCount: document.blocks.length.toString(),
+          }}
+          contextPrompt="Document: {documentTitle}. Sections: {sectionCount}. Blocks: {blockCount}. Current selection: {currentContent}"
+        />
+        <span style={{ fontSize: "0.78rem", color: "var(--sf-muted-light)", marginLeft: "auto" }}>
+          Use refresh if content seems stale after accepting patches
+        </span>
+      </div>
+
+      {/* Help Overlay */}
+      {showHelp && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "rgba(0,0,0,0.5)",
+            zIndex: 9999,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          onClick={() => setShowHelp(false)}
+        >
+          <div
+            style={{
+              background: "var(--sf-surface-warm)",
+              padding: "2rem",
+              borderRadius: "12px",
+              maxWidth: "500px",
+              boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 style={{ margin: "0 0 1rem 0" }}>Keyboard Shortcuts</h2>
+            <ul style={{ margin: 0, paddingLeft: "1.5rem" }}>
+              <li style={{ marginBottom: "0.5rem" }}><strong>Ctrl/Cmd + S</strong> - Refresh from database</li>
+              <li style={{ marginBottom: "0.5rem" }}><strong>Ctrl/Cmd + ?</strong> - Show/hide this help</li>
+              <li style={{ marginBottom: "0.5rem" }}><strong>Escape</strong> - Close help overlay</li>
+            </ul>
+            <button
+              type="button"
+              onClick={() => setShowHelp(false)}
+              style={{
+                padding: "0.55rem 1.2rem",
+                borderRadius: "999px",
+                background: "#1c1a17",
+                color: "#fffbf6",
+                border: "none",
+                cursor: "pointer",
+                fontSize: "0.875rem",
+              }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
       <div className="editorSurface" ref={surfaceRef}>
         {blockMarkers.map((marker) => (
           <div key={marker.block_id} className="blockMarker" style={{ top: `${marker.top}px` }}>
@@ -705,6 +974,7 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
         ))}
         <EditorContent editor={editor} />
       </div>
+      <ToastContainer />
     </div>
   );
 }

@@ -58,22 +58,24 @@ export function CollapsibleWorkspaceNav({ docTitle, stageLabel, shareUrl }: Prop
         )}
         <button
           onClick={handleCopy}
-          title="Copy share link"
+          title="Copy share link to clipboard"
           style={{
             display: "inline-flex",
             alignItems: "center",
-            padding: "4px 10px",
+            padding: "6px 12px",
             borderRadius: "999px",
-            fontSize: "0.78rem",
+            fontSize: "0.84rem",
             fontWeight: 600,
-            color: copied ? "#16a34a" : "var(--sf-ink)",
-            background: "rgba(28,26,23,0.06)",
+            color: "var(--sf-surface-warm)",
+            background: "var(--sf-teal)",
             border: "none",
             cursor: "pointer",
-            transition: "color 0.15s",
+            transition: "opacity 0.15s",
           }}
+          onMouseEnter={(e) => e.currentTarget.style.opacity = "0.85"}
+          onMouseLeave={(e) => e.currentTarget.style.opacity = "1"}
         >
-          {copied ? "Copied" : "Share"}
+          {copied ? "✓ Copied" : "📤 Share"}
         </button>
         <button
           onClick={() => setCollapsed((c) => !c)}
