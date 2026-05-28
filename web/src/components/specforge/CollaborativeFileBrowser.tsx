@@ -143,6 +143,7 @@ export function CollaborativeFileBrowser({
   const [loading, setLoading] = useState(true);
   const [syncState, setSyncState] = useState<"connecting" | "live" | "offline">("connecting");
   const [aiAssisting, setAiAssisting] = useState(false);
+  const [ideaValidationSession, setIdeaValidationSession] = useState<{ completed: number; total: number } | null>(null);
 
   // Yjs document and provider for the selected file
   const ydocRef = useRef<Y.Doc | null>(null);
@@ -170,7 +171,24 @@ export function CollaborativeFileBrowser({
   // Fetch files on mount
   useEffect(() => {
     fetchFiles();
+    fetchIdeaValidationSession();
   }, [documentId]);
+
+  async function fetchIdeaValidationSession() {
+    try {
+      const res = await fetch(`/api/documents/${documentId}/idea-validation-sessions`);
+      if (!res.ok) return;
+      const data = await res.json();
+      const sessions = data.sessions ?? [];
+      if (sessions.length > 0) {
+        const session = sessions[0];
+        const completed = session.stages.filter((s: { status: string }) => s.status === "completed").length;
+        setIdeaValidationSession({ completed, total: session.stages.length });
+      }
+    } catch {
+      // Silently ignore
+    }
+  }
 
   // Cleanup Yjs resources when switching files
   useEffect(() => {
@@ -427,6 +445,21 @@ export function CollaborativeFileBrowser({
     <div className={styles.browser}>
       {/* ---- file list ---- */}
       <aside className={styles.fileList} aria-label="Workspace files">
+        {ideaValidationSession ? (
+          <div style={{
+            padding: "10px 12px",
+            borderBottom: "1px solid var(--sf-border-faint)",
+            fontSize: "0.75rem",
+            background: "rgba(34, 197, 94, 0.06)",
+          }}>
+            <div style={{ fontWeight: 600, marginBottom: "4px", color: "var(--sf-ink)" }}>
+              Idea Validation
+            </div>
+            <div style={{ color: "var(--sf-muted-mid)" }}>
+              {ideaValidationSession.completed}/{ideaValidationSession.total} stages completed
+            </div>
+          </div>
+        ) : null}
         <div className={styles.fileListHeader}>
           <span>{files.length} files</span>
           <button

@@ -34,6 +34,7 @@ import {
   makeDocumentRecord,
   upsertSectionBullet,
 } from "./markdown";
+import { listPlanSessions } from "./plan-session";
 
 export type StoreOptions = {
   backend?: "pglite" | "postgres";
@@ -2841,6 +2842,45 @@ export async function initializeDefaultWorkspaceFiles(
     return; // Already initialized
   }
 
+  const workspaceId = options?.workspaceId ?? process.env.SPECFORGE_WORKSPACE_ID ?? "default";
+
+  // Check for idea validation sessions and create IDEA_VALIDATION.md if they exist
+  const sessions = await listPlanSessions(documentId, workspaceId);
+  if (sessions.length > 0) {
+    const session = sessions[0];
+    const completedStages = session.stages.filter((s) => s.status === "completed");
+
+    if (completedStages.length > 0) {
+      // Build IDEA_VALIDATION.md from the session
+      let ideaValidationContent = "# Idea Validation\n\n";
+      ideaValidationContent += `Completed on: ${session.created_at}\n`;
+      ideaValidationContent += `Mode: ${session.mode}\n\n`;
+      ideaValidationContent += `Stages completed: ${completedStages.length}/${session.stages.length}\n\n`;
+
+      for (const stage of completedStages) {
+        ideaValidationContent += `## ${stage.name}\n\n`;
+        if (stage.answers) {
+          for (const [key, answer] of Object.entries(stage.answers)) {
+            ideaValidationContent += `**${key}**: ${answer}\n\n`;
+          }
+        }
+        if (stage.patch_id) {
+          ideaValidationContent += `> Patch created: ${stage.patch_id}\n\n`;
+        }
+      }
+
+      await createWorkspaceFile(
+        {
+          document_id: documentId,
+          filename: "IDEA_VALIDATION.md",
+          content: ideaValidationContent,
+          file_type: "markdown",
+        },
+        options,
+      );
+    }
+  }
+
   const exportBundle = exportDocumentBundle(document, [], []);
   const files = exportBundle.files;
 
@@ -2865,6 +2905,44 @@ export async function syncMainDocumentToFiles(
   const existingPrd = await getWorkspaceFileByName(document.document_id, 'PRD.md', options);
   if (existingPrd && existingPrd.content !== document.markdown) {
     await updateWorkspaceFile(existingPrd.file_id, { content: document.markdown }, options);
+  }
+}
+
+export async function autoAcceptIdeaValidationPatches(
+  documentId: string,
+  options?: StoreOptions,
+): Promise<void> {
+  const workspaceId = options?.workspaceId ?? process.env.SPECFORGE_WORKSPACE_ID ?? "default";
+  const sessions = await listPlanSessions(documentId, workspaceId);
+  
+  if (sessions.length === 0) {
+    return; // No idea validation sessions
+  }
+
+  const session = sessions[0];
+  const pendingPatches = session.stages
+    .filter((s) => s.status === "completed" && s.patch_id)
+    .map((s) => s.patch_id)
+    .filter((patchId): patchId is string => patchId !== null);
+
+  for (const patchId of pendingPatches) {
+    try {
+      await decidePatch(
+        {
+          document_id: documentId,
+          patch_id: patchId,
+          decision: "accept",
+          decided_by: {
+            actor_type: "agent",
+            actor_id: "auto-accept-idea-validation",
+          },
+        },
+        options,
+      );
+    } catch (error) {
+      console.error(`Failed to auto-accept patch ${patchId}:`, error);
+      // Continue with other patches even if one fails
+    }
   }
 }
 
