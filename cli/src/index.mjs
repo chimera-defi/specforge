@@ -345,10 +345,9 @@ async function runAutoplanCommand(options) {
     ? readline.createInterface({ input: process.stdin, output: process.stdout })
     : null);
 
-  const title = options.values.title;
   const idea = options.idea || options.values.idea;
 
-  if (!title && process.stdin.isTTY && rl) {
+  if (!options.values.title && process.stdin.isTTY && rl) {
     const answer = await rl.question("Project title: ");
     options.values.title = answer.trim();
   }
