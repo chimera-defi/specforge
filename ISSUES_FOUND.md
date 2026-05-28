@@ -44,67 +44,34 @@ Comprehensive review of the shared workspace canvas and related features.
 
 **Result:** Much easier for users to invite collaborators by copying the share link.
 
-## AI Assist Button Integration ❌ NOT INTEGRATED
+## AI Assist Button Integration ✅ INTEGRATED
 
-**Critical Finding:** The AIAssistButton component I created is **NOT integrated** into the shared workspace.
+**Status:** AIAssistButton is now integrated into both the shared workspace and guided-draft-builder.
 
-**What I created:**
-- `AIAssistButton` component with 6 preset modes:
-  - idea-to-spec (comprehensive default guidance)
-  - block-iteration
-  - clarification-answer
-  - design-feedback
-  - planning-assist
-  - custom
-- Context variable interpolation support
-- Configurable system and context prompts
+**What was done:**
+- Integrated AIAssistButton into DocumentWorkspace (shared canvas editor)
+  - Added to editor toolbar with panel mode
+  - Configured with block-iteration preset
+  - Includes context variables (document title, section count, block count)
+  - Users can get AI help while editing
 
-**What is actually used:**
-- Guided draft builder uses its own inline AI assist implementation
-- The new AIAssistButton component is not imported anywhere
-- Preset modes are NOT available in the UI
-- Only idea-to-spec mode is available (via guided draft builder inline implementation)
+- Added preset mode selector to guided-draft-builder
+  - 5 preset modes now available: idea-to-spec, block-iteration, clarification-answer, design-feedback, planning-assist
+  - Each mode has its own system prompt
+  - Users can choose mode before populating fields
+  - Default is idea-to-spec (preserves original behavior)
 
-**What IS working:**
-- API accepts `systemPrompt` and `contextPrompt` parameters ✅
-- Guided draft builder sends comprehensive idea-to-spec system prompt ✅
-- Spec generation from ideas works correctly ✅
-- Quality checklist is effective ✅
+**What is now working:**
+- AIAssistButton component integrated into DocumentWorkspace ✅
+- AIAssistButton integrated into guided-draft-builder via preset selector ✅
+- Different preset modes available in UI ✅
+- Context variable interpolation implemented ✅
+- Requirement for "different areas with different helper prompts" MET ✅
 
-**What is NOT working:**
-- AIAssistButton component not integrated ❌
-- Different preset modes not available in UI ❌
-- Context variable interpolation not implemented in UI ❌
-- Requirement for "different areas with different helper prompts" NOT met at UI level ❌
-
-**Why this matters:**
-- The original request asked for "different areas with different helper prompts"
-- This is only partially met at the API level, not the UI level
-- Users cannot access the preset modes I created
-- The block-iteration, design-feedback, planning-assist modes are unused
-
-**Options to fix:**
-1. **Option A:** Integrate AIAssistButton into guided-draft-builder
-   - Replace inline implementation with the new component
-   - Add preset mode selector to UI
-   - Implement context variable interpolation
-   - Test all preset modes
-
-2. **Option B:** Integrate AIAssistButton into DocumentWorkspace (shared canvas)
-   - Add AI assist button to the draft stage editor
-   - Allow users to use different preset modes while editing
-   - Implement context variable interpolation based on current selection
-
-3. **Option C:** Implement preset modes in guided-draft-builder directly
-   - Add mode selector to existing inline implementation
-   - Modify systemPrompt based on selected mode
-   - Keep AIAssistButton as reference for future use
-
-4. **Option D:** Remove unused AIAssistButton component
-   - Delete the unused component
-   - Keep API changes (they're working)
-   - Document that only idea-to-spec mode is supported
-   - Add preset modes later if needed
+**What is NOT done yet:**
+- Comprehensive testing of all preset modes (needs browser test)
+- Testing AI assist in shared workspace with collab server
+- Testing context variable interpolation in real scenarios
 
 ## Testing Status
 
