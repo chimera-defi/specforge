@@ -675,6 +675,48 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
           ))}
         </div>
       </div>
+      <div className="documentInfo">
+        <span>Document info</span>
+        <div className="documentInfoContent">
+          <div>
+            <strong>Sections:</strong> {document.sections.length}
+            {" · "}
+            <strong>Blocks:</strong> {document.blocks.length}
+            {" · "}
+            <strong>Version:</strong> {document.version}
+          </div>
+          {document.sections.length > 0 && (
+            <div className="documentSections">
+              <strong>Sections:</strong>
+              <div className="sectionList">
+                {document.sections.slice(0, 5).map((section) => (
+                  <span key={section.section_id} className="sectionChip">
+                    {section.heading}
+                  </span>
+                ))}
+                {document.sections.length > 5 && (
+                  <span className="sectionChip">+{document.sections.length - 5} more</span>
+                )}
+              </div>
+            </div>
+          )}
+          {Object.keys(document.metadata).length > 0 && (
+            <div className="documentMetadata">
+              <strong>Metadata:</strong>
+              <div className="metadataList">
+                {Object.entries(document.metadata).slice(0, 3).map(([key, value]) => (
+                  <span key={key} className="metadataChip">
+                    <code>{key}</code>: {value}
+                  </span>
+                ))}
+                {Object.keys(document.metadata).length > 3 && (
+                  <span className="metadataChip">+{Object.keys(document.metadata).length - 3} more</span>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
       <div className="editorSurface" ref={surfaceRef}>
         {blockMarkers.map((marker) => (
           <div key={marker.block_id} className="blockMarker" style={{ top: `${marker.top}px` }}>
