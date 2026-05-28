@@ -266,6 +266,13 @@ async function runAuditCommand(options) {
     ? [options.stage]
     : AUDIT_STAGE_NAMES.filter((s) => !options.skipStages?.includes(s));
 
+  if (stagesToRun.length === 0) {
+    process.stderr.write("Error: No audit stages to run. Use --stage to specify a stage or remove --skip flags.\n");
+    process.exitCode = 1;
+    if (rl && !options.rl) rl.close();
+    return;
+  }
+
   const idea = options.idea || options.values.idea;
 
   if (!options.json) {
@@ -350,6 +357,13 @@ async function runAutoplanCommand(options) {
   if (!options.values.title && process.stdin.isTTY && rl) {
     const answer = await rl.question("Project title: ");
     options.values.title = answer.trim();
+  }
+
+  if (!options.values.title && !process.stdin.isTTY) {
+    process.stderr.write("Error: --title is required when not running in an interactive terminal.\n");
+    process.exitCode = 1;
+    if (rl && !options.rl) rl.close();
+    return;
   }
 
   if (!options.json) {

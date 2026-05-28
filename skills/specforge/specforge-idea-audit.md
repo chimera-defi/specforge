@@ -96,23 +96,23 @@ Outputs: `RISK_REGISTER`, `SECURITY.md`.
 
 ```bash
 # Run full audit (all 5 stages)
-bun run specforge -- audit --title "<title>" --idea "<rough idea>"
+bun run specforge audit --idea "<rough idea>"
 
 # Run a specific stage
-bun run specforge -- audit --stage office-hours
-bun run specforge -- audit --stage ceo-review
-bun run specforge -- audit --stage eng-review
-bun run specforge -- audit --stage design-review
-bun run specforge -- audit --stage security-review
+bun run specforge audit --stage office-hours
+bun run specforge audit --stage ceo-review
+bun run specforge audit --stage eng-review
+bun run specforge audit --stage design-review
+bun run specforge audit --stage security-review
 
 # Skip a stage
-bun run specforge -- audit --skip security-review
+bun run specforge audit --skip security-review
 
 # Machine-readable output
-bun run specforge -- audit --json
+bun run specforge audit --json
 
 # Run full automated pipeline (audit → plan → spec → handoff)
-bun run specforge -- autoplan --title "<title>"
+bun run specforge autoplan --title "<title>" --idea "<rough idea>"
 ```
 
 ## End-of-Audit Recap Protocol
