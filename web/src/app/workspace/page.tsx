@@ -1250,6 +1250,7 @@ export default async function Home({ searchParams }: Props) {
                   activeActor={activeWorkspaceActor}
                   authMode={activeWorkspaceSession.authMode}
                   blockSummaries={blockSummaries}
+                  toolStatuses={assistToolStatuses}
                 />
               ) : (
                 <p className={styles.empty}>Create a document first.</p>

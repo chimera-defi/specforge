@@ -12,6 +12,8 @@ import type { DocumentRecord } from "@/lib/specforge/contracts";
 import { markdownToEditorHtml, tiptapJsonToMarkdown } from "@/lib/specforge/editor";
 import { buildRoomName } from "@/lib/specforge/collab-auth";
 import { logger } from "@/lib/logger";
+import { AIAssistButton } from "@/components/specforge/AIAssistButton";
+import type { AgentAssistToolStatus } from "@/lib/specforge/agent-assist";
 
 type Props = {
   document: DocumentRecord;
@@ -28,6 +30,7 @@ type Props = {
     pendingPatches: number;
     touchedBy: string[];
   }[];
+  toolStatuses?: AgentAssistToolStatus[];
 };
 
 type Collaborator = {
@@ -93,7 +96,7 @@ function makeLocalUser(activeActor: Props["activeActor"]) {
   return value;
 }
 
-export function DocumentWorkspace({ document, activeActor, authMode, blockSummaries }: Props) {
+export function DocumentWorkspace({ document, activeActor, authMode, blockSummaries, toolStatuses = [] }: Props) {
   const router = useRouter();
   const collabUrl =
     process.env.NEXT_PUBLIC_COLLAB_URL?.trim() || "ws://127.0.0.1:4321";
@@ -712,6 +715,38 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
             </div>
           )}
         </div>
+      </div>
+      <div className="editorToolbar">
+        <AIAssistButton
+          mode="panel"
+          preset="block-iteration"
+          label="Improve with AI"
+          placeholder="Describe what to improve (e.g., 'Make this section more specific', 'Add technical details')..."
+          toolStatuses={toolStatuses}
+          onAssist={async (tool, input, systemPrompt, contextPrompt) => {
+            const response = await fetch("/api/agent/assist", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ tool, input, systemPrompt, contextPrompt }),
+            });
+            if (!response.ok) {
+              throw new Error("AI assist failed");
+            }
+            const payload = await response.json();
+            if (payload.notes && Array.isArray(payload.notes)) {
+              alert(payload.notes.join("\n"));
+            }
+          }}
+          contextVars={{
+            documentTitle: document.title,
+            sectionCount: document.sections.length.toString(),
+            blockCount: document.blocks.length.toString(),
+          }}
+          contextPrompt="Document: {documentTitle}. Sections: {sectionCount}. Blocks: {blockCount}. Current selection: {currentContent}"
+        />
+        <span style={{ fontSize: "0.78rem", color: "var(--sf-muted-light)", marginLeft: "auto" }}>
+          Select text and use AI assist to improve this section
+        </span>
       </div>
       <div className="editorSurface" ref={surfaceRef}>
         {blockMarkers.map((marker) => (
