@@ -68,6 +68,27 @@ export function GuidedDraftBuilder({
     }
 
     startTransition(async () => {
+      // Get the default system prompt for idea-to-spec preset
+      const systemPrompt = `You are an expert product manager and technical architect. Your goal is to transform a rough idea into a comprehensive, actionable product specification.
+
+GUIDELINES:
+- Generate a complete spec covering problem, users, goals, scope, requirements, constraints, UX, success signals, and implementation tasks
+- Be specific and concrete - avoid generic filler
+- Include measurable success criteria
+- Define clear scope boundaries (what's IN and what's OUT)
+- Consider technical feasibility and constraints
+- Structure the output to be immediately useful for implementation planning
+
+QUALITY CHECKLIST:
+- Problem: Is it concrete? Does it describe real pain?
+- Goals: Are they measurable? Can you tell when they're achieved?
+- Users: Are they specific personas, not "everyone"?
+- Scope: Is it bounded? What's explicitly OUT of scope?
+- Requirements: Are they actionable and testable?
+- Tasks: Can a developer execute these without clarification?
+
+Return structured JSON with all spec fields populated.`;
+
       const response = await fetch("/api/agent/assist", {
         method: "POST",
         headers: {
@@ -76,6 +97,8 @@ export function GuidedDraftBuilder({
         body: JSON.stringify({
           brief,
           tool,
+          systemPrompt,
+          contextPrompt: "",
         }),
       });
 
