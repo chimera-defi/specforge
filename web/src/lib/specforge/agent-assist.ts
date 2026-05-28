@@ -412,7 +412,7 @@ export const getAgentAssistToolStatuses = cache(async (): Promise<AgentAssistToo
   ];
 });
 
-function buildAssistPrompt(
+export function buildAssistPrompt(
   brief: string,
   systemPrompt?: string,
   contextPrompt?: string,
@@ -565,7 +565,7 @@ async function runDevinAssist(
       "bash",
       [
         "-lc",
-        'devin -p --model claude-sonnet-4 -- "$(cat "$1")" < /dev/null',
+        'devin -p --model claude-sonnet-4.6 -- "$(cat "$1")" < /dev/null',
         promptPath,
       ],
       {
