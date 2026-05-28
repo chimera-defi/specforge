@@ -14,6 +14,7 @@ import { buildRoomName } from "@/lib/specforge/collab-auth";
 import { logger } from "@/lib/logger";
 import { AIAssistButton } from "@/components/specforge/AIAssistButton";
 import type { AgentAssistToolStatus } from "@/lib/specforge/agent-assist";
+import { useToast } from "@/components/specforge/useToast";
 
 type Props = {
   document: DocumentRecord;
@@ -113,6 +114,7 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
   const [isPending, startTransition] = useTransition();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+  const { showToast, ToastContainer } = useToast();
   const surfaceRef = useRef<HTMLDivElement | null>(null);
   const isMountedRef = useRef(false);
   const editorRef = useRef<any>(null);
@@ -136,13 +138,15 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
         editorRef.current.commands.setContent(markdownToEditorHtml(latestDocument.markdown));
         console.log(`Refreshed from database: v${latestDocument.version}`);
         lastKnownVersionRef.current = latestDocument.version;
+        showToast(`Refreshed from database (v${latestDocument.version})`, "success");
       }
     } catch (error) {
       console.error("Refresh failed:", error);
+      showToast("Failed to refresh from database", "error");
     } finally {
       setIsRefreshing(false);
     }
-  }, [document.document_id]);
+  }, [document.document_id, showToast]);
 
   // Auto-refresh when component mounts or document version changes
   useEffect(() => {
@@ -950,6 +954,7 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
         ))}
         <EditorContent editor={editor} />
       </div>
+      <ToastContainer />
     </div>
   );
 }
