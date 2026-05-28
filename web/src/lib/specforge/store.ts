@@ -1116,24 +1116,36 @@ async function createSchema(database: QuerySession) {
 
     ALTER TABLE clarifications ADD COLUMN IF NOT EXISTS priority TEXT NOT NULL DEFAULT 'normal';
 
-    CREATE TABLE IF NOT EXISTS plan_sessions (
+    -- Migration: Rename old plan_sessions tables to idea_validation_sessions
+    ALTER TABLE IF EXISTS plan_sessions RENAME TO idea_validation_sessions;
+    ALTER TABLE IF EXISTS plan_stages RENAME TO idea_validation_stages;
+
+    -- Add new columns to idea_validation_sessions if they don't exist
+    ALTER TABLE idea_validation_sessions ADD COLUMN IF NOT EXISTS mode TEXT NOT NULL DEFAULT 'startup';
+    ALTER TABLE idea_validation_stages ADD COLUMN IF NOT EXISTS question_prompt TEXT;
+    ALTER TABLE idea_validation_stages ADD COLUMN IF NOT EXISTS system_prompt TEXT;
+
+    CREATE TABLE IF NOT EXISTS idea_validation_sessions (
       session_id TEXT PRIMARY KEY,
       document_id TEXT NOT NULL REFERENCES documents(document_id) ON DELETE CASCADE,
       workspace_id TEXT NOT NULL,
+      mode TEXT NOT NULL DEFAULT 'startup', -- 'startup' or 'builder'
       status TEXT NOT NULL DEFAULT 'active',
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
     );
 
-    CREATE TABLE IF NOT EXISTS plan_stages (
+    CREATE TABLE IF NOT EXISTS idea_validation_stages (
       stage_id TEXT PRIMARY KEY,
-      session_id TEXT NOT NULL REFERENCES plan_sessions(session_id) ON DELETE CASCADE,
+      session_id TEXT NOT NULL REFERENCES idea_validation_sessions(session_id) ON DELETE CASCADE,
       document_id TEXT NOT NULL,
-      name TEXT NOT NULL,
+      name TEXT NOT NULL, -- 'demand-reality', 'status-quo', 'desperate-specificity', 'narrowest-wedge', 'observation', 'future-fit'
       status TEXT NOT NULL DEFAULT 'pending',
       patch_id TEXT REFERENCES patches(patch_id) ON DELETE SET NULL,
-      outputs_json JSONB,
+      question_prompt TEXT, -- The question that was asked
+      system_prompt TEXT, -- The system prompt used for AI assistance
       answers_json JSONB,
+      outputs_json JSONB, -- AI-generated outputs or analysis
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
     );

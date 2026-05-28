@@ -1,7 +1,8 @@
 import { randomUUID } from "node:crypto";
 
 import {
-  PLAN_STAGE_NAMES,
+  IDEA_VALIDATION_STAGE_NAMES,
+  type IdeaValidationStageName,
   type PlanSession,
   type PlanStage,
   type PlanStageName,
@@ -17,175 +18,169 @@ import { deriveDocumentShape } from "./markdown";
 // ---------------------------------------------------------------------------
 
 type StageDefinition = {
-  name: PlanStageName;
+  name: IdeaValidationStageName;
   label: string;
   description: string;
-  questions: Array<{ key: string; prompt: string }>;
+  question: string; // The main forcing question
+  subQuestions: Array<{ key: string; prompt: string }>; // Follow-up questions for depth
   /** Returns the patch content (markdown) to propose when the stage completes */
   buildPatchContent: (answers: Record<string, string>) => string;
   /** Block/section hints for where the patch should land */
   targetHint: string;
+  /** System prompt for AI assistance if needed */
+  systemPrompt?: string;
 };
 
-const STAGE_DEFINITIONS: Record<PlanStageName, StageDefinition> = {
-  discovery: {
-    name: "discovery",
-    label: "Discovery",
-    description: "Problem framing, user segments, and success signals",
-    questions: [
-      { key: "problem", prompt: "What specific problem does this product solve? Be concrete about the pain." },
-      { key: "users", prompt: "Who are the 1-3 primary user segments? What is their job-to-be-done?" },
-      { key: "success_signals", prompt: "How will you know the product succeeded in 6 months? List 2-3 measurable signals." },
-      { key: "anti_problems", prompt: "What adjacent problems are explicitly NOT in scope?" },
+const STAGE_DEFINITIONS: Record<IdeaValidationStageName, StageDefinition> = {
+  "demand-reality": {
+    name: "demand-reality",
+    label: "Demand Reality",
+    description: "Strongest evidence that someone actually wants this - not interest, but demand",
+    question: "What's the strongest evidence you have that someone actually wants this — not 'is interested,' not 'signed up for a waitlist,' but would be genuinely upset if it disappeared tomorrow?",
+    subQuestions: [
+      { key: "specific_behavior", prompt: "What specific behavior shows demand? (paying, expanding usage, building workflow around it, panic when it breaks)" },
+      { key: "evidence", prompt: "Name a specific person who would be affected if this vanished. What would they have to do?" },
     ],
     buildPatchContent: (answers) => [
-      "## Problem",
+      "## Demand Reality",
       "",
-      answers.problem ?? "",
+      answers.question ?? "",
       "",
-      "### User Segments",
+      "### Evidence",
       "",
-      answers.users ?? "",
+      answers.specific_behavior ?? "",
       "",
-      "### Success Signals",
+      "### Specific Impact",
       "",
-      answers.success_signals ?? "",
-      "",
-      "### Out of Scope",
-      "",
-      answers.anti_problems ?? "",
+      answers.evidence ?? "",
     ].join("\n"),
     targetHint: "problem",
+    systemPrompt: "You are a YC partner conducting a rigorous product diagnostic. Push for specific, evidence-based answers. Demand is behavior, money, or panic — not interest or waitlists.",
   },
-  "ceo-review": {
-    name: "ceo-review",
-    label: "CEO Review",
-    description: "10-star product vision, scope hardening, and anti-goals",
-    questions: [
-      { key: "vision", prompt: "If this product were a 10/10 experience — what would users say about it? Write the 10-star review." },
-      { key: "scope_hardening", prompt: "What must be true for v1 to ship? List the 3 non-negotiable scope items." },
-      { key: "anti_goals", prompt: "What are we explicitly NOT building? List 3-5 anti-goals to guard the team." },
-      { key: "competitive_insight", prompt: "What does this product do that no existing solution does well?" },
+  "status-quo": {
+    name: "status-quo",
+    label: "Status Quo",
+    description: "What users are doing right now to solve this problem — even badly",
+    question: "What are your users doing right now to solve this problem — even badly? What does that workaround cost them?",
+    subQuestions: [
+      { key: "workflow", prompt: "Describe the specific workflow in detail. What tools are they duct-taping together?" },
+      { key: "cost", prompt: "How much time or money are they wasting on this workaround? Be specific." },
     ],
     buildPatchContent: (answers) => [
-      "## Vision",
+      "## Status Quo",
       "",
-      answers.vision ?? "",
+      answers.question ?? "",
       "",
-      "### Scope (v1 Non-Negotiables)",
+      "### Current Workaround",
       "",
-      answers.scope_hardening ?? "",
+      answers.workflow ?? "",
       "",
-      "### Non-Goals",
+      "### Cost of Status Quo",
       "",
-      answers.anti_goals ?? "",
+      answers.cost ?? "",
+    ].join("\n"),
+    targetHint: "problem",
+    systemPrompt: "You are a YC partner conducting a rigorous product diagnostic. The status quo is your real competitor — not other startups. Understand what users are already living with.",
+  },
+  "desperate-specificity": {
+    name: "desperate-specificity",
+    label: "Desperate Specificity",
+    description: "Specific pain point, not vague problems. One specific person with a specific need.",
+    question: "What's the specific pain point? Can you name one specific person at one specific company who has this problem right now?",
+    subQuestions: [
+      { key: "pain_severity", prompt: "How often does this pain occur? Daily, weekly, monthly?" },
+      { key: "urgency", prompt: "What happens if they don't solve this? What's the consequence?" },
+    ],
+    buildPatchContent: (answers) => [
+      "## Desperate Specificity",
       "",
-      "### Competitive Differentiation",
+      answers.question ?? "",
       "",
-      answers.competitive_insight ?? "",
+      "### Specific Person",
+      "",
+      answers.pain_severity ?? "",
+      "",
+      "### Frequency & Urgency",
+      "",
+      answers.urgency ?? "",
+    ].join("\n"),
+    targetHint: "problem",
+    systemPrompt: "You are a YC partner conducting a rigorous product diagnostic. Specificity is the only currency. Vague answers get pushed. Name a real person with a real problem.",
+  },
+  "narrowest-wedge": {
+    name: "narrowest-wedge",
+    label: "Narrowest Wedge",
+    description: "Smallest version someone would pay real money for this week",
+    question: "What's the one thing a user would pay for this week? Not the full platform vision — the smallest version that delivers value.",
+    subQuestions: [
+      { key: "wedge_value", prompt: "What specific problem does this wedge solve that the user would pay to solve immediately?" },
+      { key: "expansion_path", prompt: "How does this expand from the wedge into the full vision? What comes next?" },
+    ],
+    buildPatchContent: (answers) => [
+      "## Narrowest Wedge",
+      "",
+      answers.question ?? "",
+      "",
+      "### Wedge Value",
+      "",
+      answers.wedge_value ?? "",
+      "",
+      "### Expansion Path",
+      "",
+      answers.expansion_path ?? "",
     ].join("\n"),
     targetHint: "vision",
+    systemPrompt: "You are a YC partner conducting a rigorous product diagnostic. Narrow beats wide early. Wedge first, expand from strength. If no one pays for the small version, the value proposition isn't clear.",
   },
-  "eng-review": {
-    name: "eng-review",
-    label: "Engineering Review",
-    description: "Architecture decisions, data flow, tech stack, and failure modes",
-    questions: [
-      { key: "architecture", prompt: "Describe the high-level architecture in 3-5 sentences. What are the main components?" },
-      { key: "data_flow", prompt: "Walk through the critical data flow for the primary user action." },
-      { key: "tech_stack", prompt: "What is the proposed tech stack and why? Call out any non-obvious choices." },
-      { key: "failure_modes", prompt: "What are the top 3 failure modes and how will the system handle each?" },
-      { key: "test_matrix", prompt: "What are the must-have test scenarios? List 3-5 acceptance criteria." },
+  "observation": {
+    name: "observation",
+    label: "Observation",
+    description: "Watch real users struggle — guided walkthroughs teach you nothing",
+    question: "Have you watched a real user struggle with this problem? If not, that's assignment #1.",
+    subQuestions: [
+      { key: "observation_method", prompt: "Describe what you observed. Where did they get stuck? What workarounds did they use?" },
+      { key: "insights", prompt: "What did you learn that contradicted your assumptions?" },
     ],
     buildPatchContent: (answers) => [
-      "## Architecture",
+      "## Observation",
       "",
-      answers.architecture ?? "",
+      answers.question ?? "",
       "",
-      "### Data Flow",
+      "### What We Observed",
       "",
-      answers.data_flow ?? "",
+      answers.observation_method ?? "",
       "",
-      "### Tech Stack",
+      "### Counter-Intuitive Insights",
       "",
-      answers.tech_stack ?? "",
-      "",
-      "### Failure Modes",
-      "",
-      answers.failure_modes ?? "",
-      "",
-      "### Test Matrix",
-      "",
-      answers.test_matrix ?? "",
+      answers.insights ?? "",
     ].join("\n"),
-    targetHint: "architecture",
+    targetHint: "problem",
+    systemPrompt: "You are a YC partner conducting a rigorous product diagnostic. Watch, don't demo. Sitting behind someone while they struggle teaches you everything. Guided walkthroughs teach you nothing.",
   },
-  "design-review": {
-    name: "design-review",
-    label: "Design Review",
-    description: "Design system constraints, interaction model, and accessibility decisions",
-    questions: [
-      { key: "design_principles", prompt: "What are the 2-3 core design principles for this product?" },
-      { key: "interaction_model", prompt: "Describe the primary interaction pattern. How does the user move through the core flow?" },
-      { key: "accessibility", prompt: "What accessibility requirements apply? (WCAG level, keyboard nav, screen reader support)" },
-      { key: "design_constraints", prompt: "What existing design system, brand, or platform constraints must be respected?" },
+  "future-fit": {
+    name: "future-fit",
+    label: "Future-Fit",
+    description: "Does this survive reorg or when your champion leaves?",
+    question: "Does this survive a reorg — or does it die when your champion leaves? Is this a feature or a product?",
+    subQuestions: [
+      { key: "survival_mechanism", prompt: "What makes this product essential, not just nice-to-have?" },
+      { key: "champion_risk", prompt: "Who is your champion? What happens if they leave?" },
     ],
     buildPatchContent: (answers) => [
-      "## Design System",
+      "## Future-Fit",
       "",
-      "### Principles",
+      answers.question ?? "",
       "",
-      answers.design_principles ?? "",
+      "### Survival Mechanism",
       "",
-      "### Interaction Model",
+      answers.survival_mechanism ?? "",
       "",
-      answers.interaction_model ?? "",
+      "### Champion Risk",
       "",
-      "### Accessibility",
-      "",
-      answers.accessibility ?? "",
-      "",
-      "### Constraints",
-      "",
-      answers.design_constraints ?? "",
+      answers.champion_risk ?? "",
     ].join("\n"),
-    targetHint: "design",
-  },
-  "security-review": {
-    name: "security-review",
-    label: "Security Review",
-    description: "OWASP threat model, trust boundaries, and security requirements",
-    questions: [
-      { key: "trust_boundaries", prompt: "Where are the trust boundaries? What data crosses them?" },
-      { key: "threat_model", prompt: "List the top 3 threats (OWASP-aligned) relevant to this product." },
-      { key: "auth_model", prompt: "Describe the authentication and authorization model." },
-      { key: "sensitive_data", prompt: "What sensitive data is stored or processed? How is it protected?" },
-      { key: "security_requirements", prompt: "List 3-5 non-functional security requirements (e.g., rate limiting, audit logging)." },
-    ],
-    buildPatchContent: (answers) => [
-      "## Security",
-      "",
-      "### Trust Boundaries",
-      "",
-      answers.trust_boundaries ?? "",
-      "",
-      "### Threat Model",
-      "",
-      answers.threat_model ?? "",
-      "",
-      "### Auth Model",
-      "",
-      answers.auth_model ?? "",
-      "",
-      "### Sensitive Data",
-      "",
-      answers.sensitive_data ?? "",
-      "",
-      "### Security Requirements",
-      "",
-      answers.security_requirements ?? "",
-    ].join("\n"),
-    targetHint: "security",
+    targetHint: "vision",
+    systemPrompt: "You are a YC partner conducting a rigorous product diagnostic. Features die when champions leave. Products survive when they're essential, not when they're nice-to-have.",
   },
 };
 
@@ -197,6 +192,7 @@ type PlanSessionRow = {
   session_id: string;
   document_id: string;
   workspace_id: string;
+  mode: string;
   status: string;
   created_at: string;
   updated_at: string;
@@ -209,6 +205,8 @@ type PlanStageRow = {
   name: string;
   status: string;
   patch_id: string | null;
+  question_prompt: string | null;
+  system_prompt: string | null;
   outputs_json: Record<string, unknown> | null;
   answers_json: Record<string, string> | null;
   created_at: string;
@@ -222,24 +220,26 @@ type PlanStageRow = {
 export async function createPlanSession(
   documentId: string,
   workspaceId: string,
+  mode: "startup" | "builder" = "startup",
 ): Promise<PlanSession> {
   const db = await getDatabase({ workspaceId });
   const now = new Date().toISOString();
-  const sessionId = `psession_${randomUUID()}`;
+  const sessionId = `ivsession_${randomUUID()}`;
 
   await db.query(
-    `INSERT INTO plan_sessions (session_id, document_id, workspace_id, status, created_at, updated_at)
-     VALUES ($1, $2, $3, $4, $5, $6)`,
-    [sessionId, documentId, workspaceId, "active", now, now],
+    `INSERT INTO idea_validation_sessions (session_id, document_id, workspace_id, mode, status, created_at, updated_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+    [sessionId, documentId, workspaceId, mode, "active", now, now],
   );
 
-  // Pre-create all stage rows as 'pending'
-  for (const name of PLAN_STAGE_NAMES) {
-    const stageId = `pstage_${randomUUID()}`;
+  // Pre-create all stage rows as 'pending' with their questions and system prompts
+  for (const name of IDEA_VALIDATION_STAGE_NAMES) {
+    const stageDef = STAGE_DEFINITIONS[name];
+    const stageId = `ivstage_${randomUUID()}`;
     await db.query(
-      `INSERT INTO plan_stages (stage_id, session_id, document_id, name, status, patch_id, outputs_json, answers_json, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, $5, NULL, NULL, NULL, $6, $7)`,
-      [stageId, sessionId, documentId, name, "pending", now, now],
+      `INSERT INTO idea_validation_stages (stage_id, session_id, document_id, name, status, patch_id, question_prompt, system_prompt, outputs_json, answers_json, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, NULL, $6, $7, NULL, NULL, $8, $9)`,
+      [stageId, sessionId, documentId, name, "pending", stageDef.question, stageDef.systemPrompt || null, now, now],
     );
   }
 
@@ -253,14 +253,14 @@ export async function getPlanSession(
   const db = await getDatabase({ workspaceId });
 
   const { rows: sessionRows } = await db.query<PlanSessionRow>(
-    `SELECT * FROM plan_sessions WHERE session_id = $1`,
+    `SELECT * FROM idea_validation_sessions WHERE session_id = $1`,
     [sessionId],
   );
   const session = sessionRows[0];
-  if (!session) throw new Error(`Plan session not found: ${sessionId}`);
+  if (!session) throw new Error(`Idea validation session not found: ${sessionId}`);
 
   const { rows: stageRows } = await db.query<PlanStageRow>(
-    `SELECT * FROM plan_stages WHERE session_id = $1 ORDER BY created_at ASC`,
+    `SELECT * FROM idea_validation_stages WHERE session_id = $1 ORDER BY created_at ASC`,
     [sessionId],
   );
 
@@ -274,14 +274,14 @@ export async function listPlanSessions(
   const db = await getDatabase({ workspaceId });
 
   const { rows: sessionRows } = await db.query<PlanSessionRow>(
-    `SELECT * FROM plan_sessions WHERE document_id = $1 ORDER BY created_at DESC`,
+    `SELECT * FROM idea_validation_sessions WHERE document_id = $1 ORDER BY created_at DESC`,
     [documentId],
   );
 
   const sessions: PlanSession[] = [];
   for (const row of sessionRows) {
     const { rows: stageRows } = await db.query<PlanStageRow>(
-      `SELECT * FROM plan_stages WHERE session_id = $1 ORDER BY created_at ASC`,
+      `SELECT * FROM idea_validation_stages WHERE session_id = $1 ORDER BY created_at ASC`,
       [row.session_id],
     );
     sessions.push(assembleSession(row, stageRows));
@@ -300,7 +300,7 @@ export async function advancePlanSession(
   const now = new Date().toISOString();
 
   const stageRow = await db.query<PlanStageRow>(
-    `SELECT * FROM plan_stages WHERE session_id = $1 AND name = $2`,
+    `SELECT * FROM idea_validation_stages WHERE session_id = $1 AND name = $2`,
     [sessionId, input.stage_name],
   );
   const stage = stageRow.rows[0];
@@ -330,7 +330,7 @@ export async function advancePlanSession(
         operation: "replace",
         content: patchContent,
         patch_type: "structural_edit",
-        rationale: `Planning stage: ${def.label}`,
+        rationale: `Idea validation stage: ${def.label}`,
         proposed_by: {
           actor_type: input.actor_type,
           actor_id: input.actor_id,
@@ -344,13 +344,13 @@ export async function advancePlanSession(
     patchId = patch.patch_id;
   }
 
-  const outputs = def.questions.reduce<Record<string, string>>((acc, q) => {
+  const outputs = def.subQuestions.reduce<Record<string, string>>((acc, q) => {
     acc[q.key] = input.answers[q.key] ?? "";
     return acc;
   }, {});
 
   await db.query(
-    `UPDATE plan_stages
+    `UPDATE idea_validation_stages
      SET status = 'completed', patch_id = $1, outputs_json = $2::jsonb, answers_json = $3::jsonb, updated_at = $4
      WHERE session_id = $5 AND name = $6`,
     [
@@ -364,7 +364,7 @@ export async function advancePlanSession(
   );
 
   await db.query(
-    `UPDATE plan_sessions SET updated_at = $1 WHERE session_id = $2`,
+    `UPDATE idea_validation_sessions SET updated_at = $1 WHERE session_id = $2`,
     [now, sessionId],
   );
 
@@ -381,13 +381,13 @@ export async function skipPlanStage(
   const now = new Date().toISOString();
 
   await db.query(
-    `UPDATE plan_stages SET status = 'skipped', updated_at = $1
+    `UPDATE idea_validation_stages SET status = 'skipped', updated_at = $1
      WHERE session_id = $2 AND name = $3`,
     [now, sessionId, input.stage_name],
   );
 
   await db.query(
-    `UPDATE plan_sessions SET updated_at = $1 WHERE session_id = $2`,
+    `UPDATE idea_validation_sessions SET updated_at = $1 WHERE session_id = $2`,
     [now, sessionId],
   );
 
@@ -399,7 +399,7 @@ export function getStageDefinition(name: PlanStageName): StageDefinition {
 }
 
 export function getAllStageDefinitions(): StageDefinition[] {
-  return PLAN_STAGE_NAMES.map((n) => STAGE_DEFINITIONS[n]);
+  return IDEA_VALIDATION_STAGE_NAMES.map((n) => STAGE_DEFINITIONS[n]);
 }
 
 // ---------------------------------------------------------------------------
@@ -410,7 +410,7 @@ function assembleSession(
   session: PlanSessionRow,
   stageRows: PlanStageRow[],
 ): PlanSession {
-  const stages: PlanStage[] = PLAN_STAGE_NAMES.map((name) => {
+  const stages: PlanStage[] = IDEA_VALIDATION_STAGE_NAMES.map((name) => {
     const row = stageRows.find((r) => r.name === name);
     if (row) {
       return {
@@ -420,6 +420,8 @@ function assembleSession(
         name: name as PlanStageName,
         status: row.status as PlanStage["status"],
         patch_id: row.patch_id,
+        question_prompt: row.question_prompt,
+        system_prompt: row.system_prompt,
         outputs: row.outputs_json ?? null,
         answers: row.answers_json ?? null,
         created_at: row.created_at,
@@ -435,6 +437,8 @@ function assembleSession(
       name: name as PlanStageName,
       status: "pending" as const,
       patch_id: null,
+      question_prompt: null,
+      system_prompt: null,
       outputs: null,
       answers: null,
       created_at: now,
@@ -446,6 +450,7 @@ function assembleSession(
     session_id: session.session_id,
     document_id: session.document_id,
     workspace_id: session.workspace_id,
+    mode: session.mode as "startup" | "builder",
     status: session.status as PlanSession["status"],
     stages,
     created_at: session.created_at,
