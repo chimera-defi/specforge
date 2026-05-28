@@ -1116,15 +1116,22 @@ async function createSchema(database: QuerySession) {
 
     ALTER TABLE clarifications ADD COLUMN IF NOT EXISTS priority TEXT NOT NULL DEFAULT 'normal';
 
-    -- Migration: Rename old plan_sessions tables to idea_validation_sessions
-    ALTER TABLE IF EXISTS plan_sessions RENAME TO idea_validation_sessions;
-    ALTER TABLE IF EXISTS plan_stages RENAME TO idea_validation_stages;
+    -- Migration: Rename old plan_sessions tables to idea_validation_sessions if they exist
+    DO $$
+    BEGIN
+      -- Check if old table exists and new table doesn't, then rename
+      IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'plan_sessions')
+         AND NOT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'idea_validation_sessions') THEN
+        ALTER TABLE plan_sessions RENAME TO idea_validation_sessions;
+      END IF;
 
-    -- Add new columns to idea_validation_sessions if they don't exist
-    ALTER TABLE idea_validation_sessions ADD COLUMN IF NOT EXISTS mode TEXT NOT NULL DEFAULT 'startup';
-    ALTER TABLE idea_validation_stages ADD COLUMN IF NOT EXISTS question_prompt TEXT;
-    ALTER TABLE idea_validation_stages ADD COLUMN IF NOT EXISTS system_prompt TEXT;
+      IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'plan_stages')
+         AND NOT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'idea_validation_stages') THEN
+        ALTER TABLE plan_stages RENAME TO idea_validation_stages;
+      END IF;
+    END $$;
 
+    -- Create new tables if they don't exist (for fresh installs)
     CREATE TABLE IF NOT EXISTS idea_validation_sessions (
       session_id TEXT PRIMARY KEY,
       document_id TEXT NOT NULL REFERENCES documents(document_id) ON DELETE CASCADE,
@@ -1149,6 +1156,37 @@ async function createSchema(database: QuerySession) {
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
     );
+
+    -- Add new columns to idea_validation_sessions if they don't exist (for migrations)
+    DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'idea_validation_sessions' AND column_name = 'mode'
+      ) THEN
+        ALTER TABLE idea_validation_sessions ADD COLUMN mode TEXT NOT NULL DEFAULT 'startup';
+      END IF;
+    END $$;
+
+    DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'idea_validation_stages' AND column_name = 'question_prompt'
+      ) THEN
+        ALTER TABLE idea_validation_stages ADD COLUMN question_prompt TEXT;
+      END IF;
+    END $$;
+
+    DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'idea_validation_stages' AND column_name = 'system_prompt'
+      ) THEN
+        ALTER TABLE idea_validation_stages ADD COLUMN system_prompt TEXT;
+      END IF;
+    END $$;
 
     CREATE TABLE IF NOT EXISTS acceptance_tests (
       test_id TEXT PRIMARY KEY,
@@ -2527,7 +2565,7 @@ async function getCompletedPlanningStages(
     outputs_json: Record<string, string> | null;
   }>(
     `SELECT name, outputs_json
-     FROM plan_stages
+     FROM idea_validation_stages
      WHERE document_id = $1 AND status = 'completed'`,
     [documentId],
   );
