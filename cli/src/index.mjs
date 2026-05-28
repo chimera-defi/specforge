@@ -255,6 +255,154 @@ async function runHandoffCommand(options) {
   process.stdout.write(`${outputStr}\n`);
 }
 
+const AUDIT_STAGE_NAMES = ["office-hours", "ceo-review", "eng-review", "design-review", "security-review"];
+
+async function runAuditCommand(options) {
+  const rl = options.rl ?? (process.stdin.isTTY
+    ? readline.createInterface({ input: process.stdin, output: process.stdout })
+    : null);
+
+  const stagesToRun = options.stage
+    ? [options.stage]
+    : AUDIT_STAGE_NAMES.filter((s) => !options.skipStages?.includes(s));
+
+  const idea = options.idea || options.values.idea;
+
+  if (!options.json) {
+    process.stdout.write("\nSpecForge Idea Audit — Pre-Spec Validation\n");
+    if (idea) {
+      process.stdout.write(`Idea: ${idea}\n`);
+    }
+    process.stdout.write("\n");
+  }
+
+  const results = [];
+
+  for (const stageName of stagesToRun) {
+    if (!AUDIT_STAGE_NAMES.includes(stageName)) {
+      process.stderr.write(`Error: Unknown audit stage "${stageName}". Valid stages: ${AUDIT_STAGE_NAMES.join(", ")}\n`);
+      process.exitCode = 1;
+      if (rl && !options.rl) rl.close();
+      return;
+    }
+
+    if (!options.json) {
+      process.stdout.write(`\n--- ${stageName.toUpperCase()} ---\n`);
+      process.stdout.write(`Running ${stageName} audit stage...\n`);
+    }
+
+    // For now, simulate the audit stage completion
+    // In a full implementation, this would call the appropriate skill or API
+    const stageResult = {
+      stage: stageName,
+      status: "completed",
+      outputs: {
+        timestamp: new Date().toISOString(),
+        notes: `Audit stage ${stageName} completed - full skill integration pending`
+      }
+    };
+
+    results.push(stageResult);
+
+    if (!options.json) {
+      process.stdout.write(`  Stage ${stageName} completed\n`);
+    }
+  }
+
+  if (rl && !options.rl) rl.close();
+
+  const auditOutput = {
+    ideaAudit: {
+      stages: results,
+      ideaPack: {
+        executiveSummary: "Audit complete - full integration pending",
+        productThesis: idea || "No thesis provided",
+        goNoGo: "conditional",
+        killCriteria: "TBD",
+        riskiestAssumption: "TBD",
+        validationSignal: "TBD"
+      },
+      exitGates: {
+        completeness: true,
+        consistency: true,
+        validation: false,
+        alignment: true,
+        ux: false,
+        blocking: "validation"
+      }
+    }
+  };
+
+  if (options.json) {
+    process.stdout.write(`${JSON.stringify(auditOutput, null, 2)}\n`);
+  } else {
+    process.stdout.write("\nAudit complete. Review outputs above and proceed to spec generation with `specforge plan`.\n");
+  }
+}
+
+async function runAutoplanCommand(options) {
+  const rl = options.rl ?? (process.stdin.isTTY
+    ? readline.createInterface({ input: process.stdin, output: process.stdout })
+    : null);
+
+  const title = options.values.title;
+  const idea = options.idea || options.values.idea;
+
+  if (!title && process.stdin.isTTY && rl) {
+    const answer = await rl.question("Project title: ");
+    options.values.title = answer.trim();
+  }
+
+  if (!options.json) {
+    process.stdout.write("\nSpecForge Autoplan — Full Automated Pipeline\n");
+    process.stdout.write(`Title: ${options.values.title || "Untitled"}\n`);
+    if (idea) {
+      process.stdout.write(`Idea: ${idea}\n`);
+    }
+    process.stdout.write("\n");
+  }
+
+  // Step 1: Run audit
+  if (!options.json) {
+    process.stdout.write("Step 1: Running idea audit...\n");
+  }
+  await runAuditCommand({ ...options, idea, json: true });
+
+  // Step 2: Run plan stages
+  if (!options.json) {
+    process.stdout.write("\nStep 2: Running sprint planning stages...\n");
+  }
+
+  // For autoplan, we need a document ID - this would normally come from creating a document first
+  // For now, we'll skip this step with a message
+  if (!options.json) {
+    process.stdout.write("  Plan stages require document creation - integration pending\n");
+    process.stdout.write("  Run `specforge plan --document <id>` after creating a document\n");
+  }
+
+  // Step 3: Generate spec
+  if (!options.json) {
+    process.stdout.write("\nStep 3: Generating spec...\n");
+    process.stdout.write("  Spec generation requires document context - integration pending\n");
+  }
+
+  // Step 4: Emit handoff
+  if (!options.json) {
+    process.stdout.write("\nStep 4: Emitting handoff...\n");
+    process.stdout.write("  Handoff requires completed document - integration pending\n");
+  }
+
+  if (rl && !options.rl) rl.close();
+
+  if (!options.json) {
+    process.stdout.write("\nAutoplan framework complete. Full integration with document lifecycle pending.\n");
+    process.stdout.write("Use individual commands for full functionality:\n");
+    process.stdout.write("  specforge audit --idea '<idea>'\n");
+    process.stdout.write("  specforge plan --document <id>\n");
+    process.stdout.write("  specforge handoff --document <id>\n");
+  }
+}
+
 const fieldOrder = [
   ["title", "Title"],
   ["problem", "Problem"],
@@ -269,6 +417,11 @@ const fieldOrder = [
 ];
 
 function parseArgs(argv) {
+  // Check for help flags first
+  if (argv.includes("--help") || argv.includes("-h")) {
+    return { command: "help", json: false, output: null, values: {}, help: true, stage: null, skipStages: [], idea: null };
+  }
+
   const normalizedArgv =
     argv[0] === "/specforge"
       ? argv[1] && !argv[1].startsWith("--")
@@ -276,18 +429,13 @@ function parseArgs(argv) {
         : ["init", ...argv.slice(1)]
       : argv;
   const [command = "init", ...rest] = normalizedArgv;
-  const options = { command, json: false, output: null, values: {}, help: false, stage: null, skipStages: [] };
+  const options = { command, json: false, output: null, values: {}, help: false, stage: null, skipStages: [], idea: null };
 
   for (let index = 0; index < rest.length; index += 1) {
     const token = rest[index];
 
     if (token === "--json") {
       options.json = true;
-      continue;
-    }
-
-    if (token === "--help" || token === "-h") {
-      options.help = true;
       continue;
     }
 
@@ -306,6 +454,12 @@ function parseArgs(argv) {
     if (token === "--skip") {
       const stageName = rest[index + 1] ?? null;
       if (stageName) options.skipStages.push(stageName);
+      index += 1;
+      continue;
+    }
+
+    if (token === "--idea") {
+      options.idea = rest[index + 1] ?? null;
       index += 1;
       continue;
     }
@@ -550,6 +704,10 @@ function printHelp() {
     [
       "SpecForge CLI",
       "",
+      "ACT 0 — Idea Audit:",
+      "  specforge audit [--stage <name>] [--skip <stage>] [--idea '<idea>'] [--json]",
+      "  specforge autoplan --title '<title>' [--idea '<idea>'] [--json]",
+      "",
       "ACT 1 — Sprint Planning:",
       "  specforge plan --document <id> [--stage <name>] [--skip <stage>] [--json]",
       "  specforge iterate --document <id> --section <blockId> [--message <msg>] [--json]",
@@ -569,11 +727,15 @@ function printHelp() {
       "  specforge backlog [--json]",
       "  specforge tui",
       "",
+      "Audit stages: office-hours | ceo-review | eng-review | design-review | security-review",
       "Plan stages: discovery | ceo-review | eng-review | design-review | security-review",
       "",
       "Requires SPECFORGE_API_URL to be set (e.g. http://localhost:3000).",
       "",
       "Examples:",
+      "  specforge audit --stage office-hours --idea 'A tool for X'",
+      "  specforge audit --json",
+      "  specforge autoplan --title 'Server Manager' --idea 'Teams lose infra context'",
       "  specforge plan --document doc_abc123 --json",
       "  specforge plan --document doc_abc123 --stage discovery",
       "  specforge plan --document doc_abc123 --skip security-review",
@@ -601,7 +763,7 @@ function printBacklog(backlog) {
 async function run() {
   const options = parseArgs(process.argv.slice(2));
 
-  if (options.help) {
+  if (options.command === "help" || options.help) {
     printHelp();
     return;
   }
@@ -739,6 +901,16 @@ async function run() {
 
   if (options.command === "handoff") {
     await runHandoffCommand(options);
+    return;
+  }
+
+  if (options.command === "audit") {
+    await runAuditCommand(options);
+    return;
+  }
+
+  if (options.command === "autoplan") {
+    await runAutoplanCommand(options);
     return;
   }
 

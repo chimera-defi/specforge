@@ -1,6 +1,7 @@
 import { mkdtemp } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 import { agentSpecExportSchema } from "./contracts";
@@ -42,7 +43,7 @@ async function makeOptions() {
 
   return {
     dbPath: path.join(baseDir, "specforge-db"),
-    fixturesDir: path.resolve(process.cwd(), "..", "fixtures"),
+    fixturesDir: path.resolve(fileURLToPath(import.meta.url), "..", "..", "..", "..", "..", "fixtures"),
   };
 }
 
