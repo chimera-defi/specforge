@@ -19,6 +19,7 @@ import {
 import { CollapsibleWorkspaceNav } from "./collapsible-nav";
 import { ClarificationQueue } from "@/components/specforge/ClarificationQueue";
 import { DocumentWorkspace } from "../document-workspace";
+import { CollaborativeFileBrowser } from "@/components/specforge/CollaborativeFileBrowser";
 import { GuidedDraftBuilder } from "../guided-draft-builder";
 import { LocalAdminPanel } from "../local-admin-panel";
 import { ShareDocumentPanel } from "../share-document-panel";
@@ -1240,17 +1241,13 @@ export default async function Home({ searchParams }: Props) {
           {activeStage === "draft" ? (
             <section className={`${styles.panel} ${styles.editorPanel}`} id="document-workspace">
               <div className={styles.panelHeader}>
-                <h2>Document workspace</h2>
-                <span>Tiptap-backed local editor</span>
+                <h2>File workspace</h2>
+                <span>Multi-file collaborative editor</span>
               </div>
               {activeDocument ? (
-                <DocumentWorkspace
-                  key={`${activeDocument.document_id}:${activeDocument.version}`}
-                  document={activeDocument}
+                <CollaborativeFileBrowser
+                  documentId={activeDocument.document_id}
                   activeActor={activeWorkspaceActor}
-                  authMode={activeWorkspaceSession.authMode}
-                  blockSummaries={blockSummaries}
-                  toolStatuses={assistToolStatuses}
                 />
               ) : (
                 <p className={styles.empty}>Create a document first.</p>
