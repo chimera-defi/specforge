@@ -1199,6 +1199,18 @@ async function createSchema(database: QuerySession) {
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS workspace_files (
+      file_id TEXT PRIMARY KEY,
+      document_id TEXT NOT NULL REFERENCES documents(document_id) ON DELETE CASCADE,
+      filename TEXT NOT NULL,
+      content TEXT NOT NULL,
+      content_json JSONB,
+      file_type TEXT NOT NULL DEFAULT 'markdown',
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      UNIQUE(document_id, filename)
+    );
   `);
 }
 
@@ -2670,6 +2682,172 @@ export async function getUserByGitHubLogin(
     [githubLogin],
   );
   return result.rows[0] ? mapUserRow(result.rows[0]) : null;
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Workspace Files (Multi-file workspace support)
+// ──────────────────────────────────────────────────────────────────────────────
+
+export type WorkspaceFileRecord = {
+  file_id: string;
+  document_id: string;
+  filename: string;
+  content: string;
+  content_json: Record<string, unknown> | null;
+  file_type: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export async function createWorkspaceFile(
+  input: {
+    document_id: string;
+    filename: string;
+    content: string;
+    file_type?: string;
+  },
+  options?: StoreOptions,
+): Promise<WorkspaceFileRecord> {
+  const database = await getDatabase(options);
+  const { dbPath } = resolveOptions(options);
+  const fileId = `file_${randomUUID()}`;
+  const now = new Date().toISOString();
+
+  const { rows } = await database.query<WorkspaceFileRecord>(
+    `INSERT INTO workspace_files (
+      file_id, document_id, filename, content, file_type, created_at, updated_at
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+    ON CONFLICT (document_id, filename) 
+    DO UPDATE SET content = $4, updated_at = $6
+    RETURNING *`,
+    [fileId, input.document_id, input.filename, input.content, input.file_type ?? 'markdown', now, now],
+  );
+
+  await persistSnapshot(database, dbPath);
+  return rows[0]!;
+}
+
+export async function getWorkspaceFile(
+  fileId: string,
+  options?: StoreOptions,
+): Promise<WorkspaceFileRecord | null> {
+  const database = await getDatabase(options);
+  const { rows } = await database.query<WorkspaceFileRecord>(
+    `SELECT * FROM workspace_files WHERE file_id = $1`,
+    [fileId],
+  );
+  return rows[0] ?? null;
+}
+
+export async function getWorkspaceFileByName(
+  documentId: string,
+  filename: string,
+  options?: StoreOptions,
+): Promise<WorkspaceFileRecord | null> {
+  const database = await getDatabase(options);
+  const { rows } = await database.query<WorkspaceFileRecord>(
+    `SELECT * FROM workspace_files WHERE document_id = $1 AND filename = $2`,
+    [documentId, filename],
+  );
+  return rows[0] ?? null;
+}
+
+export async function listWorkspaceFiles(
+  documentId: string,
+  options?: StoreOptions,
+): Promise<WorkspaceFileRecord[]> {
+  const database = await getDatabase(options);
+  const { rows } = await database.query<WorkspaceFileRecord>(
+    `SELECT * FROM workspace_files WHERE document_id = $1 ORDER BY filename`,
+    [documentId],
+  );
+  return rows;
+}
+
+export async function updateWorkspaceFile(
+  fileId: string,
+  updates: {
+    content?: string;
+    content_json?: Record<string, unknown>;
+  },
+  options?: StoreOptions,
+): Promise<WorkspaceFileRecord> {
+  const database = await getDatabase(options);
+  const { dbPath } = resolveOptions(options);
+  const now = new Date().toISOString();
+
+  const setClauses: string[] = [];
+  const params: unknown[] = [];
+  let paramIndex = 1;
+
+  if (updates.content !== undefined) {
+    setClauses.push(`content = $${paramIndex++}`);
+    params.push(updates.content);
+  }
+  if (updates.content_json !== undefined) {
+    setClauses.push(`content_json = $${paramIndex++}`);
+    params.push(updates.content_json);
+  }
+
+  setClauses.push(`updated_at = $${paramIndex++}`);
+  params.push(now);
+  params.push(fileId);
+
+  const { rows } = await database.query<WorkspaceFileRecord>(
+    `UPDATE workspace_files SET ${setClauses.join(', ')} WHERE file_id = $${paramIndex} RETURNING *`,
+    params,
+  );
+
+  await persistSnapshot(database, dbPath);
+  return rows[0]!;
+}
+
+export async function deleteWorkspaceFile(
+  fileId: string,
+  options?: StoreOptions,
+): Promise<void> {
+  const database = await getDatabase(options);
+  const { dbPath } = resolveOptions(options);
+
+  await database.query(`DELETE FROM workspace_files WHERE file_id = $1`, [fileId]);
+  await persistSnapshot(database, dbPath);
+}
+
+export async function initializeDefaultWorkspaceFiles(
+  documentId: string,
+  document: DocumentRecord,
+  options?: StoreOptions,
+): Promise<void> {
+  const existingFiles = await listWorkspaceFiles(documentId, options);
+  if (existingFiles.length > 0) {
+    return; // Already initialized
+  }
+
+  const exportBundle = exportDocumentBundle(document, [], []);
+  const files = exportBundle.files;
+
+  for (const [filename, content] of Object.entries(files)) {
+    await createWorkspaceFile(
+      {
+        document_id: documentId,
+        filename,
+        content,
+        file_type: filename.endsWith('.json') ? 'json' : 'markdown',
+      },
+      options,
+    );
+  }
+}
+
+export async function syncMainDocumentToFiles(
+  document: DocumentRecord,
+  options?: StoreOptions,
+): Promise<void> {
+  // Ensure PRD.md is kept in sync with the main document
+  const existingPrd = await getWorkspaceFileByName(document.document_id, 'PRD.md', options);
+  if (existingPrd && existingPrd.content !== document.markdown) {
+    await updateWorkspaceFile(existingPrd.file_id, { content: document.markdown }, options);
+  }
 }
 
 /* Membership and audit functions extracted to ./store-memberships.ts and ./store-audit.ts */
