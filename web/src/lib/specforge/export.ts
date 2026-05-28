@@ -719,15 +719,25 @@ export function exportDocumentBundle(
     "SPEC.md": buildSpec(document, patches),
     "AGENT_HANDOFF.md": buildAgentHandoff(document),
     "TASKS.md": buildTasks(document, patches),
-    "OPEN_QUESTIONS.md": buildOpenQuestions(document, clarifications),
     "FIRST_60_MINUTES.md": buildFirst60Minutes(document),
     "RISK_REGISTER.md": buildRiskRegister(document),
     "ACCEPTANCE_TEST_MATRIX.md": buildAcceptanceTestMatrix(document),
-    "DECISIONS.md": buildDecisions(document, patches),
     "USER_FLOWS.md": buildUserFlows(document),
     "VALIDATION_PLAN.md": buildValidationPlan(document),
     "agent_spec.json": buildAgentSpecJson(document, patches, clarifications, planningStages),
   };
+
+  // Only include OPEN_QUESTIONS.md if there are actual questions
+  const openQuestions = buildOpenQuestions(document, clarifications);
+  if (!openQuestions.includes("All critical questions have been answered")) {
+    files["OPEN_QUESTIONS.md"] = openQuestions;
+  }
+
+  // Only include DECISIONS.md if there are actual decisions
+  const decisions = buildDecisions(document, patches);
+  if (!decisions.includes("No decisions have been recorded")) {
+    files["DECISIONS.md"] = decisions;
+  }
 
   // Conditionally add planning stage outputs
   if (planningStages) {

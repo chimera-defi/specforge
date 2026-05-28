@@ -26,3 +26,6 @@ artifacts/kimi-delegate/
 artifacts/token-reduction/
 artifacts/qmd-repo-*.stamp
 .gstack/
+.env
+cookies.txt
+desktop/src-tauri/gen/schemas/

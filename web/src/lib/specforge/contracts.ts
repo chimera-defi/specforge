@@ -13,6 +13,17 @@ export const documentUpdateSchema = z.object({
   editor_json: z.unknown().optional(),
 });
 
+export const workspaceFileCreateSchema = z.object({
+  filename: z.string().min(1).max(200),
+  content: z.string(),
+  file_type: z.enum(["markdown", "json", "yaml"]).optional(),
+});
+
+export const workspaceFileUpdateSchema = z.object({
+  content: z.string().optional(),
+  content_json: z.record(z.string(), z.unknown()).optional(),
+});
+
 export const patchProposalSchema = z.object({
   document_id: z.string().min(1),
   block_id: z.string().min(1),
