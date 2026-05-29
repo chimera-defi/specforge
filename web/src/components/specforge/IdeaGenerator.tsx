@@ -69,9 +69,9 @@ export function IdeaGenerator({ onGenerate, onCancel }: IdeaGeneratorProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          preset: "idea-to-spec",
-          context: briefDescription,
-          target_format: "idea_scaffold",
+          brief: briefDescription,
+          systemPrompt: "You are helping a user fill in an idea scaffold for a product. Extract the following fields from their brief: title, thesis, elevatorPitch, problem, currentAlternatives, whyNow, targetUser, userSegment, marketSize, solutionApproach, keyDifferentiator, mvpScope, phase1Features, futureFeatures, nonGoals, primarySurfaces, keyScreens, acceptanceTests, successMetrics, technicalRisks, constraints. Return as JSON with these exact field names.",
+          contextPrompt: briefDescription,
         }),
       });
 
