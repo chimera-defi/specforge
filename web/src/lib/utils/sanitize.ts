@@ -28,6 +28,21 @@ export function sanitizeInput(input: string): string {
 }
 
 /**
+ * Generic field validation helper
+ */
+export function validateField(
+  value: string | undefined,
+  fieldName: string,
+  minLength: number,
+  example: string
+): string | undefined {
+  if (!value || value.trim().length < minLength) {
+    return `${fieldName} must be at least ${minLength} characters (${example})`;
+  }
+  return undefined;
+}
+
+/**
  * Get error message for a specific field
  */
 export function getFieldError<T extends { field: string; message: string }>(

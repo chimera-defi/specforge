@@ -1,4 +1,5 @@
 import type { GuidedSpecInput } from "./guided";
+import { validateField } from "../utils/sanitize";
 
 export type IdeaScaffold = {
   // Core idea
@@ -128,25 +129,20 @@ export type IdeaValidationError = {
 export function validateIdeaScaffold(scaffold: IdeaScaffold): IdeaValidationError[] {
   const errors: IdeaValidationError[] = [];
 
-  if (!scaffold.title || scaffold.title.trim().length < 3) {
-    errors.push({ field: "title", message: "Title must be at least 3 characters (e.g., 'My Awesome Product')" });
-  }
+  const titleError = validateField(scaffold.title, "Title", 3, "e.g., 'My Awesome Product'");
+  if (titleError) errors.push({ field: "title", message: titleError });
 
-  if (!scaffold.thesis || scaffold.thesis.trim().length < 10) {
-    errors.push({ field: "thesis", message: "Thesis must be at least 10 characters (what is this and why it matters?)" });
-  }
+  const thesisError = validateField(scaffold.thesis, "Thesis", 10, "what is this and why it matters?");
+  if (thesisError) errors.push({ field: "thesis", message: thesisError });
 
-  if (!scaffold.problem || scaffold.problem.trim().length < 10) {
-    errors.push({ field: "problem", message: "Problem must be at least 10 characters (what's broken or missing?)" });
-  }
+  const problemError = validateField(scaffold.problem, "Problem", 10, "what's broken or missing?");
+  if (problemError) errors.push({ field: "problem", message: problemError });
 
-  if (!scaffold.targetUser || scaffold.targetUser.trim().length < 5) {
-    errors.push({ field: "targetUser", message: "Target user must be at least 5 characters (who specifically is this for?)" });
-  }
+  const targetUserError = validateField(scaffold.targetUser, "Target user", 5, "who specifically is this for?");
+  if (targetUserError) errors.push({ field: "targetUser", message: targetUserError });
 
-  if (!scaffold.solutionApproach || scaffold.solutionApproach.trim().length < 10) {
-    errors.push({ field: "solutionApproach", message: "Solution approach must be at least 10 characters (how will you solve it?)" });
-  }
+  const solutionError = validateField(scaffold.solutionApproach, "Solution approach", 10, "how will you solve it?");
+  if (solutionError) errors.push({ field: "solutionApproach", message: solutionError });
 
   return errors;
 }
