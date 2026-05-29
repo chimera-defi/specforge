@@ -5,6 +5,7 @@ import { useState } from "react";
 import type { IdeaScaffold, IdeaValidationError } from "@/lib/specforge/ideas-generator";
 import { validateIdeaScaffold } from "@/lib/specforge/ideas-generator";
 import { agentApi } from "@/lib/api-client";
+import { sanitizeInput } from "@/lib/utils/sanitize";
 
 interface IdeaGeneratorProps {
   onGenerate: (scaffold: Partial<IdeaScaffold>) => void;
@@ -49,18 +50,20 @@ export function IdeaGenerator({ onGenerate, onCancel }: IdeaGeneratorProps) {
   const [isAssisting, setIsAssisting] = useState(false);
   const [assistError, setAssistError] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<IdeaValidationError[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const errors = validateIdeaScaffold(scaffold as IdeaScaffold);
     setValidationErrors(errors);
     if (errors.length === 0) {
+      setIsSubmitting(true);
       onGenerate(scaffold);
     }
   };
 
   const handleChange = (field: keyof IdeaScaffold, value: string) => {
-    setScaffold(prev => ({ ...prev, [field]: value }));
+    setScaffold(prev => ({ ...prev, [field]: sanitizeInput(value) }));
     // Clear validation error for this field when user types
     setValidationErrors(prev => prev.filter(error => error.field !== field));
   };
@@ -548,6 +551,7 @@ export function IdeaGenerator({ onGenerate, onCancel }: IdeaGeneratorProps) {
           </button>
           <button
             type="submit"
+            disabled={isSubmitting}
             style={{
               padding: "8px 16px",
               borderRadius: "6px",
@@ -555,11 +559,12 @@ export function IdeaGenerator({ onGenerate, onCancel }: IdeaGeneratorProps) {
               background: "var(--sf-ink)",
               color: "var(--sf-surface-warm)",
               fontSize: "0.9rem",
-              cursor: "pointer",
+              cursor: isSubmitting ? "not-allowed" : "pointer",
               fontWeight: 500,
+              opacity: isSubmitting ? 0.7 : 1,
             }}
           >
-            Generate Idea & Spec
+            {isSubmitting ? "Generating..." : "Generate Idea & Spec"}
           </button>
         </div>
       </form>
