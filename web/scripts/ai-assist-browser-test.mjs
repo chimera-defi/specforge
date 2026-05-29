@@ -81,7 +81,7 @@ async function runAIAssistBrowserTest() {
           console.log(`✓ Found idea input with selector: ${selector}`);
           break;
         }
-      } catch (e) {
+      } catch (_e) {
         // Continue to next selector
       }
     }

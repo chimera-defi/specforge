@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState, useTransition, useCallback } from
 import { useRouter } from "next/navigation";
 import { HocuspocusProvider } from "@hocuspocus/provider";
 import Collaboration from "@tiptap/extension-collaboration";
-import { EditorContent, useEditor } from "@tiptap/react";
+import { EditorContent, useEditor, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import * as Y from "yjs";
 
@@ -118,7 +118,7 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
   const { showToast, removeToast, ToastContainer } = useToast();
   const surfaceRef = useRef<HTMLDivElement | null>(null);
   const isMountedRef = useRef(false);
-  const editorRef = useRef<any>(null);
+  const editorRef = useRef<Editor | null>(null);
   const lastKnownVersionRef = useRef(document.version);
   // Track whether the collab provider has already fired its first `synced`
   // event. We use a ref so that the value survives across useEffect re-runs
@@ -137,7 +137,7 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
 
       if (latestDocument && latestDocument.markdown && editorRef.current) {
         editorRef.current.commands.setContent(markdownToEditorHtml(latestDocument.markdown));
-        console.log(`Refreshed from database: v${latestDocument.version}`);
+        logger.info(`Refreshed from database: v${latestDocument.version}`);
         lastKnownVersionRef.current = latestDocument.version;
         setHasUnsavedChanges(false);
         showToast(`Refreshed from database (v${latestDocument.version})`, "success");
@@ -159,10 +159,10 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
 
     // Only auto-refresh if version changed (not on initial mount)
     if (document.version !== lastKnownVersionRef.current) {
-      console.log(`Document version changed from ${lastKnownVersionRef.current} to ${document.version}, auto-refreshing...`);
+      logger.info(`Document version changed from ${lastKnownVersionRef.current} to ${document.version}, auto-refreshing...`);
       handleRefreshFromDatabase();
     }
-  }, [document.version]);
+  }, [document.version, handleRefreshFromDatabase]);
   const collab = useMemo(() => {
     collabSyncedRef.current = false; // reset on new provider
     const ydoc = new Y.Doc();
@@ -223,7 +223,7 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
         class: "specforgeEditor",
       },
     },
-    onUpdate: ({ editor }) => {
+    onUpdate: ({ editor: _editor }) => {
       setHasUnsavedChanges(true);
     },
   });

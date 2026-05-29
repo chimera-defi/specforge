@@ -63,7 +63,7 @@ async function findAndClickAIAssist(page, stage) {
         console.log(`    Clicked AI assist button`);
         return true;
       }
-    } catch (e) {
+    } catch (_e) {
       // Continue to next selector
     }
   }
@@ -91,7 +91,7 @@ async function findIdeaInput(page) {
         console.log(`    Found with selector: ${selector}`);
         return element;
       }
-    } catch (e) {
+    } catch (_e) {
       // Continue to next selector
     }
   }

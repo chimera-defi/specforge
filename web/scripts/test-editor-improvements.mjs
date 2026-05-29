@@ -47,14 +47,14 @@ async function testEditorImprovements() {
     await page.goto(`http://localhost:3000/workspace?stage=draft`);
     await page.waitForTimeout(3000);
 
-    const beforeRefresh = await page.content();
+    const _beforeRefresh = await page.content();
     console.log("  ✓ Navigated to draft stage");
 
     // Press Ctrl+S
     await page.keyboard.press("Control+s");
     await page.waitForTimeout(2000);
 
-    const afterRefresh = await page.content();
+    const _afterRefresh = await page.content();
     const hasRefreshLog = consoleLogs.some(log => log.includes("Refreshed from database"));
     console.log(`  Ctrl+S refresh triggered: ${hasRefreshLog ? "✅ PASS" : "❌ FAIL"}`);
 

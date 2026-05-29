@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test } from "@playwright/test";
 
 test.describe("Idea-to-Spec Flow - Browser Testing", () => {
   test.beforeEach(async ({ page }) => {

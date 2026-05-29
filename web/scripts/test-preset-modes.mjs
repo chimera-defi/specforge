@@ -27,7 +27,7 @@ async function findAIAssistButton(page) {
       if (count > 0) {
         return button;
       }
-    } catch (e) {
+    } catch (_e) {
       // Continue
     }
   }

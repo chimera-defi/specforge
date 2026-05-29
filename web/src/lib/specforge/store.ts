@@ -2873,7 +2873,7 @@ interface FileVersionRecord {
   document_id: string;
   filename: string;
   content: string;
-  content_json: any;
+  content_json: Record<string, unknown>;
   file_type: string;
   created_at: string;
   created_by: string;
@@ -2959,8 +2959,8 @@ export async function restoreFileVersion(
   versionId: string,
   options?: StoreOptions,
 ): Promise<void> {
-  const database = await getDatabase(options);
-  const { dbPath } = resolveOptions(options);
+  const _database = await getDatabase(options);
+  const _dbPath = resolveOptions(options).dbPath;
 
   const version = await getFileVersion(versionId, options);
   if (!version) {

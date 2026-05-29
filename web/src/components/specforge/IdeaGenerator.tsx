@@ -338,7 +338,7 @@ export function IdeaGenerator({ onGenerate, onCancel }: IdeaGeneratorProps) {
               </label>
               <select
                 value={scaffold.runtimeTopology}
-                onChange={(e) => handleChange("runtimeTopology", e.target.value as any)}
+                onChange={(e) => handleChange("runtimeTopology", e.target.value as "local-only" | "hosted-only" | "hybrid")}
                 style={{
                   width: "100%",
                   padding: "8px 12px",
@@ -347,7 +347,7 @@ export function IdeaGenerator({ onGenerate, onCancel }: IdeaGeneratorProps) {
                   fontSize: "0.9rem",
                 }}
               >
-                <option value="local-only">Local-only (runs on user's machine)</option>
+                <option value="local-only">Local-only (runs on user&apos;s machine)</option>
                 <option value="hosted-only">Hosted-only (SaaS service)</option>
                 <option value="hybrid">Hybrid (local + hosted)</option>
               </select>
@@ -358,7 +358,7 @@ export function IdeaGenerator({ onGenerate, onCancel }: IdeaGeneratorProps) {
               </label>
               <select
                 value={scaffold.releaseStage}
-                onChange={(e) => handleChange("releaseStage", e.target.value as any)}
+                onChange={(e) => handleChange("releaseStage", e.target.value as "alpha" | "beta" | "production")}
                 style={{
                   width: "100%",
                   padding: "8px 12px",

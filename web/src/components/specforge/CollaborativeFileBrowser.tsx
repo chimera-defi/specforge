@@ -31,9 +31,21 @@ import {
 
 import { markdownToEditorHtml, tiptapJsonToMarkdown } from "@/lib/specforge/editor";
 
+interface FileVersionRecord {
+  version_id: string;
+  file_id: string;
+  document_id: string;
+  filename: string;
+  content: string;
+  content_json: Record<string, unknown>;
+  file_type: string;
+  created_at: string;
+  created_by: string;
+  version_number: number;
+}
+
 import styles from "./CollaborativeFileBrowser.module.css";
 import { FILE_TEMPLATES } from "./fileTemplates";
-import { getFileIcon } from "./fileIcons";
 import { SortableFileItem } from "./SortableFileItem";
 import { FileHistoryModal } from "./FileHistoryModal";
 import { RemoteCursors } from "./RemoteCursors";
@@ -83,7 +95,7 @@ interface CodeEditorProps {
   remoteCursors: Record<string, { x: number; y: number; name: string; color: string }>;
 }
 
-function CodeEditor({ ytext, filename, providerRef, activeActor, remoteCursors }: CodeEditorProps) {
+function CodeEditor({ ytext, filename: _filename, providerRef, activeActor, remoteCursors }: CodeEditorProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -96,7 +108,7 @@ function CodeEditor({ ytext, filename, providerRef, activeActor, remoteCursors }
 
     // Sync textarea -> Yjs (user typing)
     const handleChange = () => {
-      const cursorPosition = textarea.selectionStart;
+      const _cursorPosition = textarea.selectionStart;
       const currentContent = ytext.toString();
       const newContent = textarea.value;
 
@@ -208,7 +220,7 @@ export function CollaborativeFileBrowser({
   const [selectedFileIds, setSelectedFileIds] = useState<Set<string>>(new Set());
   const [connectedUsers, setConnectedUsers] = useState<number>(1);
   const [showHistory, setShowHistory] = useState(false);
-  const [fileVersions, setFileVersions] = useState<any[]>([]);
+  const [fileVersions, setFileVersions] = useState<FileVersionRecord[]>([]);
   const [loadingVersions, setLoadingVersions] = useState(false);
   const [remoteCursors, setRemoteCursors] = useState<Record<string, { x: number; y: number; name: string; color: string }>>({});
   const [isInitializing, setIsInitializing] = useState(false);
@@ -286,6 +298,7 @@ export function CollaborativeFileBrowser({
   useEffect(() => {
     fetchFiles();
     fetchIdeaValidationSession();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [documentId]);
 
   async function fetchIdeaValidationSession() {
@@ -327,6 +340,7 @@ export function CollaborativeFileBrowser({
       color: activeActor.color,
       currentFile: selected.filename,
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected?.filename, activeActor.name, activeActor.color]);
 
   // Detect network status
@@ -400,7 +414,7 @@ export function CollaborativeFileBrowser({
       });
       providerRef.current = provider;
 
-      provider.on("status", (status: any) => {
+      provider.on("status", (status: { status: string }) => {
         setSyncState(
           !isNetworkOnline 
             ? "offline" 
@@ -480,7 +494,7 @@ export function CollaborativeFileBrowser({
         });
       }
 
-      provider.on("status", (status: any) => {
+      provider.on("status", (status: { status: string }) => {
         setSyncState(
           !isNetworkOnline 
             ? "offline" 
@@ -537,6 +551,7 @@ export function CollaborativeFileBrowser({
         debouncedSave(selected.file_id, content);
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected, documentId]);
 
   // Debounced save to avoid excessive API calls
@@ -599,6 +614,7 @@ export function CollaborativeFileBrowser({
     return () => {
       editor.off("update", handleUpdate);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editor, selected]);
 
   async function fetchFiles() {
@@ -807,7 +823,7 @@ export function CollaborativeFileBrowser({
     }
   }
 
-  const highlighted = selected ? highlight(selected.content, selected.filename) : "";
+  const _highlighted = selected ? highlight(selected.content, selected.filename) : "";
   const isMarkdownFile = selected && isMarkdown(selected.filename);
 
   // Filter files based on search query
@@ -902,7 +918,7 @@ export function CollaborativeFileBrowser({
             <div className={styles.viewerHeader}>
               {syncState === "offline" && (
                 <div className={styles.offlineBanner} style={{ gridColumn: "1 / -1", marginBottom: "8px" }}>
-                  📡 You're offline. Edits are saved locally and will sync when you reconnect.
+                  📡 You&apos;re offline. Edits are saved locally and will sync when you reconnect.
                 </div>
               )}
               <span className={styles.filename}>{selected.filename}</span>
