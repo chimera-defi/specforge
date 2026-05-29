@@ -111,9 +111,9 @@ export function getValidationAnnouncement<T extends { field: string; message: st
 }
 
 /**
- * Convert text to bullet list format
+ * Convert text to bullet list format (internal helper)
  */
-export function toBulletLines(value: string): string[] {
+function toBulletLines(value: string): string[] {
   return value
     .split("\n")
     .map((line) => line.trim())
