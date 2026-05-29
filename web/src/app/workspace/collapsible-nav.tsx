@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { APP_CONFIG } from "@/lib/constants";
 import styles from "../page.module.css";
 
 type Props = {
@@ -18,7 +19,7 @@ export function CollapsibleWorkspaceNav({ docTitle, stageLabel, shareUrl }: Prop
     try {
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
+      setTimeout(() => setCopied(false), APP_CONFIG.COPY_FEEDBACK_DURATION);
     } catch {
       // ignore
     }

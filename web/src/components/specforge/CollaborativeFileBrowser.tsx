@@ -30,6 +30,7 @@ import {
 } from "@dnd-kit/sortable";
 
 import { markdownToEditorHtml, tiptapJsonToMarkdown } from "@/lib/specforge/editor";
+import { APP_CONFIG } from "@/lib/constants";
 
 interface FileVersionRecord {
   version_id: string;
@@ -372,7 +373,8 @@ export function CollaborativeFileBrowser({
     if (isNetworkOnline) {
       // If we're offline and come online, the provider will emit status event
       // But we should check current provider status
-      const currentStatus = (providerRef.current as any).status;
+      const provider = providerRef.current as { status?: string };
+      const currentStatus = provider.status;
       setSyncState(
         currentStatus === "connected" ? "live" : "local"
       );
@@ -408,7 +410,7 @@ export function CollaborativeFileBrowser({
       setConnectedUsers(1);
       
       const provider = new HocuspocusProvider({
-        url: process.env.NEXT_PUBLIC_COLLAB_SERVER_URL || "ws://localhost:3001",
+        url: APP_CONFIG.COLLAB_SERVER_URL,
         name: roomName,
         document: ydoc,
       });

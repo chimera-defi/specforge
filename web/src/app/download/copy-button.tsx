@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Copy, Check } from "lucide-react";
+import { APP_CONFIG } from "@/lib/constants";
 
 export function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
@@ -9,7 +10,7 @@ export function CopyButton({ text }: { text: string }) {
   function handleCopy() {
     navigator.clipboard.writeText(text).then(() => {
       setCopied(true);
-      setTimeout(() => setCopied(false), 1800);
+      setTimeout(() => setCopied(false), APP_CONFIG.COPY_FEEDBACK_DURATION_LONG);
     });
   }
 
