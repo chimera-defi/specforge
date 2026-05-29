@@ -1,5 +1,5 @@
 import type { GuidedSpecInput } from "./guided";
-import { validateFields } from "../utils/sanitize";
+import { validateFields, toSection } from "../utils/sanitize";
 
 export type IdeaScaffold = {
   // Core idea
@@ -136,22 +136,6 @@ export function validateIdeaScaffold(scaffold: IdeaScaffold): IdeaValidationErro
   });
 }
 
-function toBulletList(value: string): string[] {
-  return value
-    .split("\n")
-    .map(line => line.trim())
-    .filter(Boolean)
-    .map(line => line.replace(/^[-*\d.\s]+/, ""));
-}
-
-function formatSection(heading: string, content: string, fallback: string = ""): string {
-  const trimmed = content.trim();
-  if (!trimmed) return `## ${heading}\n\n- ${fallback}\n`;
-  
-  const bullets = toBulletList(trimmed);
-  return `## ${heading}\n\n${bullets.map(b => `- ${b}`).join("\n")}\n`;
-}
-
 export function buildIdeaMarkdown(scaffold: IdeaScaffold): string {
   return [
     `# ${scaffold.title || "Untitled Idea"}`,
@@ -163,24 +147,24 @@ export function buildIdeaMarkdown(scaffold: IdeaScaffold): string {
     scaffold.elevatorPitch || "- [30-second pitch - what problem do you solve and for whom?]",
     "",
     "## Problem",
-    formatSection("Current State", scaffold.currentAlternatives, "What are people using now?"),
+    toSection("Current State", scaffold.currentAlternatives, "What are people using now?"),
     "",
-    formatSection("The Problem", scaffold.problem, "What's broken or missing?"),
+    toSection("The Problem", scaffold.problem, "What's broken or missing?"),
     "",
     "## Why Now",
-    formatSection("Timing", scaffold.whyNow, "Why is this the right moment? What changed?"),
+    toSection("Timing", scaffold.whyNow, "Why is this the right moment? What changed?"),
     "",
     "## User & Market",
-    formatSection("Target User", scaffold.targetUser, "Who specifically is this for?"),
+    toSection("Target User", scaffold.targetUser, "Who specifically is this for?"),
     "",
-    formatSection("User Segment", scaffold.userSegment, "Which segment of users?"),
+    toSection("User Segment", scaffold.userSegment, "Which segment of users?"),
     "",
-    formatSection("Market Size", scaffold.marketSize, "How big is the opportunity?"),
+    toSection("Market Size", scaffold.marketSize, "How big is the opportunity?"),
     "",
     "## Solution",
-    formatSection("Approach", scaffold.solutionApproach, "How will you solve it?"),
+    toSection("Approach", scaffold.solutionApproach, "How will you solve it?"),
     "",
-    formatSection("Key Differentiator", scaffold.keyDifferentiator, "What makes you different?"),
+    toSection("Key Differentiator", scaffold.keyDifferentiator, "What makes you different?"),
     "",
     "## Technical Architecture",
     "",
@@ -188,39 +172,39 @@ export function buildIdeaMarkdown(scaffold: IdeaScaffold): string {
     "",
     `**Release Stage:** ${scaffold.releaseStage}`,
     "",
-    formatSection("Distribution Model", scaffold.distributionModel, "How will users run this?"),
+    toSection("Distribution Model", scaffold.distributionModel, "How will users run this?"),
     "",
-    formatSection("Agent Integration", scaffold.agentIntegration, "How do AI agents work with this?"),
+    toSection("Agent Integration", scaffold.agentIntegration, "How do AI agents work with this?"),
     "",
     "## Scope & Phases",
-    formatSection("MVP Scope", scaffold.mvpScope, "What's the minimum viable version?"),
+    toSection("MVP Scope", scaffold.mvpScope, "What's the minimum viable version?"),
     "",
-    formatSection("Phase 1 Features", scaffold.phase1Features, "What's in the first release?"),
+    toSection("Phase 1 Features", scaffold.phase1Features, "What's in the first release?"),
     "",
-    formatSection("Future Features", scaffold.futureFeatures, "What comes later?"),
+    toSection("Future Features", scaffold.futureFeatures, "What comes later?"),
     "",
-    formatSection("Future Work", scaffold.futureWork, "What's the longer-term vision?"),
+    toSection("Future Work", scaffold.futureWork, "What's the longer-term vision?"),
     "",
-    formatSection("Non-Goals", scaffold.nonGoals, "What are you explicitly NOT doing?"),
+    toSection("Non-Goals", scaffold.nonGoals, "What are you explicitly NOT doing?"),
     "",
     "## UX & Design",
-    formatSection("Primary Surfaces", scaffold.primarySurfaces, "What are the main interfaces?"),
+    toSection("Primary Surfaces", scaffold.primarySurfaces, "What are the main interfaces?"),
     "",
-    formatSection("Key Screens", scaffold.keyScreens, "What are the critical screens?"),
+    toSection("Key Screens", scaffold.keyScreens, "What are the critical screens?"),
     "",
-    formatSection("Failure States", scaffold.failureStates, "What can go wrong and how do you handle it?"),
+    toSection("Failure States", scaffold.failureStates, "What can go wrong and how do you handle it?"),
     "",
-    formatSection("Responsive", scaffold.responsive, "Mobile, desktop, or both?"),
+    toSection("Responsive", scaffold.responsive, "Mobile, desktop, or both?"),
     "",
     "## Verification",
-    formatSection("Acceptance Tests", scaffold.acceptanceTests, "How do you verify it works?"),
+    toSection("Acceptance Tests", scaffold.acceptanceTests, "How do you verify it works?"),
     "",
-    formatSection("Success Metrics", scaffold.successMetrics, "How do you measure success?"),
+    toSection("Success Metrics", scaffold.successMetrics, "How do you measure success?"),
     "",
     "## Risks & Constraints",
-    formatSection("Technical Risks", scaffold.technicalRisks, "What could go wrong technically?"),
+    toSection("Technical Risks", scaffold.technicalRisks, "What could go wrong technically?"),
     "",
-    formatSection("Constraints", scaffold.constraints, "What are your limitations?"),
+    toSection("Constraints", scaffold.constraints, "What are your limitations?"),
   ].join("\n");
 }
 

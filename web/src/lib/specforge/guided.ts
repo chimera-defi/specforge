@@ -1,4 +1,4 @@
-import { validateFields } from "../utils/sanitize";
+import { validateFields, toSection } from "../utils/sanitize";
 
 export type GuidedSpecInput = {
   title: string;
@@ -93,21 +93,6 @@ export function validateGuidedSpecInput(input: GuidedSpecInput): ValidationError
     users: { minLength: 5, example: "who is this for?" },
     scope: { minLength: 10, example: "what's in/out of scope" },
   });
-}
-
-function toBulletLines(value: string) {
-  return value
-    .split("\n")
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .map((line) => `- ${line.replace(/^-+\s*/, "")}`);
-}
-
-function toSection(heading: string, body: string, fallback: string) {
-  const trimmed = body.trim();
-  const lines = trimmed.length > 0 ? toBulletLines(trimmed) : [`- ${fallback}`];
-
-  return [`## ${heading}`, "", ...lines].join("\n");
 }
 
 export function buildGuidedSpecMarkdown(input: GuidedSpecInput) {
