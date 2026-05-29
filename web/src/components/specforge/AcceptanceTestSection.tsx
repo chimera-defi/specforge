@@ -72,15 +72,11 @@ export function AcceptanceTestSection({
     <div>
       {runResult && runResult.evaluated > 0 && (
         <div
-          style={{
-            marginBottom: "12px",
-            padding: "8px 14px",
-            borderRadius: "6px",
-            background: runResult.failed === 0 ? "var(--sf-success-subtle)" : "var(--sf-warning-subtle)",
-            border: `1px solid ${runResult.failed === 0 ? "var(--sf-success)" : "var(--sf-warning)"}`,
-            fontSize: "13px",
-            color: "var(--sf-ink)",
-          }}
+          className={`mb-3 px-3.5 py-2 rounded-md text-sm ${
+            runResult.failed === 0
+              ? "bg-success-subtle border border-success text-foreground"
+              : "bg-warning-subtle border border-warning text-foreground"
+          }`}
         >
           Evaluated {runResult.evaluated} pending tests — {runResult.passed} passed, {runResult.failed} need spec expansion.
         </div>

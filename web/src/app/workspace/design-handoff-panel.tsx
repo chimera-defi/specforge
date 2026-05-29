@@ -78,7 +78,7 @@ export function DesignHandoffPanel({ uxPack, designSystem, reviewChecklist, prom
         source of truth, then hand the prompt to a design-focused agent or partner reviewer.
       </p>
       {pendingDesignPatches > 0 ? (
-        <p style={{ margin: "0 0 0.5rem" }}>
+        <p className="mb-2">
           <span className={`${styles.badge} ${styles.design}`}>
             {pendingDesignPatches} design review
           </span>
@@ -126,21 +126,14 @@ export function DesignHandoffPanel({ uxPack, designSystem, reviewChecklist, prom
       {documentId ? (
         <article className={styles.exportCard} data-testid="design-feedback-section">
           <h3>Submit design feedback</h3>
-          <p style={{ color: "var(--muted-foreground)", fontSize: "0.85rem", margin: "0 0 0.5rem" }}>
+          <p className="text-muted-foreground text-sm mb-2">
             Send design feedback back as a governed patch proposal.
           </p>
-          <div style={{ display: "flex", gap: "0.75rem", marginBottom: "0.5rem" }}>
+          <div className="flex gap-3 mb-2">
             {sectionOptions.map((option) => (
               <label
                 key={option.value}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.25rem",
-                  fontSize: "0.85rem",
-                  color: "var(--foreground)",
-                  cursor: "pointer",
-                }}
+                className="flex items-center gap-1 text-sm text-foreground cursor-pointer"
               >
                 <input
                   type="radio"
@@ -161,19 +154,9 @@ export function DesignHandoffPanel({ uxPack, designSystem, reviewChecklist, prom
             rows={3}
             disabled={submitting}
             data-testid="design-feedback-textarea"
-            style={{
-              width: "100%",
-              padding: "0.5rem",
-              borderRadius: "4px",
-              border: "1px solid var(--border)",
-              backgroundColor: "var(--muted)",
-              color: "var(--foreground)",
-              fontFamily: "inherit",
-              fontSize: "0.85rem",
-              resize: "vertical",
-            }}
+            className="w-full p-2 rounded border border-border bg-muted text-foreground text-sm resize-y"
           />
-          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginTop: "0.5rem" }}>
+          <div className="flex items-center gap-3 mt-2">
             <button
               type="button"
               onClick={submitFeedback}
@@ -184,7 +167,7 @@ export function DesignHandoffPanel({ uxPack, designSystem, reviewChecklist, prom
             </button>
             {submitted ? (
               <span
-                style={{ color: "var(--foreground)", fontSize: "0.85rem" }}
+                className="text-foreground text-sm"
                 data-testid="design-feedback-success"
               >
                 Feedback queued for review
@@ -192,7 +175,7 @@ export function DesignHandoffPanel({ uxPack, designSystem, reviewChecklist, prom
             ) : null}
             {feedbackError ? (
               <span
-                style={{ color: "var(--sf-danger)", fontSize: "0.85rem" }}
+                className="text-danger text-sm"
                 data-testid="design-feedback-error"
               >
                 {feedbackError}

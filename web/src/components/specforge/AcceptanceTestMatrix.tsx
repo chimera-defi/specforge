@@ -34,10 +34,10 @@ const EMPTY_DRAFT: AcceptanceTestDraft = {
 };
 
 const statusColors: Record<AcceptanceTest["status"], string> = {
-  pending: "var(--sf-muted-light)",
-  pass: "var(--sf-success)",
-  fail: "var(--sf-danger)",
-  skip: "var(--sf-muted-lighter)",
+  pending: "text-muted-light",
+  pass: "text-success",
+  fail: "text-danger",
+  skip: "text-muted-lighter",
 };
 
 export function AcceptanceTestMatrix({
@@ -104,75 +104,34 @@ export function AcceptanceTestMatrix({
     [editDraft, onUpdateTest]
   );
 
-  const inputStyle: React.CSSProperties = {
-    padding: "6px 10px",
-    fontSize: "13px",
-    border: "1px solid var(--sf-border)",
-    borderRadius: "6px",
-    width: "100%",
-    boxSizing: "border-box",
-  };
-
-  const actionButtonStyle: React.CSSProperties = {
-    fontSize: "12px",
-    color: "var(--sf-muted-lighter)",
-    background: "none",
-    border: "none",
-    cursor: "pointer",
-    marginRight: "8px",
-  };
-
   return (
     <div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "12px",
-        }}
-      >
-        <h3 style={{ margin: 0, fontSize: "15px", fontWeight: 600 }}>
+      <div className="flex justify-between items-center mb-3">
+        <h3 className="m-0 text-sm font-semibold">
           Acceptance Tests ({tests.length})
         </h3>
         <button
           onClick={handleRun}
           disabled={running || tests.length === 0}
-          style={{
-            padding: "6px 14px",
-            fontSize: "13px",
-            borderRadius: "6px",
-            border: "1px solid var(--sf-border)",
-            background: running ? "var(--sf-surface-light)" : "var(--sf-surface-input)",
-            cursor: running ? "wait" : "pointer",
-          }}
+          className={`px-3.5 py-1.5 text-sm rounded-md border cursor-pointer ${
+            running
+              ? "bg-surface-light cursor-wait"
+              : "bg-surface-input"
+          }`}
         >
           {running ? "Running..." : "Run Tests"}
         </button>
       </div>
 
       {tests.length > 0 && (
-        <table
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            fontSize: "13px",
-            marginBottom: "16px",
-          }}
-        >
+        <table className="w-full border-collapse text-sm mb-4">
           <thead>
             <tr>
               {["Feature", "Test Case", "Expected Result", "Status", ""].map(
                 (header) => (
                   <th
                     key={header || "actions"}
-                    style={{
-                      textAlign: "left",
-                      padding: "6px 8px",
-                      borderBottom: "1px solid var(--sf-border-mid)",
-                      fontWeight: 500,
-                      color: "var(--sf-muted-light)",
-                    }}
+                    className="text-left px-2 py-1.5 border-b border-border-mid font-medium text-muted-light"
                   >
                     {header}
                   </th>
@@ -187,12 +146,7 @@ export function AcceptanceTestMatrix({
                 <tr key={test.test_id}>
                   {isEditing ? (
                     <>
-                      <td
-                        style={{
-                          padding: "6px 8px",
-                          borderBottom: "1px solid var(--sf-border-faint)",
-                        }}
-                      >
+                      <td className="px-2 py-1.5 border-b border-border-faint">
                         <input
                           value={editDraft.feature}
                           onChange={(e) =>
@@ -201,15 +155,10 @@ export function AcceptanceTestMatrix({
                               feature: e.target.value,
                             })
                           }
-                          style={inputStyle}
+                          className="w-full px-2.5 py-1.5 text-sm border border-border rounded-md"
                         />
                       </td>
-                      <td
-                        style={{
-                          padding: "6px 8px",
-                          borderBottom: "1px solid var(--sf-border-faint)",
-                        }}
-                      >
+                      <td className="px-2 py-1.5 border-b border-border-faint">
                         <input
                           value={editDraft.test_case}
                           onChange={(e) =>
@@ -218,15 +167,10 @@ export function AcceptanceTestMatrix({
                               test_case: e.target.value,
                             })
                           }
-                          style={inputStyle}
+                          className="w-full px-2.5 py-1.5 text-sm border border-border rounded-md"
                         />
                       </td>
-                      <td
-                        style={{
-                          padding: "6px 8px",
-                          borderBottom: "1px solid var(--sf-border-faint)",
-                        }}
-                      >
+                      <td className="px-2 py-1.5 border-b border-border-faint">
                         <input
                           value={editDraft.expected_result}
                           onChange={(e) =>
@@ -235,50 +179,34 @@ export function AcceptanceTestMatrix({
                               expected_result: e.target.value,
                             })
                           }
-                          style={inputStyle}
+                          className="w-full px-2.5 py-1.5 text-sm border border-border rounded-md"
                         />
                       </td>
-                      <td
-                        style={{
-                          padding: "6px 8px",
-                          borderBottom: "1px solid var(--sf-border-faint)",
-                        }}
-                      >
-                        <span
-                          style={{
-                            color: statusColors[test.status],
-                            fontWeight: 500,
-                          }}
-                        >
+                      <td className="px-2 py-1.5 border-b border-border-faint">
+                        <span className={`${statusColors[test.status]} font-medium`}>
                           {test.status}
                         </span>
                       </td>
-                      <td
-                        style={{
-                          padding: "6px 8px",
-                          borderBottom: "1px solid var(--sf-border-faint)",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
+                      <td className="px-2 py-1.5 border-b border-border-faint whitespace-nowrap">
                         <button
                           onClick={() => handleSave(test.test_id)}
                           disabled={saving}
-                          style={{
-                            ...actionButtonStyle,
-                            color: saving ? "var(--sf-muted-light)" : "var(--sf-success)",
-                            cursor: saving ? "wait" : "pointer",
-                          }}
+                          className={`text-xs mr-2 border-none bg-none cursor-pointer ${
+                            saving
+                              ? "text-muted-light cursor-wait"
+                              : "text-success"
+                          }`}
                         >
                           {saving ? "Saving..." : "Save"}
                         </button>
                         <button
                           onClick={cancelEdit}
                           disabled={saving}
-                          style={{
-                            ...actionButtonStyle,
-                            color: saving ? "var(--sf-muted-light)" : "var(--sf-muted-lighter)",
-                            cursor: saving ? "not-allowed" : "pointer",
-                          }}
+                          className={`text-xs border-none bg-none cursor-pointer ${
+                            saving
+                              ? "text-muted-light cursor-not-allowed"
+                              : "text-muted-lighter"
+                          }`}
                         >
                           Cancel
                         </button>
@@ -286,64 +214,30 @@ export function AcceptanceTestMatrix({
                     </>
                   ) : (
                     <>
-                      <td
-                        style={{
-                          padding: "6px 8px",
-                          borderBottom: "1px solid var(--sf-border-faint)",
-                        }}
-                      >
+                      <td className="px-2 py-1.5 border-b border-border-faint">
                         {test.feature}
                       </td>
-                      <td
-                        style={{
-                          padding: "6px 8px",
-                          borderBottom: "1px solid var(--sf-border-faint)",
-                        }}
-                      >
+                      <td className="px-2 py-1.5 border-b border-border-faint">
                         {test.test_case}
                       </td>
-                      <td
-                        style={{
-                          padding: "6px 8px",
-                          borderBottom: "1px solid var(--sf-border-faint)",
-                        }}
-                      >
+                      <td className="px-2 py-1.5 border-b border-border-faint">
                         {test.expected_result}
                       </td>
-                      <td
-                        style={{
-                          padding: "6px 8px",
-                          borderBottom: "1px solid var(--sf-border-faint)",
-                        }}
-                      >
-                        <span
-                          style={{
-                            color: statusColors[test.status],
-                            fontWeight: 500,
-                          }}
-                        >
+                      <td className="px-2 py-1.5 border-b border-border-faint">
+                        <span className={`${statusColors[test.status]} font-medium`}>
                           {test.status}
                         </span>
                       </td>
-                      <td
-                        style={{
-                          padding: "6px 8px",
-                          borderBottom: "1px solid var(--sf-border-faint)",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
+                      <td className="px-2 py-1.5 border-b border-border-faint whitespace-nowrap">
                         <button
                           onClick={() => startEdit(test)}
-                          style={actionButtonStyle}
+                          className="text-xs text-muted-lighter border-none bg-none cursor-pointer mr-2"
                         >
                           edit
                         </button>
                         <button
                           onClick={() => onDeleteTest(test.test_id)}
-                          style={{
-                            ...actionButtonStyle,
-                            marginRight: 0,
-                          }}
+                          className="text-xs text-muted-lighter border-none bg-none cursor-pointer"
                         >
                           remove
                         </button>
@@ -357,35 +251,18 @@ export function AcceptanceTestMatrix({
         </table>
       )}
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr 1fr auto",
-          gap: "8px",
-          alignItems: "end",
-        }}
-      >
+      <div className="grid grid-cols-[1fr_1fr_1fr_auto] gap-2 items-end">
         <input
           placeholder="Feature"
           value={draft.feature}
           onChange={(e) => setDraft({ ...draft, feature: e.target.value })}
-          style={{
-            padding: "6px 10px",
-            fontSize: "13px",
-            border: "1px solid var(--sf-border)",
-            borderRadius: "6px",
-          }}
+          className="px-2.5 py-1.5 text-sm border border-border rounded-md"
         />
         <input
           placeholder="Test case"
           value={draft.test_case}
           onChange={(e) => setDraft({ ...draft, test_case: e.target.value })}
-          style={{
-            padding: "6px 10px",
-            fontSize: "13px",
-            border: "1px solid var(--sf-border)",
-            borderRadius: "6px",
-          }}
+          className="px-2.5 py-1.5 text-sm border border-border rounded-md"
         />
         <input
           placeholder="Expected result"
@@ -393,24 +270,16 @@ export function AcceptanceTestMatrix({
           onChange={(e) =>
             setDraft({ ...draft, expected_result: e.target.value })
           }
-          style={{
-            padding: "6px 10px",
-            fontSize: "13px",
-            border: "1px solid var(--sf-border)",
-            borderRadius: "6px",
-          }}
+          className="px-2.5 py-1.5 text-sm border border-border rounded-md"
         />
         <button
           onClick={handleAdd}
           disabled={adding}
-          style={{
-            padding: "6px 14px",
-            fontSize: "13px",
-            borderRadius: "6px",
-            border: "1px solid var(--sf-border)",
-            background: adding ? "#f3f4f6" : "#fff",
-            cursor: adding ? "wait" : "pointer",
-          }}
+          className={`px-3.5 py-1.5 text-sm rounded-md border cursor-pointer ${
+            adding
+              ? "bg-gray-100 cursor-wait"
+              : "bg-white"
+          }`}
         >
           {adding ? "Adding..." : "Add"}
         </button>
