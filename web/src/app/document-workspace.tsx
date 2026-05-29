@@ -124,6 +124,10 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
   // event. We use a ref so that the value survives across useEffect re-runs
   // without causing additional re-renders.
   const collabSyncedRef = useRef(false);
+  // Auto-save timeout ref
+  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // Track if auto-save is in progress to prevent concurrent saves
+  const isAutoSavingRef = useRef(false);
 
   const handleRefreshFromDatabase = useCallback(async () => {
     setIsRefreshing(true);
@@ -149,6 +153,86 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
       setIsRefreshing(false);
     }
   }, [document.document_id, showToast]);
+
+  // Auto-save function with debouncing
+  const triggerAutoSave = useCallback(() => {
+    // Clear any pending auto-save
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+    }
+
+    // Don't auto-save if already saving
+    if (isAutoSavingRef.current) {
+      return;
+    }
+
+    // Debounce: wait 3 seconds after last change before saving
+    autoSaveTimeoutRef.current = setTimeout(async () => {
+      if (!editorRef.current || !hasUnsavedChanges) {
+        return;
+      }
+
+      isAutoSavingRef.current = true;
+      try {
+        const editorJson = editorRef.current.getJSON();
+        const markdown = tiptapJsonToMarkdown(editorJson);
+
+        if (!markdown || markdown.trim().length === 0) {
+          return;
+        }
+
+        const response = await fetch(`/api/documents/${document.document_id}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            title: document.title,
+            markdown,
+            editor_json: editorJson,
+          }),
+        });
+
+        if (response.ok) {
+          setHasUnsavedChanges(false);
+          logger.info(`Auto-saved document: ${document.document_id}`);
+        } else {
+          logger.error(`Auto-save failed for document: ${document.document_id}`);
+        }
+      } catch (error) {
+        logger.error(`Auto-save error for document: ${document.document_id}`, error instanceof Error ? error : new Error(String(error)));
+      } finally {
+        isAutoSavingRef.current = false;
+      }
+    }, 3000); // 3 second debounce
+  }, [document.document_id, document.title, hasUnsavedChanges]);
+
+  // Trigger auto-save when hasUnsavedChanges changes
+  useEffect(() => {
+    if (hasUnsavedChanges) {
+      triggerAutoSave();
+    }
+
+    // Cleanup timeout on unmount
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+    };
+  }, [hasUnsavedChanges, triggerAutoSave]);
+
+  // Save on page unload
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges && editorRef.current) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedChanges]);
 
   // Auto-refresh when component mounts or document version changes
   useEffect(() => {
