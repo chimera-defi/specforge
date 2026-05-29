@@ -88,6 +88,11 @@
 - [x] Split MVP parity from broader platform/company parity so “done” never hides unfinished productization work.
 - [x] Require explicit runtime topology and distribution mode in specs before implementation starts.
 - [x] Require acceptance tests and release-stage targets in the spec itself, not only in later implementation docs.
+- [x] Prefer CSS modules over inline styles for UI consistency and maintainability.
+- [x] Add confirmation dialogs for destructive actions (member deletion, etc.) even with server-side guards.
+- [x] When integrating third-party APIs, include list-based fallbacks for search APIs to handle account configuration variations.
+- [x] Archive historical documentation rather than deleting; keep canonical docs clearly separated from reference material.
+- [x] Regularly prune documentation of obsolete content and update references when files are restructured.
 
 ## Spec System Improvements
 
