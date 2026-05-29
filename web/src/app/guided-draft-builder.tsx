@@ -9,7 +9,9 @@ import { agentApi } from "@/lib/api-client";
 import {
   DEFAULT_GUIDED_SPEC_INPUT,
   normalizeGuidedSpecInput,
+  validateGuidedSpecInput,
   type GuidedSpecInput,
+  type ValidationError,
 } from "@/lib/specforge/guided";
 
 type AssistPreset = "idea-to-spec" | "block-iteration" | "clarification-answer" | "design-feedback" | "planning-assist";
@@ -110,6 +112,7 @@ export function GuidedDraftBuilder({
   const [assistNotes, setAssistNotes] = useState<string[]>([]);
   const [assistSource, setAssistSource] = useState<string>("No assist run yet.");
   const [isPending, startTransition] = useTransition();
+  const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
 
   const availableToolCount = useMemo(
     () => toolStatuses.filter((status) => status.available).length,
@@ -118,6 +121,18 @@ export function GuidedDraftBuilder({
 
   function updateField<K extends keyof GuidedSpecInput>(key: K, value: GuidedSpecInput[K]) {
     setFields((current) => ({ ...current, [key]: value }));
+    // Clear validation error for this field when user types
+    setValidationErrors((prev) => prev.filter((error) => error.field !== key));
+  }
+
+  function validateForm() {
+    const errors = validateGuidedSpecInput(fields);
+    setValidationErrors(errors);
+    return errors.length === 0;
+  }
+
+  function getFieldError(fieldName: string): string | undefined {
+    return validationErrors.find((error) => error.field === fieldName)?.message;
   }
 
   function populateFromAssist() {
@@ -167,7 +182,16 @@ export function GuidedDraftBuilder({
   }
 
   return (
-    <form action={createDocumentAction} className={styles.form} data-testid="create-document-form">
+    <form
+      action={createDocumentAction}
+      className={styles.form}
+      data-testid="create-document-form"
+      onSubmit={(e) => {
+        if (!validateForm()) {
+          e.preventDefault();
+        }
+      }}
+    >
       <input type="hidden" name="mode" value="guided" />
 
       <details className={styles.wizardSection} open>
@@ -270,6 +294,11 @@ export function GuidedDraftBuilder({
           data-testid="create-document-title"
           placeholder="e.g., SpecForge MVP, Server Management Agent, Team Collab Tool"
         />
+        {getFieldError("title") && (
+          <span style={{ color: "var(--sf-error)", fontSize: "0.875rem", marginTop: "4px", display: "block" }}>
+            {getFieldError("title")}
+          </span>
+        )}
       </label>
       <details className={styles.wizardSection} open>
         <summary className={styles.disclosureSummary}>
@@ -286,6 +315,11 @@ export function GuidedDraftBuilder({
               onChange={(event) => updateField("problem", event.target.value)}
               placeholder="e.g., Teams lose momentum between idea, spec, review, and build handoff. Current tools are disconnected and don't provide traceability."
             />
+            {getFieldError("problem") && (
+              <span style={{ color: "var(--sf-error)", fontSize: "0.875rem", marginTop: "4px", display: "block" }}>
+                {getFieldError("problem")}
+              </span>
+            )}
           </label>
           <label>
             Goals
@@ -296,6 +330,11 @@ export function GuidedDraftBuilder({
               onChange={(event) => updateField("goals", event.target.value)}
               placeholder="e.g., Produce a build-ready spec, Support human and agent collaboration, Keep review and attribution explicit"
             />
+            {getFieldError("goals") && (
+              <span style={{ color: "var(--sf-error)", fontSize: "0.875rem", marginTop: "4px", display: "block" }}>
+                {getFieldError("goals")}
+              </span>
+            )}
           </label>
           <label>
             Users
@@ -306,6 +345,11 @@ export function GuidedDraftBuilder({
               onChange={(event) => updateField("users", event.target.value)}
               placeholder="e.g., Product-minded founder, PM + engineer pair, Coding agent operator"
             />
+            {getFieldError("users") && (
+              <span style={{ color: "var(--sf-error)", fontSize: "0.875rem", marginTop: "4px", display: "block" }}>
+                {getFieldError("users")}
+              </span>
+            )}
           </label>
         </div>
       </details>
@@ -324,6 +368,11 @@ export function GuidedDraftBuilder({
               onChange={(event) => updateField("scope", event.target.value)}
               placeholder="e.g., Guided spec creation, Shared authoring canvas, Patch review and export handoff"
             />
+            {getFieldError("scope") && (
+              <span style={{ color: "var(--sf-error)", fontSize: "0.875rem", marginTop: "4px", display: "block" }}>
+                {getFieldError("scope")}
+              </span>
+            )}
           </label>
           <label>
             Requirements

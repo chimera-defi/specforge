@@ -49,6 +49,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added competitiveAnalysis and businessModel form fields to IdeaGenerator UI
   - Updated AI assist prompt to populate new fields
 
+- **Form Validation**
+  - Added validation function for GuidedSpecInput
+  - Required fields: title (3+ chars), problem (10+ chars), goals (10+ chars), users (5+ chars), scope (10+ chars)
+  - Added inline error messages for required fields
+  - Form submission blocked when validation fails
+  - Errors clear when user types
+
 ### Changed
 - Updated README with bridge component documentation
 - Added bridge startup instructions and health check URLs
