@@ -8,7 +8,7 @@ export default defineConfig({
     timeout: 10_000,
   },
   use: {
-    baseURL: "http://127.0.0.1:3100",
+    baseURL: "http://127.0.0.1:3000",
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
   },
@@ -21,11 +21,11 @@ export default defineConfig({
   webServer: [
     {
       command: "bun run build && bun x next start --hostname 127.0.0.1",
-      port: 3100,
+      port: 3000,
       reuseExistingServer: false,
       timeout: 180_000,
       env: {
-        PORT: "3100",
+        PORT: "3000",
         NEXT_PUBLIC_COLLAB_URL: "ws://127.0.0.1:4322",
         SPECFORGE_DB_PATH: ".data/specforge-db-playwright.json",
         SPECFORGE_PILOT_TRIAGE_WORKSPACE_ID: "ws_demo",
