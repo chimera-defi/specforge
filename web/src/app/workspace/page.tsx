@@ -20,7 +20,8 @@ import { CollapsibleWorkspaceNav } from "./collapsible-nav";
 import { ClarificationQueue } from "@/components/specforge/ClarificationQueue";
 import { DocumentWorkspace } from "../document-workspace";
 import { CollaborativeFileBrowser } from "@/components/specforge/CollaborativeFileBrowser";
-import { GuidedDraftBuilder } from "../guided-draft-builder";
+import { SpecCreationWrapper } from "./SpecCreationWrapper";
+import type { AgentAssistToolStatus } from "@/lib/specforge/agent-assist";
 import { LocalAdminPanel } from "../local-admin-panel";
 import { ShareDocumentPanel } from "../share-document-panel";
 import { ExportStage } from "./export-stage";
@@ -1146,7 +1147,7 @@ export default async function Home({ searchParams }: Props) {
                   <h2>Guided spec creation</h2>
                   <span>Structured draft with assist</span>
                 </div>
-                <GuidedDraftBuilder
+                <SpecCreationWrapper
                   toolStatuses={assistToolStatuses}
                   cliAssistEnabled={activeWorkspaceSession.authMode === "local"}
                   preferredTool={preferredAssistTool}
