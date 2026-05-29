@@ -62,6 +62,8 @@
 
 **Runtime Topology:** local-only | hosted-only | hybrid
 
+**Release Stage:** alpha | beta | production
+
 ### Distribution Model
 - How will users run this?
 - Desktop app, web service, CLI, or combination?
@@ -88,6 +90,11 @@
 - What comes after MVP?
 - What's the roadmap?
 - What's the vision for v2, v3?
+
+### Future Work
+- What's the longer-term vision beyond the roadmap?
+- What's the 2-5 year vision?
+- What are the expansion opportunities?
 
 ### Non-Goals
 - What are you explicitly NOT doing?
