@@ -27,6 +27,7 @@ import {
   buildGuidedSpecMetadata,
   inferClarificationQuestions,
 } from "@/lib/specforge/guided";
+import { ideaToGuidedSpecInput, normalizeIdeaScaffold, type IdeaScaffold } from "@/lib/specforge/ideas-generator";
 import { getMemberQuotaState } from "@/lib/specforge/plans";
 import {
   getCurrentWorkspaceActor,
@@ -686,4 +687,33 @@ export async function reviewPilotAccessRequestAction(formData: FormData) {
   revalidatePath("/workspace");
   revalidatePath("/pilot-access");
   redirect(buildRedirectPath(returnTo, { triage_status: "saved" }));
+}
+
+export async function createIdeaDocumentAction(scaffold: Partial<IdeaScaffold>) {
+  const { currentActor, actorRef } = await getActionActorRef();
+  
+  // Normalize the scaffold
+  const normalizedScaffold = normalizeIdeaScaffold(scaffold);
+  
+  // Convert to guided spec input
+  const { guided, metadata } = ideaToGuidedSpecInput(normalizedScaffold);
+  
+  // Build the spec markdown
+  const specMarkdown = buildGuidedSpecMarkdown(guided);
+  const specMetadata = buildGuidedSpecMetadata(guided);
+  
+  // Create the document with the generated spec
+  const created = await createDocument({
+    workspace_id: currentActor.workspace_id,
+    title: guided.title,
+    initial_markdown: specMarkdown,
+    metadata: {
+      ...specMetadata,
+      ...metadata,
+      creation_mode: "idea_generated",
+    },
+  });
+  
+  // Redirect to the new document
+  redirect(buildRedirectPath(`/workspace?document=${created.document_id}&stage=draft`, {}));
 }

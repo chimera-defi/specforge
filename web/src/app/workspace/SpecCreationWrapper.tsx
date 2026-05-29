@@ -5,6 +5,8 @@ import { useState } from "react";
 import { IdeaGenerator } from "@/components/specforge/IdeaGenerator";
 import type { AgentAssistToolStatus } from "@/lib/specforge/agent-assist";
 import { GuidedDraftBuilder } from "../guided-draft-builder";
+import { createIdeaDocumentAction } from "../actions";
+import type { IdeaScaffold } from "@/lib/specforge/ideas-generator";
 
 type Mode = "guided" | "idea";
 
@@ -59,20 +61,8 @@ export function SpecCreationWrapper({
         </div>
         <IdeaGenerator
           onGenerate={async (scaffold) => {
-            // Call the API to generate idea and spec
-            const response = await fetch("/api/ideas/generate", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(scaffold),
-            });
-            if (!response.ok) {
-              alert("Failed to generate idea");
-              return;
-            }
-            const data = await response.json();
-            alert(`Idea generated! Check console for output.`);
-            console.log("Generated:", data);
-            setMode("guided");
+            // Use server action to create document from generated spec
+            await createIdeaDocumentAction(scaffold);
           }}
           onCancel={() => setMode("guided")}
         />
