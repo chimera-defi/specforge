@@ -9,6 +9,7 @@ This directory contains historical and obsolete documentation preserved for refe
 - `CODE_REVIEW_2026-05-29.md` - Code review of session changes (security, SQL, structural analysis)
 - `DESIGN_REVIEW_2026-05-29.md` - Design review of UI/UX changes (membership UI, design system compliance)
 - `SECURITY_AUDIT_2026-05-29.md` - Comprehensive security audit (OWASP Top 10, STRIDE, secrets, dependencies)
+- `DEPENDENCY_AUDIT_2026-05-29.md` - Dependency vulnerability scan (bun audit results and analysis)
 - `SESSION_REVIEW.md` - Review of UX polish and SaaS scaffolding work (2026-05-29)
 - `DOC_CONSOLIDATION_PLAN.md` - Documentation consolidation plan and execution
 
