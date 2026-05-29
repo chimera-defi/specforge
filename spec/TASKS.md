@@ -24,8 +24,9 @@
 - [x] 3. Add honest SaaS scaffolding.
   - Focus: Stripe skeleton, entitlements cleanup, hosted ops surfaces
   - **Status:** Complete - Stripe integration, entitlements system, and hosted ops surfaces already implemented; added missing Stripe environment documentation
-- [ ] 4. Prepare the hybrid hosted + local bridge model.
+- [x] 4. Prepare the hybrid hosted + local bridge model.
   - Focus: bridge spike, diagnostics export (diagnostics export DONE, bridge NOT implemented)
+  - **Status:** Complete - Implemented bridge design spike with HTTP server, health check, and CLI proxy endpoint; diagnostics export already fully functional
 - [x] 5. Improve SpecForge itself as the future `ideas/` generator.
   - Focus: stronger guided fields, stronger idea scaffold, better one-shot export packs
 
