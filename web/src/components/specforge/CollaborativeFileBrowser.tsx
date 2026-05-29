@@ -711,27 +711,22 @@ export function CollaborativeFileBrowser({
       {/* ---- file list ---- */}
       <aside className={styles.fileList} aria-label="Workspace files">
         {ideaValidationSession ? (
-          <div style={{
-            padding: "10px 12px",
-            borderBottom: "1px solid var(--sf-border-faint)",
-            fontSize: "0.75rem",
-            background: "rgba(34, 197, 94, 0.06)",
-          }}>
-            <div style={{ fontWeight: 600, marginBottom: "4px", color: "var(--sf-ink)" }}>
+          <div className={styles.ideaValidation}>
+            <div className={styles.ideaValidationTitle}>
               Idea Validation
             </div>
-            <div style={{ color: "var(--sf-muted-mid)" }}>
+            <div className={styles.ideaValidationProgress}>
               {ideaValidationSession.completed}/{ideaValidationSession.total} stages completed
             </div>
           </div>
         ) : null}
         <div className={styles.fileListHeader}>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1 }}>
+          <div className={styles.fileListControls}>
             <input
               type="checkbox"
               checked={selectedFileIds.size === filteredFiles.length && filteredFiles.length > 0}
               onChange={toggleSelectAll}
-              style={{ cursor: "pointer" }}
+              className={styles.fileListCheckbox}
             />
             <span>{filteredFiles.length} files</span>
             <input
@@ -739,31 +734,15 @@ export function CollaborativeFileBrowser({
               placeholder="Search files..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              style={{
-                padding: "4px 8px",
-                fontSize: "0.75rem",
-                borderRadius: "6px",
-                border: "1px solid var(--sf-border-faint)",
-                background: "var(--sf-surface-input)",
-                color: "var(--sf-ink)",
-                width: "100px",
-              }}
+              className={styles.fileSearchInput}
+              style={{ width: "100px" }}
             />
           </div>
-          <div style={{ display: "flex", gap: "8px" }}>
+          <div className={styles.fileListActions}>
             {selectedFileIds.size > 0 && (
               <button
                 onClick={batchDeleteFiles}
-                style={{
-                  padding: "4px 12px",
-                  borderRadius: "999px",
-                  fontSize: "0.78rem",
-                  fontWeight: 500,
-                  cursor: "pointer",
-                  border: "1px solid var(--sf-danger)",
-                  background: "var(--sf-danger-subtle)",
-                  color: "var(--sf-danger)",
-                }}
+                className={styles.batchDeleteBtn}
               >
                 Delete ({selectedFileIds.size})
               </button>
@@ -806,13 +785,7 @@ export function CollaborativeFileBrowser({
             <div className={styles.viewerHeader}>
               <span className={styles.filename}>{selected.filename}</span>
               <div className={styles.viewerActions}>
-                <span style={{ 
-                  fontSize: "0.75rem", 
-                  color: "var(--sf-muted-mid)",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "4px"
-                }}>
+                <span className={styles.syncStatusText}>
                   👥 {connectedUsers} {connectedUsers === 1 ? "user" : "users"}
                 </span>
                 <span className={`${styles.syncStatus} ${styles[syncState]}`}>
@@ -825,16 +798,7 @@ export function CollaborativeFileBrowser({
                       setShowHistory(true);
                     }
                   }}
-                  style={{
-                    padding: "4px 12px",
-                    borderRadius: "999px",
-                    fontSize: "0.78rem",
-                    fontWeight: 500,
-                    cursor: "pointer",
-                    border: "1px solid var(--sf-border)",
-                    background: "var(--sf-surface-elevated)",
-                    color: "var(--sf-ink)",
-                  }}
+                  className={styles.historyBtn}
                 >
                   📜 History
                 </button>
@@ -851,7 +815,7 @@ export function CollaborativeFileBrowser({
 
             <div className={styles.editorArea}>
               {isMarkdownFile && editor ? (
-                <div style={{ position: "relative" }}>
+                <div className={styles.editorContainer}>
                   <EditorContent editor={editor} />
                   <RemoteCursors cursors={remoteCursors} />
                 </div>
@@ -864,7 +828,7 @@ export function CollaborativeFileBrowser({
           <div className={styles.empty}>
             <p>No files in workspace yet.</p>
             {isInitializing ? (
-              <p style={{ color: "var(--sf-muted-mid)" }}>Initializing default files...</p>
+              <p className={styles.emptyStateText}>Initializing default files...</p>
             ) : (
               <button
                 className={styles.initBtn}
