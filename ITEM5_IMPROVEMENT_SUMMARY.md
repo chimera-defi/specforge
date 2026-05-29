@@ -108,7 +108,8 @@
 ## Recommendations
 
 **Immediate:**
-- IdeaGenerator form needs to be updated to include competitiveAnalysis and businessModel input fields (deferred due to complexity)
+- ✅ IdeaGenerator form updated to include competitiveAnalysis and businessModel input fields (COMPLETE)
+- ✅ AI assist prompt updated to populate new fields (COMPLETE)
 - Consider adding form validation for new fields
 
 **Future:**
@@ -123,3 +124,20 @@
 **Item #5:** ✅ COMPLETE
 **TASKS.md:** All 5 priority items now complete
 **Codebase:** Production ready
+
+---
+
+## Follow-up Work (2026-05-29)
+
+**IdeaGenerator Form Updates:** ✅ COMPLETE
+- Added competitiveAnalysis form field with placeholder
+- Added businessModel form field with placeholder
+- Updated AI assist prompt to extract new fields
+- All tests passing (256/256)
+- Lint passing
+- Changes committed to feat/improve-ideas-generator branch
+
+**Files Modified in Follow-up:**
+- web/src/components/specforge/IdeaGenerator.tsx
+- CHANGELOG.md
+- ITEM5_IMPROVEMENT_SUMMARY.md

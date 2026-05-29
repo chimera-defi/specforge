@@ -46,6 +46,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added COMPETITIVE_ANALYSIS.md export artifact
   - Added BUSINESS_MODEL.md export artifact
   - Improved export bundle with 15 total artifacts
+  - Added competitiveAnalysis and businessModel form fields to IdeaGenerator UI
+  - Updated AI assist prompt to populate new fields
 
 ### Changed
 - Updated README with bridge component documentation
