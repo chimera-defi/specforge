@@ -43,6 +43,33 @@ export function validateField(
 }
 
 /**
+ * Validate multiple fields at once
+ */
+export function validateFields<T extends string>(
+  fields: Record<T, string | undefined>,
+  rules: Record<T, { minLength: number; example: string; displayName?: string }>
+): { field: T; message: string }[] {
+  const errors: { field: T; message: string }[] = [];
+
+  for (const [fieldKey, fieldValue] of Object.entries(fields) as [T, string | undefined][]) {
+    const rule = rules[fieldKey];
+    if (!rule) continue;
+
+    const error = validateField(
+      fieldValue,
+      rule.displayName || fieldKey.charAt(0).toUpperCase() + fieldKey.slice(1),
+      rule.minLength,
+      rule.example
+    );
+    if (error) {
+      errors.push({ field: fieldKey, message: error });
+    }
+  }
+
+  return errors;
+}
+
+/**
  * Get error message for a specific field
  */
 export function getFieldError<T extends { field: string; message: string }>(

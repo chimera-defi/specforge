@@ -1,4 +1,4 @@
-import { validateField } from "../utils/sanitize";
+import { validateFields } from "../utils/sanitize";
 
 export type GuidedSpecInput = {
   title: string;
@@ -86,24 +86,13 @@ export type ValidationError = {
 };
 
 export function validateGuidedSpecInput(input: GuidedSpecInput): ValidationError[] {
-  const errors: ValidationError[] = [];
-
-  const titleError = validateField(input.title, "Title", 3, "e.g., 'SpecForge MVP'");
-  if (titleError) errors.push({ field: "title", message: titleError });
-
-  const problemError = validateField(input.problem, "Problem", 10, "describe the pain point");
-  if (problemError) errors.push({ field: "problem", message: problemError });
-
-  const goalsError = validateField(input.goals, "Goals", 10, "what you want to achieve");
-  if (goalsError) errors.push({ field: "goals", message: goalsError });
-
-  const usersError = validateField(input.users, "Users", 5, "who is this for?");
-  if (usersError) errors.push({ field: "users", message: usersError });
-
-  const scopeError = validateField(input.scope, "Scope", 10, "what's in/out of scope");
-  if (scopeError) errors.push({ field: "scope", message: scopeError });
-
-  return errors;
+  return validateFields(input, {
+    title: { minLength: 3, example: "e.g., 'SpecForge MVP'" },
+    problem: { minLength: 10, example: "describe the pain point" },
+    goals: { minLength: 10, example: "what you want to achieve" },
+    users: { minLength: 5, example: "who is this for?" },
+    scope: { minLength: 10, example: "what's in/out of scope" },
+  });
 }
 
 function toBulletLines(value: string) {
