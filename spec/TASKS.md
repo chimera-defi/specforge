@@ -21,8 +21,9 @@
 - [x] 2. Tighten the local alpha UX.
   - Focus: pilot membership polish, acceptance test UX, design review polish, remaining decomposition
   - **Status:** Complete - Migrated acceptance test and design review components to Tailwind classes for design system compliance
-- [ ] 3. Add honest SaaS scaffolding.
+- [x] 3. Add honest SaaS scaffolding.
   - Focus: Stripe skeleton, entitlements cleanup, hosted ops surfaces
+  - **Status:** Complete - Stripe integration, entitlements system, and hosted ops surfaces already implemented; added missing Stripe environment documentation
 - [ ] 4. Prepare the hybrid hosted + local bridge model.
   - Focus: bridge spike, diagnostics export (diagnostics export DONE, bridge NOT implemented)
 - [x] 5. Improve SpecForge itself as the future `ideas/` generator.
