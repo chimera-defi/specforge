@@ -16,7 +16,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-import { ideaValidationApi } from "@/lib/api-client";
+import { ideaValidationApi, ApiError } from "@/lib/api-client";
 
 // ---------------------------------------------------------------------------
 // Static stage definitions (mirrors STAGE_DEFINITIONS in plan-session.ts)
@@ -223,7 +223,7 @@ export function IdeaValidationPanel({ documentId, actorId, specWizardHref }: Pro
       setSession(data.session);
       setQuestionIdx(0);
     } catch (e) {
-      if (e instanceof Error && e.message.includes("401")) {
+      if (e instanceof ApiError && e.status === 401) {
         setAuthRequired(true);
         return;
       }

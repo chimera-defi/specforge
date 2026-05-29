@@ -87,11 +87,12 @@ export function IterateWithAIChat({
           filePath,
         },
       }) as { result?: IterationResponse };
-      const result: IterationResponse = data.result ?? {
-        patch_id: "mock",
-        proposed_content: "Mock response",
-        tool: "heuristic",
-      };
+      
+      if (!data.result) {
+        throw new Error("Invalid response: missing result field");
+      }
+      
+      const result: IterationResponse = data.result;
       
       // Add assistant response
       const assistantMessage: Message = {
