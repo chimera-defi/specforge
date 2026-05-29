@@ -1,5 +1,5 @@
 import type { GuidedSpecInput } from "./guided";
-import { validateField } from "../utils/sanitize";
+import { validateFields } from "../utils/sanitize";
 
 export type IdeaScaffold = {
   // Core idea
@@ -127,24 +127,13 @@ export type IdeaValidationError = {
 };
 
 export function validateIdeaScaffold(scaffold: IdeaScaffold): IdeaValidationError[] {
-  const errors: IdeaValidationError[] = [];
-
-  const titleError = validateField(scaffold.title, "Title", 3, "e.g., 'My Awesome Product'");
-  if (titleError) errors.push({ field: "title", message: titleError });
-
-  const thesisError = validateField(scaffold.thesis, "Thesis", 10, "what is this and why it matters?");
-  if (thesisError) errors.push({ field: "thesis", message: thesisError });
-
-  const problemError = validateField(scaffold.problem, "Problem", 10, "what's broken or missing?");
-  if (problemError) errors.push({ field: "problem", message: problemError });
-
-  const targetUserError = validateField(scaffold.targetUser, "Target user", 5, "who specifically is this for?");
-  if (targetUserError) errors.push({ field: "targetUser", message: targetUserError });
-
-  const solutionError = validateField(scaffold.solutionApproach, "Solution approach", 10, "how will you solve it?");
-  if (solutionError) errors.push({ field: "solutionApproach", message: solutionError });
-
-  return errors;
+  return validateFields(scaffold, {
+    title: { minLength: 3, example: "e.g., 'My Awesome Product'" },
+    thesis: { minLength: 10, example: "what is this and why it matters?" },
+    problem: { minLength: 10, example: "what's broken or missing?" },
+    targetUser: { minLength: 5, example: "who specifically is this for?" },
+    solutionApproach: { minLength: 10, example: "how will you solve it?" },
+  });
 }
 
 function toBulletList(value: string): string[] {
