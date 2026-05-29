@@ -18,8 +18,9 @@
 - [x] 1. Package the working local product.
   - Focus: Tauri shell, local runtime status, local install/download flow, local CLI assist diagnostics
   - **Status:** Complete - Added macOS/Windows packaging targets, configuration panel, service log viewing, icon generation script
-- [ ] 2. Tighten the local alpha UX.
+- [x] 2. Tighten the local alpha UX.
   - Focus: pilot membership polish, acceptance test UX, design review polish, remaining decomposition
+  - **Status:** Complete - Migrated acceptance test and design review components to Tailwind classes for design system compliance
 - [ ] 3. Add honest SaaS scaffolding.
   - Focus: Stripe skeleton, entitlements cleanup, hosted ops surfaces
 - [ ] 4. Prepare the hybrid hosted + local bridge model.
