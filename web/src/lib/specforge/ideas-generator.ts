@@ -1,3 +1,5 @@
+import { buildGuidedSpecMarkdown, buildGuidedSpecMetadata, type GuidedSpecInput } from "./guided";
+
 export type IdeaScaffold = {
   // Core idea
   title: string;
@@ -189,7 +191,7 @@ export function buildIdeaMarkdown(scaffold: IdeaScaffold): string {
 }
 
 export function ideaToGuidedSpecInput(scaffold: IdeaScaffold): {
-  guided: import("./guided").GuidedSpecInput;
+  guided: GuidedSpecInput;
   metadata: Record<string, string>;
 } {
   return {

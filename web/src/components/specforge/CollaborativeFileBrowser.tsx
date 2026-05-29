@@ -350,6 +350,24 @@ export function CollaborativeFileBrowser({
     };
   }, []);
 
+  // Update sync state when network status changes
+  useEffect(() => {
+    if (!providerRef.current) return;
+    
+    // Force re-evaluation of sync state based on network status
+    if (isNetworkOnline) {
+      // If we're offline and come online, the provider will emit status event
+      // But we should check current provider status
+      const currentStatus = (providerRef.current as any).status;
+      setSyncState(
+        currentStatus === "connected" ? "live" : "local"
+      );
+    } else {
+      // If we go offline, immediately set sync state
+      setSyncState("offline");
+    }
+  }, [isNetworkOnline]);
+
   // Setup Yjs collaboration when file is selected
   useEffect(() => {
     if (!selected) return;
