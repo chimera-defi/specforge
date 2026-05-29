@@ -31,6 +31,7 @@ import {
 
 import { markdownToEditorHtml, tiptapJsonToMarkdown } from "@/lib/specforge/editor";
 import { APP_CONFIG } from "@/lib/constants";
+import { fileApi, agentApi, ideaValidationApi } from "@/lib/api-client";
 
 interface FileVersionRecord {
   version_id: string;
@@ -304,9 +305,7 @@ export function CollaborativeFileBrowser({
 
   async function fetchIdeaValidationSession() {
     try {
-      const res = await fetch(`/api/documents/${documentId}/idea-validation-sessions`);
-      if (!res.ok) return;
-      const data = await res.json();
+      const data = await ideaValidationApi.getSessions(documentId) as { sessions?: Array<{ stages: Array<{ status: string }> }> };
       const sessions = data.sessions ?? [];
       if (sessions.length > 0) {
         const session = sessions[0];
@@ -588,12 +587,7 @@ export function CollaborativeFileBrowser({
 
   async function saveFileContent(fileId: string, content: string) {
     try {
-      const res = await fetch(`/api/documents/${fileId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content }),
-      });
-      if (!res.ok) throw new Error("Failed to save file");
+      await fileApi.update(documentId, fileId, { content });
       // Update local state
       setFiles((prev) =>
         prev.map((f) => (f.file_id === fileId ? { ...f, content } : f)),
@@ -622,9 +616,7 @@ export function CollaborativeFileBrowser({
   async function fetchFiles() {
     let triggeredInitialize = false;
     try {
-      const res = await fetch(`/api/documents/${documentId}/files`);
-      if (!res.ok) throw new Error("Failed to fetch files");
-      const data = await res.json();
+      const data = await fileApi.list(documentId) as { files?: WorkspaceFile[] };
       setFiles(data.files || []);
       if (data.files && data.files.length > 0) {
         setSelected(data.files[0]);
@@ -647,10 +639,7 @@ export function CollaborativeFileBrowser({
   async function initializeFiles() {
     setIsInitializing(true);
     try {
-      const res = await fetch(`/api/documents/${documentId}/files/initialize`, {
-        method: "POST",
-      });
-      if (!res.ok) throw new Error("Failed to initialize files");
+      await fileApi.initialize(documentId, {});
       await fetchFiles();
     } catch (error) {
       console.error("Failed to initialize files:", error);
@@ -677,16 +666,11 @@ export function CollaborativeFileBrowser({
   }
 
   try {
-    const res = await fetch(`/api/documents/${documentId}/files`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        filename,
-        content,
-        file_type: filename.endsWith(".json") ? "json" : "markdown",
-      }),
+    await fileApi.create(documentId, {
+      filename,
+      content,
+      file_type: filename.endsWith(".json") ? "json" : "markdown",
     });
-    if (!res.ok) throw new Error("Failed to create file");
     await fetchFiles();
   } catch (error) {
     console.error("Failed to create file:", error);
@@ -698,10 +682,7 @@ export function CollaborativeFileBrowser({
     if (!confirm("Are you sure you want to delete this file?")) return;
 
     try {
-      const res = await fetch(`/api/documents/${fileId}`, {
-        method: "DELETE",
-      });
-      if (!res.ok) throw new Error("Failed to delete file");
+      await fileApi.delete(documentId, fileId);
       if (selected?.file_id === fileId) {
         setSelected(files.find((f) => f.file_id !== fileId) || null);
       }
@@ -754,9 +735,7 @@ export function CollaborativeFileBrowser({
   async function fetchFileVersions(fileId: string) {
     setLoadingVersions(true);
     try {
-      const res = await fetch(`/api/documents/${documentId}/files/${fileId}/versions`);
-      if (!res.ok) throw new Error("Failed to fetch versions");
-      const data = await res.json();
+      const data = await fileApi.getVersions(documentId, fileId) as { versions?: FileVersionRecord[] };
       setFileVersions(data.versions || []);
     } catch (error) {
       console.error("Failed to fetch versions:", error);
@@ -770,10 +749,7 @@ export function CollaborativeFileBrowser({
     if (!confirm("Restore this version? Current content will be replaced.")) return;
 
     try {
-      const res = await fetch(`/api/documents/${documentId}/files/${selected.file_id}/versions/${versionId}/restore`, {
-        method: "POST",
-      });
-      if (!res.ok) throw new Error("Failed to restore version");
+      await fileApi.restore(documentId, selected.file_id, versionId);
       await fetchFiles();
       setShowHistory(false);
     } catch (error) {
@@ -789,26 +765,16 @@ export function CollaborativeFileBrowser({
     alert(`AI Assist: Processing ${selected.filename}...`);
 
     try {
-      const res = await fetch("/api/agent/assist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          document_id: documentId,
-          block_id: selected.filename,
-          section_id: selected.filename,
-          context: {
-            filename: selected.filename,
-            content: selected.content,
-            file_type: selected.file_type,
-          },
-        }),
-      });
-
-      if (!res.ok) {
-        throw new Error("AI assist request failed");
-      }
-
-      const data = await res.json();
+      const data = await agentApi.assist({
+        document_id: documentId,
+        block_id: selected.filename,
+        section_id: selected.filename,
+        context: {
+          filename: selected.filename,
+          content: selected.content,
+          file_type: selected.file_type,
+        },
+      }) as { suggestion?: string };
       
       if (data.suggestion) {
         // Apply the suggestion to the file

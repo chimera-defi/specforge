@@ -186,6 +186,14 @@ export const collabApi = {
 };
 
 /**
+ * Idea Validation API
+ */
+export const ideaValidationApi = {
+  getSessions: (documentId: string) => get(API_ENDPOINTS.IDEA_VALIDATION_SESSIONS(documentId)),
+  getSession: (documentId: string, sessionId: string) => get(API_ENDPOINTS.IDEA_VALIDATION_SESSION(documentId, sessionId)),
+};
+
+/**
  * Workspace API
  */
 export const workspaceApi = {
