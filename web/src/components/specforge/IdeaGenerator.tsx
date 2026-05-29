@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 
-import type { IdeaScaffold } from "@/lib/specforge/ideas-generator";
+import type { IdeaScaffold, IdeaValidationError } from "@/lib/specforge/ideas-generator";
+import { validateIdeaScaffold } from "@/lib/specforge/ideas-generator";
 import { agentApi } from "@/lib/api-client";
 
 interface IdeaGeneratorProps {
@@ -47,15 +48,41 @@ export function IdeaGenerator({ onGenerate, onCancel }: IdeaGeneratorProps) {
   const [briefDescription, setBriefDescription] = useState("");
   const [isAssisting, setIsAssisting] = useState(false);
   const [assistError, setAssistError] = useState<string | null>(null);
+  const [validationErrors, setValidationErrors] = useState<IdeaValidationError[]>([]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onGenerate(scaffold);
+    const errors = validateIdeaScaffold(scaffold as IdeaScaffold);
+    setValidationErrors(errors);
+    if (errors.length === 0) {
+      onGenerate(scaffold);
+    }
   };
 
   const handleChange = (field: keyof IdeaScaffold, value: string) => {
     setScaffold(prev => ({ ...prev, [field]: value }));
+    // Clear validation error for this field when user types
+    setValidationErrors(prev => prev.filter(error => error.field !== field));
   };
+
+  function getFieldError(fieldName: string): string | undefined {
+    return validationErrors.find(error => error.field === fieldName)?.message;
+  }
+
+  function getFieldErrorId(fieldName: string): string {
+    return `${fieldName}-error`;
+  }
+
+  function hasFieldError(fieldName: string): boolean {
+    return getFieldError(fieldName) !== undefined;
+  }
+
+  function getValidationAnnouncement(): string {
+    if (validationErrors.length === 0) {
+      return "";
+    }
+    return `Form has ${validationErrors.length} validation error${validationErrors.length === 1 ? "" : "s"}. Please correct the highlighted fields.`;
+  }
 
   const handleAssist = async () => {
     if (!briefDescription.trim()) {
@@ -149,6 +176,16 @@ export function IdeaGenerator({ onGenerate, onCancel }: IdeaGeneratorProps) {
       </section>
 
       <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+        {getValidationAnnouncement() && (
+          <div
+            role="status"
+            aria-live="polite"
+            style={{ color: "var(--sf-error)", marginBottom: "16px", padding: "8px", backgroundColor: "var(--sf-error-bg)", borderRadius: "6px" }}
+          >
+            {getValidationAnnouncement()}
+          </div>
+        )}
+
         {/* Core Idea */}
         <section>
           <h2 style={{ fontSize: "1.1rem", fontWeight: 600, marginBottom: "12px" }}>
@@ -164,6 +201,8 @@ export function IdeaGenerator({ onGenerate, onCancel }: IdeaGeneratorProps) {
                 value={scaffold.title}
                 onChange={(e) => handleChange("title", e.target.value)}
                 placeholder="My Awesome Product"
+                aria-invalid={hasFieldError("title")}
+                aria-describedby={hasFieldError("title") ? getFieldErrorId("title") : undefined}
                 style={{
                   width: "100%",
                   padding: "8px 12px",
@@ -173,6 +212,15 @@ export function IdeaGenerator({ onGenerate, onCancel }: IdeaGeneratorProps) {
                 }}
                 required
               />
+              {getFieldError("title") && (
+                <span
+                  id={getFieldErrorId("title")}
+                  role="alert"
+                  style={{ color: "var(--sf-error)", fontSize: "0.875rem", marginTop: "4px", display: "block" }}
+                >
+                  {getFieldError("title")}
+                </span>
+              )}
             </div>
             <div>
               <label style={{ display: "block", fontWeight: 500, marginBottom: "4px" }}>
@@ -183,6 +231,8 @@ export function IdeaGenerator({ onGenerate, onCancel }: IdeaGeneratorProps) {
                 onChange={(e) => handleChange("thesis", e.target.value)}
                 placeholder="What is this and why does it matter?"
                 rows={3}
+                aria-invalid={hasFieldError("thesis")}
+                aria-describedby={hasFieldError("thesis") ? getFieldErrorId("thesis") : undefined}
                 style={{
                   width: "100%",
                   padding: "8px 12px",
@@ -193,6 +243,15 @@ export function IdeaGenerator({ onGenerate, onCancel }: IdeaGeneratorProps) {
                 }}
                 required
               />
+              {getFieldError("thesis") && (
+                <span
+                  id={getFieldErrorId("thesis")}
+                  role="alert"
+                  style={{ color: "var(--sf-error)", fontSize: "0.875rem", marginTop: "4px", display: "block" }}
+                >
+                  {getFieldError("thesis")}
+                </span>
+              )}
             </div>
             <div>
               <label style={{ display: "block", fontWeight: 500, marginBottom: "4px" }}>
@@ -224,13 +283,15 @@ export function IdeaGenerator({ onGenerate, onCancel }: IdeaGeneratorProps) {
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             <div>
               <label style={{ display: "block", fontWeight: 500, marginBottom: "4px" }}>
-                Problem
+                Problem *
               </label>
               <textarea
                 value={scaffold.problem}
                 onChange={(e) => handleChange("problem", e.target.value)}
                 placeholder="What's broken or missing?"
                 rows={3}
+                aria-invalid={hasFieldError("problem")}
+                aria-describedby={hasFieldError("problem") ? getFieldErrorId("problem") : undefined}
                 style={{
                   width: "100%",
                   padding: "8px 12px",
@@ -239,7 +300,17 @@ export function IdeaGenerator({ onGenerate, onCancel }: IdeaGeneratorProps) {
                   fontSize: "0.9rem",
                   fontFamily: "inherit",
                 }}
+                required
               />
+              {getFieldError("problem") && (
+                <span
+                  id={getFieldErrorId("problem")}
+                  role="alert"
+                  style={{ color: "var(--sf-error)", fontSize: "0.875rem", marginTop: "4px", display: "block" }}
+                >
+                  {getFieldError("problem")}
+                </span>
+              )}
             </div>
             <div>
               <label style={{ display: "block", fontWeight: 500, marginBottom: "4px" }}>
@@ -290,13 +361,15 @@ export function IdeaGenerator({ onGenerate, onCancel }: IdeaGeneratorProps) {
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             <div>
               <label style={{ display: "block", fontWeight: 500, marginBottom: "4px" }}>
-                Target User
+                Target User *
               </label>
               <input
                 type="text"
                 value={scaffold.targetUser}
                 onChange={(e) => handleChange("targetUser", e.target.value)}
                 placeholder="Who is this for?"
+                aria-invalid={hasFieldError("targetUser")}
+                aria-describedby={hasFieldError("targetUser") ? getFieldErrorId("targetUser") : undefined}
                 style={{
                   width: "100%",
                   padding: "8px 12px",
@@ -304,17 +377,29 @@ export function IdeaGenerator({ onGenerate, onCancel }: IdeaGeneratorProps) {
                   borderRadius: "6px",
                   fontSize: "0.9rem",
                 }}
+                required
               />
+              {getFieldError("targetUser") && (
+                <span
+                  id={getFieldErrorId("targetUser")}
+                  role="alert"
+                  style={{ color: "var(--sf-error)", fontSize: "0.875rem", marginTop: "4px", display: "block" }}
+                >
+                  {getFieldError("targetUser")}
+                </span>
+              )}
             </div>
             <div>
               <label style={{ display: "block", fontWeight: 500, marginBottom: "4px" }}>
-                Solution Approach
+                Solution Approach *
               </label>
               <textarea
                 value={scaffold.solutionApproach}
                 onChange={(e) => handleChange("solutionApproach", e.target.value)}
                 placeholder="How will you solve it?"
                 rows={3}
+                aria-invalid={hasFieldError("solutionApproach")}
+                aria-describedby={hasFieldError("solutionApproach") ? getFieldErrorId("solutionApproach") : undefined}
                 style={{
                   width: "100%",
                   padding: "8px 12px",
@@ -323,7 +408,17 @@ export function IdeaGenerator({ onGenerate, onCancel }: IdeaGeneratorProps) {
                   fontSize: "0.9rem",
                   fontFamily: "inherit",
                 }}
+                required
               />
+              {getFieldError("solutionApproach") && (
+                <span
+                  id={getFieldErrorId("solutionApproach")}
+                  role="alert"
+                  style={{ color: "var(--sf-error)", fontSize: "0.875rem", marginTop: "4px", display: "block" }}
+                >
+                  {getFieldError("solutionApproach")}
+                </span>
+              )}
             </div>
             <div>
               <label style={{ display: "block", fontWeight: 500, marginBottom: "4px" }}>

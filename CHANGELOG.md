@@ -70,6 +70,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Error announcements include error count and guidance
   - Improved screen reader experience for guided form validation
 
+- **IdeaGenerator Form Validation**
+  - Added validateIdeaScaffold function to ideas-generator.ts
+  - Required fields: title (3+ chars), thesis (10+ chars), problem (10+ chars), targetUser (5+ chars), solutionApproach (10+ chars)
+  - Added validation error state management to IdeaGenerator component
+  - Added inline error messages for required fields
+  - Added ARIA attributes for accessibility (aria-invalid, aria-describedby, role="alert")
+  - Added screen reader live region for validation announcements
+  - Errors clear when user types
+  - Form submission blocked when validation fails
+
 ### Changed
 - Updated README with bridge component documentation
 - Added bridge startup instructions and health check URLs
