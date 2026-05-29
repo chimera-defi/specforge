@@ -2809,6 +2809,16 @@ export async function updateWorkspaceFile(
   const { dbPath } = resolveOptions(options);
   const now = new Date().toISOString();
 
+  // Get current file to compare content
+  const { rows: currentRows } = await database.query<WorkspaceFileRecord>(
+    `SELECT * FROM workspace_files WHERE file_id = $1`,
+    [fileId],
+  );
+  const currentFile = currentRows[0];
+  if (!currentFile) {
+    throw new Error(`File ${fileId} not found`);
+  }
+
   const setClauses: string[] = [];
   const params: unknown[] = [];
   let paramIndex = 1;
@@ -2833,9 +2843,12 @@ export async function updateWorkspaceFile(
 
   const updatedFile = rows[0]!;
 
-  // Create a version record after successful update
-  // Only if content actually changed (avoid duplicate versions from no-op updates)
-  if (updates.content !== undefined || updates.content_json !== undefined) {
+  // Create a version record only if content actually changed
+  const contentChanged = 
+    (updates.content !== undefined && updates.content !== currentFile.content) ||
+    (updates.content_json !== undefined && JSON.stringify(updates.content_json) !== JSON.stringify(currentFile.content_json));
+  
+  if (contentChanged) {
     await createFileVersion(fileId, updatedFile, options);
   }
 

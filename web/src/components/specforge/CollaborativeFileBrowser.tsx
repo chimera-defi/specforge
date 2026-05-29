@@ -222,13 +222,16 @@ export function CollaborativeFileBrowser({
       const { from } = editor.state.selection;
       try {
         const coords = editor.view.coordsAtPos(from);
-        const scrollContainer = editor.view.dom.closest('.ProseMirror')?.parentElement;
-        const scrollTop = scrollContainer?.scrollTop ?? 0;
-        const scrollLeft = scrollContainer?.scrollLeft ?? 0;
+        const viewRect = editor.view.dom.getBoundingClientRect();
+        
+        // Calculate position relative to the editor, not viewport
+        // This handles scrolling correctly without fragile DOM traversal
+        const relativeX = coords.left - viewRect.left;
+        const relativeY = coords.top - viewRect.top;
         
         providerRef.current.awareness.setLocalStateField("cursor", {
-          x: coords.left - scrollLeft,
-          y: coords.top - scrollTop,
+          x: relativeX,
+          y: relativeY,
           name: activeActor.name,
           color: activeActor.color,
         });
@@ -274,6 +277,17 @@ export function CollaborativeFileBrowser({
       }
     };
   }, []);
+
+  // Update awareness state when file changes
+  useEffect(() => {
+    if (!selected || !providerRef.current?.awareness) return;
+    
+    providerRef.current.awareness.setLocalStateField("user", {
+      name: activeActor.name,
+      color: activeActor.color,
+      currentFile: selected.filename,
+    });
+  }, [selected?.filename, activeActor.name, activeActor.color]);
 
   // Setup Yjs collaboration when file is selected
   useEffect(() => {
