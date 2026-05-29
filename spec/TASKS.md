@@ -22,7 +22,7 @@
 - [ ] 3. Add honest SaaS scaffolding.
   - Focus: Stripe skeleton, entitlements cleanup, hosted ops surfaces
 - [ ] 4. Prepare the hybrid hosted + local bridge model.
-  - Focus: bridge spike, diagnostics export
+  - Focus: bridge spike, diagnostics export (diagnostics export DONE, bridge NOT implemented)
 - [x] 5. Improve SpecForge itself as the future `ideas/` generator.
   - Focus: stronger guided fields, stronger idea scaffold, better one-shot export packs
 
@@ -75,7 +75,7 @@
 - [x] ARCHITECTURE_DECISIONS.md updated: Decisions 24, 25, 26, 27, 28, 31 reflect current implementation status.
 - [x] Shared orchestrator backlog parsing now feeds both the parity runner and the in-product delivery-loop panel.
 - [x] Runner status/brief/context now stay aligned with the live backlog instead of stale historical intents.
-- [x] Desktop packaging direction is now documented: Tauri shell + supervised local sidecars + future hosted/local bridge split.
+- [x] Desktop packaging direction is now documented: Tauri shell + supervised local sidecars + future hosted/local bridge split (bridge NOT yet implemented).
 
 ## Meta Learnings To Keep Applying
 - [x] Treat placeholder fallback content as real product debt and remove it during review passes.
@@ -105,7 +105,7 @@
 - [ ] Add runtime mode diagnostics to the workspace session UI.
   - Done: user can see local mode vs hosted mode vs future bridge mode plus local CLI availability
 - [ ] Define the first hybrid bridge contract for hosted workspaces that want local Codex / Claude CLI reuse.
-  - Done: hosted app can detect a trusted local bridge and route assist requests through it without exposing raw secrets to the browser
+  - NOT DONE: bridge detection and routing not yet implemented
 
 ## Phase 2: Core Editing (Weeks 3-4)
 
