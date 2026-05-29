@@ -4,6 +4,10 @@ This directory contains historical and obsolete documentation preserved for refe
 
 ## Archived Files
 
+### Session Documentation
+- `SESSION_REVIEW.md` - Review of UX polish and SaaS scaffolding work (2026-05-29)
+- `DOC_CONSOLIDATION_PLAN.md` - Documentation consolidation plan and execution
+
 ### Implementation Plans
 - `CLAUDE_BUILDOUT_PLAN.md` - Historical buildout plan for Claude Code integration
 - `FRONTEND_REDESIGN_PLAN.md` - Historical frontend redesign planning
