@@ -2834,7 +2834,10 @@ export async function updateWorkspaceFile(
   const updatedFile = rows[0]!;
 
   // Create a version record after successful update
-  await createFileVersion(fileId, updatedFile, options);
+  // Only if content actually changed (avoid duplicate versions from no-op updates)
+  if (updates.content !== undefined || updates.content_json !== undefined) {
+    await createFileVersion(fileId, updatedFile, options);
+  }
 
   await persistSnapshot(database, dbPath);
   return updatedFile;
