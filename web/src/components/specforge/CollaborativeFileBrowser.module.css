@@ -241,6 +241,35 @@
   color: var(--sf-muted-mid);
 }
 
+.syncStatus.offline {
+  color: var(--sf-warning);
+  font-weight: 600;
+}
+
+.conflictWarning {
+  background: var(--sf-warning-subtle);
+  border: 1px solid var(--sf-warning);
+  color: var(--sf-warning);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.offlineBanner {
+  background: var(--sf-warning-subtle);
+  border-bottom: 1px solid var(--sf-warning);
+  color: var(--sf-warning);
+  padding: 8px 12px;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .aiAssistBtn,
 .addFileBtn,
 .initBtn {
