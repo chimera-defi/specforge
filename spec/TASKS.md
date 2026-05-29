@@ -29,6 +29,7 @@
   - **Status:** Complete - Implemented bridge design spike with HTTP server, health check, and CLI proxy endpoint; diagnostics export already fully functional
 - [x] 5. Improve SpecForge itself as the future `ideas/` generator.
   - Focus: stronger guided fields, stronger idea scaffold, better one-shot export packs
+  - **Status:** Complete - Enhanced guided fields with examples, added competitiveAnalysis and businessModel to IdeaScaffold, added COMPETITIVE_ANALYSIS.md and BUSINESS_MODEL.md export artifacts
 
 ## Shipped Surface
 - [x] Guided spec wizard writes into the canonical document.

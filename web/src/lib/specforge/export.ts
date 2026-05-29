@@ -78,6 +78,8 @@ function buildReadme(document: DocumentRecord): string {
     "- DECISIONS.md — recorded decisions",
     "- USER_FLOWS.md — actor flows",
     "- VALIDATION_PLAN.md — signal checkpoints",
+    "- COMPETITIVE_ANALYSIS.md — competitive landscape",
+    "- BUSINESS_MODEL.md — business model and go-to-market",
     "- agent_spec.json — machine-readable spec",
   ].join("\n");
 }
@@ -724,6 +726,8 @@ export function exportDocumentBundle(
     "ACCEPTANCE_TEST_MATRIX.md": buildAcceptanceTestMatrix(document),
     "USER_FLOWS.md": buildUserFlows(document),
     "VALIDATION_PLAN.md": buildValidationPlan(document),
+    "COMPETITIVE_ANALYSIS.md": buildCompetitiveAnalysis(document),
+    "BUSINESS_MODEL.md": buildBusinessModel(document),
     "agent_spec.json": buildAgentSpecJson(document, patches, clarifications, planningStages),
   };
 
@@ -812,5 +816,94 @@ function buildSecurity(outputs: Record<string, string>): string {
     "## Security Requirements",
     "",
     outputs.security_requirements ?? "",
+  ].join("\n");
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Business & Competition
+// ──────────────────────────────────────────────────────────────────────────────
+
+function buildCompetitiveAnalysis(document: DocumentRecord): string {
+  const competitiveAnalysis = metaField(document, "competitive_analysis");
+  const currentAlternatives = metaField(document, "current_alternatives");
+  const keyDifferentiator = metaField(document, "key_differentiator");
+
+  const analysis = sparse(competitiveAnalysis, 1) 
+    ? (sparse(currentAlternatives, 1) ? "No competitive analysis provided." : bulletLines(currentAlternatives))
+    : bulletLines(competitiveAnalysis);
+
+  const differentiator = sparse(keyDifferentiator, 1)
+    ? "- TBD"
+    : `- ${keyDifferentiator.split("\n")[0].trim()}`;
+
+  return [
+    "# Competitive Analysis",
+    "",
+    "**Source**: Idea Scaffold — Business & Competition section",
+    "",
+    "## Current Alternatives",
+    "",
+    ...analysis,
+    "",
+    "## Key Differentiator",
+    "",
+    differentiator,
+    "",
+    "## Competitive Advantage",
+    "",
+    "- This analysis should be expanded with specific competitor research",
+    "- Identify 2-3 main competitors and their strengths/weaknesses",
+    "- Define your unique value proposition",
+    "- Document barriers to entry for new competitors",
+  ].join("\n");
+}
+
+function buildBusinessModel(document: DocumentRecord): string {
+  const businessModel = metaField(document, "business_model");
+  const marketSize = metaField(document, "market_size");
+  const targetUser = metaField(document, "target_user");
+
+  const model = sparse(businessModel, 1)
+    ? "No business model provided."
+    : bulletLines(businessModel);
+
+  const market = sparse(marketSize, 1)
+    ? "- TBD"
+    : `- ${marketSize.split("\n")[0].trim()}`;
+
+  const user = sparse(targetUser, 1)
+    ? "- TBD"
+    : `- ${targetUser.split("\n")[0].trim()}`;
+
+  return [
+    "# Business Model",
+    "",
+    "**Source**: Idea Scaffold — Business & Competition section",
+    "",
+    "## Target Market",
+    "",
+    user,
+    "",
+    "## Market Size",
+    "",
+    market,
+    "",
+    "## Business Model",
+    "",
+    ...model,
+    "",
+    "## Revenue Streams",
+    "",
+    "- This section should be expanded with specific revenue model details",
+    "- Identify primary and secondary revenue sources",
+    "- Document pricing strategy and tiers",
+    "- Define customer acquisition costs and lifetime value",
+    "",
+    "## Go-to-Market Strategy",
+    "",
+    "- Define initial target segment",
+    "- Outline marketing channels",
+    "- Document sales process",
+    "- Identify key partnerships",
   ].join("\n");
 }

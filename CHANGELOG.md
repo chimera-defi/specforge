@@ -40,6 +40,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Bridge documentation and package configuration
   - Diagnostics export already fully functional at `/api/ops/diagnostics-pack`
 
+- **Ideas Generator Improvements** (Item #5)
+  - Enhanced guided fields with specific examples and better placeholders
+  - Added competitiveAnalysis and businessModel fields to IdeaScaffold
+  - Added COMPETITIVE_ANALYSIS.md export artifact
+  - Added BUSINESS_MODEL.md export artifact
+  - Improved export bundle with 15 total artifacts
+
 ### Changed
 - Updated README with bridge component documentation
 - Added bridge startup instructions and health check URLs

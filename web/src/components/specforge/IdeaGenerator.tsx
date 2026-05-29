@@ -40,6 +40,8 @@ export function IdeaGenerator({ onGenerate, onCancel }: IdeaGeneratorProps) {
     successMetrics: "",
     technicalRisks: "",
     constraints: "",
+    competitiveAnalysis: "",
+    businessModel: "",
   });
 
   const [briefDescription, setBriefDescription] = useState("");
