@@ -14,6 +14,12 @@ import {
   type ValidationError,
 } from "@/lib/specforge/guided";
 import { sanitizeInput } from "@/lib/utils/sanitize";
+import {
+  getFieldError,
+  getFieldErrorId,
+  hasFieldError,
+  getValidationAnnouncement,
+} from "@/lib/utils/validation-helpers";
 
 type AssistPreset = "idea-to-spec" | "block-iteration" | "clarification-answer" | "design-feedback" | "planning-assist";
 
@@ -125,31 +131,14 @@ export function GuidedDraftBuilder({
     setFields((current) => ({ ...current, [key]: typeof value === "string" ? sanitizeInput(value as string) : value }));
     // Clear validation error for this field when user types
     setValidationErrors((prev) => prev.filter((error) => error.field !== key));
+    // Reset submitting state when user types
+    setIsSubmitting(false);
   }
 
   function validateForm() {
     const errors = validateGuidedSpecInput(fields);
     setValidationErrors(errors);
     return errors.length === 0;
-  }
-
-  function getFieldError(fieldName: string): string | undefined {
-    return validationErrors.find((error) => error.field === fieldName)?.message;
-  }
-
-  function getFieldErrorId(fieldName: string): string {
-    return `${fieldName}-error`;
-  }
-
-  function hasFieldError(fieldName: string): boolean {
-    return getFieldError(fieldName) !== undefined;
-  }
-
-  function getValidationAnnouncement(): string {
-    if (validationErrors.length === 0) {
-      return "";
-    }
-    return `Form has ${validationErrors.length} validation error${validationErrors.length === 1 ? "" : "s"}. Please correct the highlighted fields.`;
   }
 
   function populateFromAssist() {
@@ -206,6 +195,7 @@ export function GuidedDraftBuilder({
       onSubmit={(e) => {
         if (!validateForm()) {
           e.preventDefault();
+          setIsSubmitting(false);
           return;
         }
         setIsSubmitting(true);
@@ -213,13 +203,13 @@ export function GuidedDraftBuilder({
     >
       <input type="hidden" name="mode" value="guided" />
 
-      {getValidationAnnouncement() && (
+      {getValidationAnnouncement(validationErrors) && (
         <div
           role="status"
           aria-live="polite"
           style={{ color: "var(--sf-error)", marginBottom: "16px", padding: "8px", backgroundColor: "var(--sf-error-bg)", borderRadius: "6px" }}
         >
-          {getValidationAnnouncement()}
+          {getValidationAnnouncement(validationErrors)}
         </div>
       )}
 
@@ -322,16 +312,16 @@ export function GuidedDraftBuilder({
           onChange={(event) => updateField("title", event.target.value)}
           data-testid="create-document-title"
           placeholder="e.g., SpecForge MVP, Server Management Agent, Team Collab Tool"
-          aria-invalid={hasFieldError("title")}
-          aria-describedby={hasFieldError("title") ? getFieldErrorId("title") : undefined}
+          aria-invalid={hasFieldError("title", validationErrors)}
+          aria-describedby={hasFieldError("title", validationErrors) ? getFieldErrorId("title") : undefined}
         />
-        {getFieldError("title") && (
+        {getFieldError("title", validationErrors) && (
           <span
             id={getFieldErrorId("title")}
             role="alert"
             style={{ color: "var(--sf-error)", fontSize: "0.875rem", marginTop: "4px", display: "block" }}
           >
-            {getFieldError("title")}
+            {getFieldError("title", validationErrors)}
           </span>
         )}
       </label>
@@ -349,16 +339,16 @@ export function GuidedDraftBuilder({
               value={fields.problem}
               onChange={(event) => updateField("problem", event.target.value)}
               placeholder="e.g., Teams lose momentum between idea, spec, review, and build handoff. Current tools are disconnected and don't provide traceability."
-              aria-invalid={hasFieldError("problem")}
-              aria-describedby={hasFieldError("problem") ? getFieldErrorId("problem") : undefined}
+              aria-invalid={hasFieldError("problem", validationErrors)}
+              aria-describedby={hasFieldError("problem", validationErrors) ? getFieldErrorId("problem") : undefined}
             />
-            {getFieldError("problem") && (
+            {getFieldError("problem", validationErrors) && (
               <span
                 id={getFieldErrorId("problem")}
                 role="alert"
                 style={{ color: "var(--sf-error)", fontSize: "0.875rem", marginTop: "4px", display: "block" }}
               >
-                {getFieldError("problem")}
+                {getFieldError("problem", validationErrors)}
               </span>
             )}
           </label>
@@ -370,16 +360,16 @@ export function GuidedDraftBuilder({
               value={fields.goals}
               onChange={(event) => updateField("goals", event.target.value)}
               placeholder="e.g., Produce a build-ready spec, Support human and agent collaboration, Keep review and attribution explicit"
-              aria-invalid={hasFieldError("goals")}
-              aria-describedby={hasFieldError("goals") ? getFieldErrorId("goals") : undefined}
+              aria-invalid={hasFieldError("goals", validationErrors)}
+              aria-describedby={hasFieldError("goals", validationErrors) ? getFieldErrorId("goals") : undefined}
             />
-            {getFieldError("goals") && (
+            {getFieldError("goals", validationErrors) && (
               <span
                 id={getFieldErrorId("goals")}
                 role="alert"
                 style={{ color: "var(--sf-error)", fontSize: "0.875rem", marginTop: "4px", display: "block" }}
               >
-                {getFieldError("goals")}
+                {getFieldError("goals", validationErrors)}
               </span>
             )}
           </label>
@@ -391,16 +381,16 @@ export function GuidedDraftBuilder({
               value={fields.users}
               onChange={(event) => updateField("users", event.target.value)}
               placeholder="e.g., Product-minded founder, PM + engineer pair, Coding agent operator"
-              aria-invalid={hasFieldError("users")}
-              aria-describedby={hasFieldError("users") ? getFieldErrorId("users") : undefined}
+              aria-invalid={hasFieldError("users", validationErrors)}
+              aria-describedby={hasFieldError("users", validationErrors) ? getFieldErrorId("users") : undefined}
             />
-            {getFieldError("users") && (
+            {getFieldError("users", validationErrors) && (
               <span
                 id={getFieldErrorId("users")}
                 role="alert"
                 style={{ color: "var(--sf-error)", fontSize: "0.875rem", marginTop: "4px", display: "block" }}
               >
-                {getFieldError("users")}
+                {getFieldError("users", validationErrors)}
               </span>
             )}
           </label>
@@ -420,16 +410,16 @@ export function GuidedDraftBuilder({
               value={fields.scope}
               onChange={(event) => updateField("scope", event.target.value)}
               placeholder="e.g., Guided spec creation, Shared authoring canvas, Patch review and export handoff"
-              aria-invalid={hasFieldError("scope")}
-              aria-describedby={hasFieldError("scope") ? getFieldErrorId("scope") : undefined}
+              aria-invalid={hasFieldError("scope", validationErrors)}
+              aria-describedby={hasFieldError("scope", validationErrors) ? getFieldErrorId("scope") : undefined}
             />
-            {getFieldError("scope") && (
+            {getFieldError("scope", validationErrors) && (
               <span
                 id={getFieldErrorId("scope")}
                 role="alert"
                 style={{ color: "var(--sf-error)", fontSize: "0.875rem", marginTop: "4px", display: "block" }}
               >
-                {getFieldError("scope")}
+                {getFieldError("scope", validationErrors)}
               </span>
             )}
           </label>
