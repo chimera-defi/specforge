@@ -81,7 +81,7 @@ async function runAIAssistBrowserTest() {
           console.log(`✓ Found idea input with selector: ${selector}`);
           break;
         }
-      } catch (_e) {
+      } catch {
         // Continue to next selector
       }
     }
@@ -130,7 +130,7 @@ async function runAIAssistBrowserTest() {
             console.log(`✓ Found assist button with selector: ${selector}`);
             break;
           }
-        } catch (e) {
+        } catch {
           // Continue to next selector
         }
       }

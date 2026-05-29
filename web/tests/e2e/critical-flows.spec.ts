@@ -9,8 +9,13 @@ test.describe("SpecForge E2E - Critical Flows", () => {
     const title = await page.title();
     expect(title).toContain("SpecForge");
 
-    // Check page is loaded
+    // Check for main navigation elements
     await expect(page.locator("body")).toBeVisible();
+    
+    // Verify the page has loaded successfully
+    const bodyContent = await page.textContent("body");
+    expect(bodyContent).toBeTruthy();
+    expect(bodyContent?.length).toBeGreaterThan(0);
 
     // Take screenshot
     await page.screenshot({ path: "/tmp/e2e-home-page.png" });
@@ -33,6 +38,10 @@ test.describe("SpecForge E2E - Critical Flows", () => {
       expect(page.url()).toContain("/workspace");
     }
 
+    // Verify workspace page has loaded
+    const bodyContent = await page.textContent("body");
+    expect(bodyContent).toBeTruthy();
+
     // Take screenshot
     await page.screenshot({ path: "/tmp/e2e-workspace-auth.png" });
   });
@@ -49,6 +58,9 @@ test.describe("SpecForge E2E - Critical Flows", () => {
       await page.waitForNavigation({ timeout: 5000 });
     }
 
+    // Wait for page to load
+    await page.waitForLoadState("networkidle");
+
     // Look for the "Idea Generator" button
     const ideaGeneratorButton = page.getByText("Idea Generator");
     const isVisible = await ideaGeneratorButton.isVisible().catch(() => false);
@@ -57,13 +69,17 @@ test.describe("SpecForge E2E - Critical Flows", () => {
       // Click the button to access idea generator
       await ideaGeneratorButton.click();
       
-      // Verify we're in idea generation mode
-      const bodyText = await page.textContent("body");
-      console.log("After clicking Idea Generator, page contains:", bodyText?.substring(0, 200));
+      // Wait for navigation or content change
+      await page.waitForTimeout(1000);
+      
+      // Verify the page is still responsive
+      const bodyContent = await page.textContent("body");
+      expect(bodyContent).toBeTruthy();
     } else {
-      // Log that the button wasn't found but the page loaded
-      const bodyText = await page.textContent("body");
-      console.log("Idea Generator button not found. Page contains:", bodyText?.substring(0, 200));
+      // Button not found - this is expected in some contexts
+      // Verify the page loaded successfully
+      const bodyContent = await page.textContent("body");
+      expect(bodyContent).toBeTruthy();
     }
 
     // Take screenshot
@@ -82,15 +98,13 @@ test.describe("SpecForge E2E - Critical Flows", () => {
       await page.waitForNavigation({ timeout: 5000 });
     }
 
-    // Look for export file browser or file-related content
-    const bodyText = await page.textContent("body") || "";
-    const hasFileContent = bodyText.includes("file") || 
-                          bodyText.includes("File") ||
-                          bodyText.includes("export") ||
-                          bodyText.includes("Export");
+    // Wait for page to load
+    await page.waitForLoadState("networkidle");
 
-    console.log("Export stage has file content:", hasFileContent);
-    console.log("Export stage page preview:", bodyText.substring(0, 300));
+    // Verify the page loaded successfully
+    const bodyContent = await page.textContent("body");
+    expect(bodyContent).toBeTruthy();
+    expect(bodyContent?.length).toBeGreaterThan(0);
 
     // Take screenshot
     await page.screenshot({ path: "/tmp/e2e-export-files.png" });
@@ -108,14 +122,12 @@ test.describe("SpecForge E2E - Critical Flows", () => {
       await page.waitForNavigation({ timeout: 5000 });
     }
 
-    // Look for readiness report or launch packet
-    const bodyText = await page.textContent("body") || "";
-    const hasReadiness = bodyText.includes("readiness") || 
-                        bodyText.includes("Readiness") ||
-                        bodyText.includes("launch") ||
-                        bodyText.includes("Launch");
+    // Wait for page to load
+    await page.waitForLoadState("networkidle");
 
-    console.log("Export stage has readiness/launch content:", hasReadiness);
+    // Verify the page loaded successfully
+    const bodyContent = await page.textContent("body");
+    expect(bodyContent).toBeTruthy();
 
     // Take screenshot
     await page.screenshot({ path: "/tmp/e2e-export-readiness.png" });
@@ -133,14 +145,12 @@ test.describe("SpecForge E2E - Critical Flows", () => {
       await page.waitForNavigation({ timeout: 5000 });
     }
 
-    // Look for handoff-related content
-    const bodyText = await page.textContent("body") || "";
-    const hasHandoff = bodyText.includes("handoff") || 
-                      bodyText.includes("Handoff") ||
-                      bodyText.includes("template") ||
-                      bodyText.includes("Template");
+    // Wait for page to load
+    await page.waitForLoadState("networkidle");
 
-    console.log("Export stage has handoff/template content:", hasHandoff);
+    // Verify the page loaded successfully
+    const bodyContent = await page.textContent("body");
+    expect(bodyContent).toBeTruthy();
 
     // Take screenshot
     await page.screenshot({ path: "/tmp/e2e-handoff-stage.png" });
@@ -158,14 +168,12 @@ test.describe("SpecForge E2E - Critical Flows", () => {
       await page.waitForNavigation({ timeout: 5000 });
     }
 
-    // Look for membership-related content
-    const bodyText = await page.textContent("body") || "";
-    const hasMembership = bodyText.includes("member") || 
-                         bodyText.includes("Member") ||
-                         bodyText.includes("workspace") ||
-                         bodyText.includes("Workspace");
+    // Wait for page to load
+    await page.waitForLoadState("networkidle");
 
-    console.log("Workspace has membership content:", hasMembership);
+    // Verify the page loaded successfully
+    const bodyContent = await page.textContent("body");
+    expect(bodyContent).toBeTruthy();
 
     // Take screenshot
     await page.screenshot({ path: "/tmp/e2e-membership.png" });
@@ -187,7 +195,7 @@ test.describe("Data Propagation Verification", () => {
     expect(response.ok()).toBeTruthy();
 
     const data = await response.json();
-    console.log("Workspace count:", data.persistence?.workspaces);
-    console.log("Document count:", data.persistence?.documents);
+    expect(data.persistence?.workspaces).toBeDefined();
+    expect(data.persistence?.documents).toBeDefined();
   });
 });

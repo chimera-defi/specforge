@@ -102,7 +102,7 @@ async function testDraftCanvasFix() {
     try {
       editorText = await page.locator(".specforgeEditor").textContent() || "";
       editorHtml = await page.locator(".specforgeEditor").innerHTML() || "";
-    } catch (_e) {
+    } catch {
       console.log("  Could not get editor text");
     }
 

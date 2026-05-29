@@ -17,6 +17,7 @@ import {
   switchWorkspaceActorAction,
 } from "../actions";
 import { CollapsibleWorkspaceNav } from "./collapsible-nav";
+import { WorkspaceErrorBoundary } from "./WorkspaceErrorBoundary";
 import { ClarificationQueue } from "@/components/specforge/ClarificationQueue";
 import { CollaborativeFileBrowser } from "@/components/specforge/CollaborativeFileBrowser";
 import { SpecCreationWrapper } from "./SpecCreationWrapper";
@@ -477,7 +478,8 @@ export default async function Home({ searchParams }: Props) {
     : [];
 
   return (
-    <div className={styles.shell}>
+    <WorkspaceErrorBoundary stage={activeStage}>
+      <div className={styles.shell}>
       <CollapsibleWorkspaceNav
         docTitle={activeDocument ? activeDocument.title : "No active document"}
         stageLabel={activeDocument ? stageMeta.title : null}
@@ -1574,5 +1576,6 @@ export default async function Home({ searchParams }: Props) {
         </section>
       </main>
     </div>
+    </WorkspaceErrorBoundary>
   );
 }
