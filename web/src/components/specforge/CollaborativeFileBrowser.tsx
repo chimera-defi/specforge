@@ -723,7 +723,7 @@ export function CollaborativeFileBrowser({
 
     for (const fileId of selectedFileIds) {
       try {
-        await fetch(`/api/documents/${fileId}`, { method: "DELETE" });
+        await fileApi.delete(documentId, fileId);
       } catch (error) {
         console.error(`Failed to delete file ${fileId}:`, error);
       }
