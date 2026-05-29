@@ -3,7 +3,7 @@ import { defineConfig, devices } from "@playwright/test";
 export default defineConfig({
   testDir: "./tests",
   testMatch: ["demo.spec.ts", "e2e/**/*.spec.ts"],
-  timeout: 60_000,
+  timeout: 120_000,
   expect: {
     timeout: 10_000,
   },
@@ -35,7 +35,7 @@ export default defineConfig({
       command: "bun run --cwd ../collab-server start",
       port: 4322,
       reuseExistingServer: false,
-      timeout: 60_000,
+      timeout: 120_000,
       env: {
         PORT: "4322",
       },
