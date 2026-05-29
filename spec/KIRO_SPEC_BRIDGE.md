@@ -5,7 +5,7 @@
 
 ---
 
-## Requirements Mapping (→ requirements.md)
+## Requirements Mapping (→ PRD.md)
 
 ### Problem Statement
 **Source**: PRD.md "Problem" section
