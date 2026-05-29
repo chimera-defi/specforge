@@ -23,7 +23,7 @@
   - Focus: Stripe skeleton, entitlements cleanup, hosted ops surfaces
 - [ ] 4. Prepare the hybrid hosted + local bridge model.
   - Focus: bridge spike, diagnostics export
-- [ ] 5. Improve SpecForge itself as the future `ideas/` generator.
+- [x] 5. Improve SpecForge itself as the future `ideas/` generator.
   - Focus: stronger guided fields, stronger idea scaffold, better one-shot export packs
 
 ## Shipped Surface
@@ -91,11 +91,11 @@
 
 ## Spec System Improvements
 
-- [ ] Add stronger guided fields for future idea generation.
+- [x] Add stronger guided fields for future idea generation.
   - Focus: distribution model, runtime topology, agent integration contract, release stage, acceptance tests
-- [ ] Upgrade the exported `ideas/` scaffold to be more executable.
+- [x] Upgrade the exported `ideas/` scaffold to be more executable.
   - Focus: thesis, user, problem, goals, non-goals, UX Pack, runtime topology, verification commands, future work
-- [ ] Make SpecForge the default path for generating future repo ideas.
+- [x] Make SpecForge the default path for generating future repo ideas.
   - Focus: one-shot build packs that are honest, deterministic, and easier for agents to execute
 
 ## Next Productization Track
