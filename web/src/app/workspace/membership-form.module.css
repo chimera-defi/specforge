@@ -1,0 +1,67 @@
+.membershipActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.roleInput {
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--sf-border);
+  font-size: 0.8rem;
+  background: var(--sf-surface-input);
+  color: var(--sf-ink);
+}
+
+.roleInput:focus {
+  outline: 2px solid var(--sf-teal);
+  outline-offset: 1px;
+}
+
+.updateButton {
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--sf-teal);
+  background: var(--sf-teal);
+  color: var(--sf-surface-warm);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.updateButton:hover {
+  background: var(--sf-teal-hover);
+}
+
+.updateButton:focus {
+  outline: 2px solid var(--sf-teal);
+  outline-offset: 1px;
+}
+
+.removeButton {
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--sf-danger);
+  background: var(--sf-danger);
+  color: var(--sf-surface-warm);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  font-weight: 500;
+}
+
+.removeButton:hover {
+  background: var(--sf-danger-hover);
+}
+
+.removeButton:focus {
+  outline: 2px solid var(--sf-danger);
+  outline-offset: 1px;
+}
+
+.roleLabel {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--sf-muted-light);
+  margin-bottom: 2px;
+}

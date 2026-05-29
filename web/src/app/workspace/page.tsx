@@ -20,6 +20,8 @@ import { CollapsibleWorkspaceNav } from "./collapsible-nav";
 import { ClarificationQueue } from "@/components/specforge/ClarificationQueue";
 import { CollaborativeFileBrowser } from "@/components/specforge/CollaborativeFileBrowser";
 import { SpecCreationWrapper } from "./SpecCreationWrapper";
+import { DeleteMemberButton } from "./DeleteMemberButton";
+import membershipStyles from "./membership-form.module.css";
 import { LocalAdminPanel } from "../local-admin-panel";
 import { ShareDocumentPanel } from "../share-document-panel";
 import { ExportStage } from "./export-stage";
@@ -51,7 +53,6 @@ import {
 import { loadWorkspaceSummary } from "@/lib/specforge/workspace-summary";
 import { IdeaValidationPanel } from "@/components/specforge/SprintPlanningPanel";
 import {
-  deleteWorkspaceMemberAction,
   updateWorkspaceMemberRoleAction,
 } from "../actions";
 import { AcceptanceTestSection } from "@/components/specforge/AcceptanceTestSection";
@@ -675,53 +676,28 @@ export default async function Home({ searchParams }: Props) {
                                 <span className={styles.mutedInline}>@{member.github_login}</span>
                               ) : null}
                             </span>
-                            <div style={{ display: "flex", gap: "8px", marginTop: "4px" }}>
+                            <div className={membershipStyles.membershipActions}>
                               <form action={updateWorkspaceMemberRoleAction} style={{ display: "inline" }}>
                                 <input type="hidden" name="membership_id" value={member.membership_id} />
                                 <input type="hidden" name="return_to" value={actorReturnTo} />
+                                <label htmlFor={`role-${member.membership_id}`} className={membershipStyles.roleLabel}>
+                                  Role
+                                </label>
                                 <input
+                                  id={`role-${member.membership_id}`}
                                   name="role"
                                   defaultValue={member.role}
-                                  style={{
-                                    padding: "2px 6px",
-                                    borderRadius: "4px",
-                                    border: "1px solid var(--sf-border)",
-                                    fontSize: "0.8rem",
-                                  }}
+                                  className={membershipStyles.roleInput}
                                 />
-                                <button
-                                  type="submit"
-                                  style={{
-                                    padding: "2px 8px",
-                                    borderRadius: "4px",
-                                    border: "1px solid var(--sf-teal)",
-                                    background: "var(--sf-teal)",
-                                    color: "var(--sf-surface-warm)",
-                                    fontSize: "0.8rem",
-                                    cursor: "pointer",
-                                  }}
-                                >
+                                <button type="submit" className={membershipStyles.updateButton}>
                                   Update
                                 </button>
                               </form>
-                              <form action={deleteWorkspaceMemberAction} style={{ display: "inline" }}>
-                                <input type="hidden" name="membership_id" value={member.membership_id} />
-                                <input type="hidden" name="return_to" value={actorReturnTo} />
-                                <button
-                                  type="submit"
-                                  style={{
-                                    padding: "2px 8px",
-                                    borderRadius: "4px",
-                                    border: "1px solid var(--sf-danger)",
-                                    background: "var(--sf-danger)",
-                                    color: "var(--sf-surface-warm)",
-                                    fontSize: "0.8rem",
-                                    cursor: "pointer",
-                                  }}
-                                >
-                                  Remove
-                                </button>
-                              </form>
+                              <DeleteMemberButton
+                                membershipId={member.membership_id}
+                                returnTo={actorReturnTo}
+                                memberName={member.name}
+                              />
                             </div>
                           </li>
                         ))}

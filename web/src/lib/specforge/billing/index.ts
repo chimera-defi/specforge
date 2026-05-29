@@ -515,10 +515,25 @@ class StripeBillingProvider implements BillingProviderInterface {
     const query = encodeURIComponent(`metadata['workspace_id']:'${workspaceId}'`);
     
     try {
-      const searchPayload = await this.stripeGetJson<StripeListResponse<StripeSubscription>>(
-        `https://api.stripe.com/v1/subscriptions/search?query=${query}&limit=1`,
-      );
-      const subscription = searchPayload.data?.[0];
+      let subscription: StripeSubscription | null = null;
+      
+      // Try search API first
+      try {
+        const searchPayload = await this.stripeGetJson<StripeListResponse<StripeSubscription>>(
+          `https://api.stripe.com/v1/subscriptions/search?query=${query}&limit=1`,
+        );
+        subscription = searchPayload.data?.[0] ?? null;
+      } catch (searchError) {
+        // Search API failed, fall back to list-based search
+        console.warn("Stripe search API failed, falling back to list-based search:", searchError);
+        
+        const listPayload = await this.stripeGetJson<StripeListResponse<StripeSubscription>>(
+          `https://api.stripe.com/v1/subscriptions?limit=100`,
+        );
+        subscription = listPayload.data?.find(
+          (sub) => sub.metadata?.workspace_id === workspaceId
+        ) ?? null;
+      }
       
       if (!subscription?.id) {
         throw new BillingProviderError({
@@ -526,6 +541,16 @@ class StripeBillingProvider implements BillingProviderInterface {
           code: "BILLING_PROVIDER_REQUEST_FAILED",
           status: 404,
           details: { provider: "stripe", workspaceId },
+        });
+      }
+
+      // Check subscription status before canceling
+      if (subscription.status === "canceled") {
+        throw new BillingProviderError({
+          message: "Subscription is already canceled",
+          code: "BILLING_PROVIDER_REQUEST_FAILED",
+          status: 400,
+          details: { provider: "stripe", workspaceId, subscriptionStatus: subscription.status },
         });
       }
 
