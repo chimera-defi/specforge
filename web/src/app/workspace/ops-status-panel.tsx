@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { opsApi } from "@/lib/api-client";
 
 interface OpsIncident {
   type: string;
@@ -20,17 +21,20 @@ export function OpsStatusPanel() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    Promise.all([
-      fetch("/api/ops/incidents")
-        .then((r) => r.json())
-        .catch(() => ({ data: { incidents: [] } })),
-      fetch("/api/ops/backups")
-        .then((r) => r.json())
-        .catch(() => ({ data: { backups: [] } })),
-    ]).then(([incData, backData]) => {
-      setIncidents(incData?.data?.incidents ?? []);
-      setBackups(backData?.data?.backups ?? []);
-    });
+    const fetchOpsData = async () => {
+      try {
+        const [incData, backData] = await Promise.all([
+          opsApi.getIncidents() as Promise<{ data: { incidents: OpsIncident[] } }>,
+          opsApi.getBackups() as Promise<{ data: { backups: BackupEntry[] } }>,
+        ]);
+        setIncidents(incData?.data?.incidents ?? []);
+        setBackups(backData?.data?.backups ?? []);
+      } catch {
+        setIncidents([]);
+        setBackups([]);
+      }
+    };
+    void fetchOpsData();
   }, []);
 
   const hasIssues = incidents.some(

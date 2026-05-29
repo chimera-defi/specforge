@@ -12,6 +12,7 @@
 import { useCallback, useState } from "react";
 
 import type { ClarificationRecord } from "@/lib/specforge/store";
+import { clarificationApi } from "@/lib/api-client";
 
 type ClarificationQueueProps = {
   documentId: string;
@@ -74,25 +75,11 @@ export function ClarificationQueue({
       setSubmitting(clarificationId);
 
       try {
-        const res = await fetch(
-          `/api/documents/${documentId}/clarifications?clarification_id=${clarificationId}`,
-          {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ answer }),
-          },
-        );
-
-        if (!res.ok) return;
+        await clarificationApi.answer(documentId, clarificationId, { answer });
 
         // Refresh clarification list
-        const listRes = await fetch(
-          `/api/documents/${documentId}/clarifications`,
-        );
-        if (listRes.ok) {
-          const data = await listRes.json();
-          setClarifications(data.clarifications ?? []);
-        }
+        const data = await clarificationApi.list(documentId) as { clarifications?: ClarificationRecord[] };
+        setClarifications(data.clarifications ?? []);
 
         setAnswerDrafts((prev) => {
           const next = { ...prev };

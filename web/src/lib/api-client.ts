@@ -216,6 +216,25 @@ export const acceptanceTestApi = {
 };
 
 /**
+ * Clarification API
+ */
+export const clarificationApi = {
+  list: (documentId: string) => get(API_ENDPOINTS.CLARIFICATIONS(documentId)),
+  answer: (documentId: string, clarificationId: string, data: unknown) => 
+    patch(`${API_ENDPOINTS.CLARIFICATIONS(documentId)}?clarification_id=${clarificationId}`, data),
+};
+
+/**
+ * Ops API
+ */
+export const opsApi = {
+  getIncidents: () => get(API_ENDPOINTS.OPS_INCIDENTS),
+  getBackups: () => get(API_ENDPOINTS.OPS_BACKUPS),
+  getSummary: () => get(API_ENDPOINTS.OPS_SUMMARY),
+  getDiagnosticsPack: () => get(API_ENDPOINTS.OPS_DIAGNOSTICS_PACK),
+};
+
+/**
  * Workspace API
  */
 export const workspaceApi = {

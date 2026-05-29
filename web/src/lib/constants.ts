@@ -40,6 +40,9 @@ export const API_ENDPOINTS = {
   DOCUMENTS: "/api/documents",
   DOCUMENT_BY_ID: (id: string) => `/api/documents/${id}`,
   
+  // Clarifications
+  CLARIFICATIONS: (documentId: string) => `/api/documents/${documentId}/clarifications`,
+  
   // Acceptance tests
   ACCEPTANCE_TESTS: (documentId: string) => `/api/documents/${documentId}/acceptance-tests`,
   ACCEPTANCE_TEST_BY_ID: (documentId: string, testId: string) => `/api/documents/${documentId}/acceptance-tests/${testId}`,

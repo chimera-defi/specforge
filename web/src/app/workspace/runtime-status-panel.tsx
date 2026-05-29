@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { agentApi, healthApi } from "@/lib/api-client";
 
 interface RuntimeStatus {
   codexAvailable: boolean;
@@ -20,27 +21,30 @@ export function RuntimeStatusPanel() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([
-      fetch("/api/agent/assist/diagnostics")
-        .then((r) => r.json())
-        .catch(() => null),
-      fetch("/api/health")
-        .then((r) => r.json())
-        .catch(() => null),
-      fetch("http://127.0.0.1:4322/health", {
-        signal: AbortSignal.timeout(2000),
-      })
-        .then((r) => r.ok)
-        .catch(() => false),
-    ]).then(([cliData, healthData, collabOk]) => {
-      // Response is { ok: true, codexAvailable, claudeAvailable, ... }
-      if (cliData?.ok) setCli(cliData as RuntimeStatus);
-      setHealth({
-        web: healthData?.status === "ok",
-        collab: !!collabOk,
-      });
-      setLoading(false);
-    });
+    const fetchRuntimeData = async () => {
+      try {
+        const [cliData, healthData] = await Promise.all([
+          agentApi.diagnostics() as Promise<{ ok: boolean } & RuntimeStatus>,
+          healthApi.check() as Promise<{ status: string }>,
+        ]);
+        
+        const collabOk = await fetch("http://127.0.0.1:4322/health", {
+          signal: AbortSignal.timeout(2000),
+        })
+          .then((r) => r.ok)
+          .catch(() => false);
+        
+        if (cliData?.ok) setCli(cliData as RuntimeStatus);
+        setHealth({
+          web: healthData?.status === "ok",
+          collab: !!collabOk,
+        });
+        setLoading(false);
+      } catch {
+        setLoading(false);
+      }
+    };
+    void fetchRuntimeData();
   }, []);
 
   if (loading) return null;
