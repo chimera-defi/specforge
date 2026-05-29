@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { buildAssistPrompt, suggestGuidedSpecInput } from "./agent-assist";
+import { buildAssistPrompt } from "./agent-assist";
 
 describe("Prompt System Integration Tests", () => {
   describe("Full Flow: API → Prompt Construction → AI Tool", () => {

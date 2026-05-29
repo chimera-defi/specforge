@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 
-import { normalizeIdeaScaffold, type IdeaScaffold } from "@/lib/specforge/ideas-generator";
-import type { AgentAssistToolStatus } from "@/lib/specforge/agent-assist";
+import type { IdeaScaffold } from "@/lib/specforge/ideas-generator";
 
 interface IdeaGeneratorProps {
   onGenerate: (scaffold: Partial<IdeaScaffold>) => void;

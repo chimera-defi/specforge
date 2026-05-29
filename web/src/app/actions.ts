@@ -692,7 +692,7 @@ export async function reviewPilotAccessRequestAction(formData: FormData) {
 }
 
 export async function createIdeaDocumentAction(scaffold: Partial<IdeaScaffold>) {
-  const { currentActor, actorRef } = await getActionActorRef();
+  const { currentActor } = await getActionActorRef();
   
   // Normalize the scaffold
   const normalizedScaffold = normalizeIdeaScaffold(scaffold);
@@ -753,7 +753,7 @@ export async function deleteWorkspaceMemberAction(formData: FormData) {
 }
 
 export async function updateWorkspaceMemberRoleAction(formData: FormData) {
-  const { currentActor } = await getActionActorRef();
+  await getActionActorRef();
   const membershipId = String(formData.get("membership_id"));
   const role = String(formData.get("role"));
   const returnTo = String(formData.get("return_to") || "/workspace");

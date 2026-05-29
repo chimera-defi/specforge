@@ -18,10 +18,8 @@ import {
 } from "../actions";
 import { CollapsibleWorkspaceNav } from "./collapsible-nav";
 import { ClarificationQueue } from "@/components/specforge/ClarificationQueue";
-import { DocumentWorkspace } from "../document-workspace";
 import { CollaborativeFileBrowser } from "@/components/specforge/CollaborativeFileBrowser";
 import { SpecCreationWrapper } from "./SpecCreationWrapper";
-import type { AgentAssistToolStatus } from "@/lib/specforge/agent-assist";
 import { LocalAdminPanel } from "../local-admin-panel";
 import { ShareDocumentPanel } from "../share-document-panel";
 import { ExportStage } from "./export-stage";

@@ -1,4 +1,4 @@
-import { buildGuidedSpecMarkdown, buildGuidedSpecMetadata, type GuidedSpecInput } from "./guided";
+import type { GuidedSpecInput } from "./guided";
 
 export type IdeaScaffold = {
   // Core idea

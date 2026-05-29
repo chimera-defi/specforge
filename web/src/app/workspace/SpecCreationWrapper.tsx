@@ -6,9 +6,10 @@ import { IdeaGenerator } from "@/components/specforge/IdeaGenerator";
 import type { AgentAssistToolStatus } from "@/lib/specforge/agent-assist";
 import { GuidedDraftBuilder } from "../guided-draft-builder";
 import { createIdeaDocumentAction } from "../actions";
-import type { IdeaScaffold } from "@/lib/specforge/ideas-generator";
 
 type Mode = "guided" | "idea";
+
+type PreferredTool = "auto" | "codex_cli" | "claude_cli" | "heuristic";
 
 interface SpecCreationWrapperProps {
   toolStatuses: AgentAssistToolStatus[];
@@ -22,8 +23,8 @@ export function SpecCreationWrapper({
   preferredTool,
 }: SpecCreationWrapperProps) {
   const [mode, setMode] = useState<Mode>("guided");
-  const safePreferredTool: "auto" | "codex_cli" | "claude_cli" | "heuristic" = 
-    (preferredTool as any) || "auto";
+  const safePreferredTool: PreferredTool = 
+    (preferredTool as PreferredTool) || "auto";
 
   if (mode === "idea") {
     return (

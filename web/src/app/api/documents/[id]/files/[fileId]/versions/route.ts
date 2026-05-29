@@ -2,8 +2,6 @@ import { NextResponse } from "next/server";
 
 import {
   listFileVersions,
-  getFileVersion,
-  restoreFileVersion,
 } from "@/lib/specforge/store";
 import { getCurrentWorkspaceAccess } from "@/lib/specforge/workspace-access";
 import { withErrorHandling } from "@/lib/api-error-handler";

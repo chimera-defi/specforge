@@ -11,6 +11,16 @@ This directory contains historical and obsolete documentation preserved for refe
 - `SESSION_REVIEW.md` - Review of UX polish and SaaS scaffolding work (2026-05-29)
 - `DOC_CONSOLIDATION_PLAN.md` - Documentation consolidation plan and execution
 
+### Testing & QA Documentation
+- `COMPREHENSIVE_TEST_RESULTS.md` - Comprehensive test results from earlier testing sessions
+- `COMPREHENSIVE_WORKSPACE_TEST_PLAN.md` - Workspace testing plan
+- `EDITOR_IMPROVEMENTS_SUMMARY.md` - Summary of editor improvements
+- `FULL_WORKFLOW_TEST_RESULTS.md` - Full workflow test results
+- `ISSUES_FOUND.md` - Issues discovered during testing
+- `MANUAL_TEST_PLAN.md` - Manual testing procedures
+- `MULTI_FILE_WORKSPACE_METALEARNINGS.md` - Meta-learnings from multi-file workspace work
+- `SPECFORGE_IMPROVEMENTS.md` - SpecForge improvement suggestions
+
 ### Implementation Plans
 - `CLAUDE_BUILDOUT_PLAN.md` - Historical buildout plan for Claude Code integration
 - `FRONTEND_REDESIGN_PLAN.md` - Historical frontend redesign planning
