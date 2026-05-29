@@ -199,7 +199,7 @@ export function DesignHandoffPanel({ uxPack, designSystem, reviewChecklist, prom
             ) : null}
             {feedbackError ? (
               <span
-                style={{ color: "var(--destructive, #ef4444)", fontSize: "0.85rem" }}
+                style={{ color: "var(--sf-danger)", fontSize: "0.85rem" }}
                 data-testid="design-feedback-error"
               >
                 {feedbackError}

@@ -52,6 +52,10 @@ import {
 } from "@/lib/specforge/workspace-document-state";
 import { loadWorkspaceSummary } from "@/lib/specforge/workspace-summary";
 import { IdeaValidationPanel } from "@/components/specforge/SprintPlanningPanel";
+import {
+  deleteWorkspaceMemberAction,
+  updateWorkspaceMemberRoleAction,
+} from "../actions";
 import { AcceptanceTestSection } from "@/components/specforge/AcceptanceTestSection";
 import { getTestMatrix } from "@/lib/specforge/acceptance-tests";
 import { getAcceptanceTestDb } from "@/lib/specforge/acceptance-test-db";
@@ -673,6 +677,54 @@ export default async function Home({ searchParams }: Props) {
                                 <span className={styles.mutedInline}>@{member.github_login}</span>
                               ) : null}
                             </span>
+                            <div style={{ display: "flex", gap: "8px", marginTop: "4px" }}>
+                              <form action={updateWorkspaceMemberRoleAction} style={{ display: "inline" }}>
+                                <input type="hidden" name="membership_id" value={member.membership_id} />
+                                <input type="hidden" name="return_to" value={actorReturnTo} />
+                                <input
+                                  name="role"
+                                  defaultValue={member.role}
+                                  style={{
+                                    padding: "2px 6px",
+                                    borderRadius: "4px",
+                                    border: "1px solid var(--sf-border)",
+                                    fontSize: "0.8rem",
+                                  }}
+                                />
+                                <button
+                                  type="submit"
+                                  style={{
+                                    padding: "2px 8px",
+                                    borderRadius: "4px",
+                                    border: "1px solid var(--sf-teal)",
+                                    background: "var(--sf-teal)",
+                                    color: "var(--sf-surface-warm)",
+                                    fontSize: "0.8rem",
+                                    cursor: "pointer",
+                                  }}
+                                >
+                                  Update
+                                </button>
+                              </form>
+                              <form action={deleteWorkspaceMemberAction} style={{ display: "inline" }}>
+                                <input type="hidden" name="membership_id" value={member.membership_id} />
+                                <input type="hidden" name="return_to" value={actorReturnTo} />
+                                <button
+                                  type="submit"
+                                  style={{
+                                    padding: "2px 8px",
+                                    borderRadius: "4px",
+                                    border: "1px solid var(--sf-danger)",
+                                    background: "var(--sf-danger)",
+                                    color: "var(--sf-surface-warm)",
+                                    fontSize: "0.8rem",
+                                    cursor: "pointer",
+                                  }}
+                                >
+                                  Remove
+                                </button>
+                              </form>
+                            </div>
                           </li>
                         ))}
                       </ul>
