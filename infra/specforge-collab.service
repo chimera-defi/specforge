@@ -1,0 +1,32 @@
+[Unit]
+Description=SpecForge Collaboration Server
+After=network.target
+
+[Service]
+Type=simple
+User=specforge
+Group=specforge
+WorkingDirectory=/opt/specforge/collab-server
+Environment="NODE_ENV=production"
+Environment="PORT=3001"
+EnvironmentFile=/opt/specforge/collab-server/.env.production
+
+# Start the collaboration server
+ExecStart=/usr/bin/bun run start
+
+# Restart policy
+Restart=always
+RestartSec=10
+
+# Security
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/specforge/collab-server/.data
+
+# Resource limits
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

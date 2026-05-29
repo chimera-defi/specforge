@@ -1,0 +1,90 @@
+# Caddyfile for SpecForge production deployment
+# This file configures Caddy as a reverse proxy for the SpecForge web app
+
+# Replace specforge.example.com with your actual domain
+specforge.example.com {
+    # Automatic HTTPS with Let's Encrypt
+    encode gzip zstd
+
+    # Security headers
+    header {
+        # Enable HSTS
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        
+        # Prevent clickjacking
+        X-Frame-Options "SAMEORIGIN"
+        
+        # Prevent MIME type sniffing
+        X-Content-Type-Options "nosniff"
+        
+        # XSS Protection
+        X-XSS-Protection "1; mode=block"
+        
+        # Referrer Policy
+        Referrer-Policy "strict-origin-when-cross-origin"
+        
+        # Remove server header
+        -Server
+    }
+
+    # Rate limiting
+    rate_limit {
+        zone app {
+            key {remote_host}
+            events 100
+            window 1m
+        }
+    }
+
+    # WebSocket support for collaboration
+    header_upstream Upgrade {http_upgrade}
+    header_upstream Connection {http_connection}
+
+    # Reverse proxy to Next.js app (running on port 3000)
+    reverse_proxy localhost:3000 {
+        # Health check
+        health_uri /api/health
+        health_interval 10s
+        health_timeout 5s
+        
+        # Timeouts
+        transport http {
+            dial_timeout 5s
+            response_header_timeout 30s
+        }
+        
+        # Buffering
+        buffer_requests
+    }
+
+    # File uploads (increase limits)
+    header_upstream X-Forwarded-Host {host}
+    header_upstream X-Forwarded-Proto {scheme}
+}
+
+# Optional: Redirect www to non-www
+www.specforge.example.com {
+    redir https://specforge.example.com{uri} permanent
+}
+
+# Optional: Collaboration server (if running separately)
+collab.specforge.example.com {
+    encode gzip zstd
+
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        X-Frame-Options "SAMEORIGIN"
+        X-Content-Type-Options "nosniff"
+        -Server
+    }
+
+    # WebSocket support for Yjs collaboration
+    header_upstream Upgrade {http_upgrade}
+    header_upstream Connection {http_connection}
+
+    reverse_proxy localhost:3001 {
+        health_uri /health
+        health_interval 10s
+        health_timeout 5s
+    }
+}

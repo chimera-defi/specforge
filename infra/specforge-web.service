@@ -1,0 +1,32 @@
+[Unit]
+Description=SpecForge Web Application
+After=network.target
+
+[Service]
+Type=simple
+User=specforge
+Group=specforge
+WorkingDirectory=/opt/specforge/web
+Environment="NODE_ENV=production"
+Environment="PORT=3000"
+EnvironmentFile=/opt/specforge/web/.env.production
+
+# Start the application
+ExecStart=/usr/bin/bun run start
+
+# Restart policy
+Restart=always
+RestartSec=10
+
+# Security
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/specforge/web/.data
+
+# Resource limits
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target
