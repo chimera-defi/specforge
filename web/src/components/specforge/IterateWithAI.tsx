@@ -130,7 +130,7 @@ export function IterateWithAI(props: Props) {
   // The "document" blockId allows document-level iteration when no specific block is targeted
   const blockId = mode === "chat" 
     ? (props.blockId ?? "document") // Use "document" as default block ID for document-level iteration
-    : (props as InlineProps).blockId;
+    : props.blockId; // TypeScript discriminates this as InlineProps when mode === "inline"
 
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");

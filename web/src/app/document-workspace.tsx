@@ -131,6 +131,13 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   // Track if auto-save is in progress to prevent concurrent saves
   const isAutoSavingRef = useRef(false);
+  // Ref to track hasUnsavedChanges to avoid stale closure in setTimeout
+  const hasUnsavedChangesRef = useRef(hasUnsavedChanges);
+  
+  // Update ref when hasUnsavedChanges changes
+  useEffect(() => {
+    hasUnsavedChangesRef.current = hasUnsavedChanges;
+  }, [hasUnsavedChanges]);
 
   const handleRefreshFromDatabase = useCallback(async () => {
     setIsRefreshing(true);
@@ -168,7 +175,7 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
 
     // Debounce: wait 3 seconds after last change before saving
     autoSaveTimeoutRef.current = setTimeout(async () => {
-      if (!editorRef.current || !hasUnsavedChanges) {
+      if (!editorRef.current || !hasUnsavedChangesRef.current) {
         return;
       }
 
@@ -195,7 +202,7 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
         isAutoSavingRef.current = false;
       }
     }, 3000); // 3 second debounce
-  }, [document.document_id, document.title, hasUnsavedChanges]);
+  }, [document.document_id, document.title]);
 
   // Trigger auto-save when hasUnsavedChanges changes
   useEffect(() => {
@@ -214,7 +221,7 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
   // Save on page unload
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (hasUnsavedChanges && editorRef.current) {
+      if (hasUnsavedChangesRef.current && editorRef.current) {
         e.preventDefault();
         e.returnValue = '';
       }
@@ -222,7 +229,7 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
 
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [hasUnsavedChanges]);
+  }, []); // Empty dependency array - listener uses ref to check current state
 
   // Auto-refresh when component mounts or document version changes
   useEffect(() => {
