@@ -109,3 +109,24 @@ export function getValidationAnnouncement<T extends { field: string; message: st
     validationErrors.length === 1 ? "" : "s"
   }. Please correct the highlighted fields.`;
 }
+
+/**
+ * Convert text to bullet list format
+ */
+export function toBulletLines(value: string): string[] {
+  return value
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => line.replace(/^-+\s*/, ""));
+}
+
+/**
+ * Format a markdown section with heading and bullet content
+ */
+export function toSection(heading: string, body: string, fallback: string): string {
+  const trimmed = body.trim();
+  const lines = trimmed.length > 0 ? toBulletLines(trimmed) : [fallback];
+
+  return [`## ${heading}`, "", ...lines.map((l) => `- ${l}`)].join("\n");
+}
