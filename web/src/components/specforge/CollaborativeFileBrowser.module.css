@@ -17,6 +17,24 @@
   max-height: 640px;
 }
 
+/* ---- idea validation session ---- */
+
+.ideaValidation {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--sf-border-faint);
+  background: var(--sf-success-subtle);
+}
+
+.ideaValidationTitle {
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--sf-ink);
+}
+
+.ideaValidationProgress {
+  color: var(--sf-muted-mid);
+}
+
 /* ---- file list ---- */
 
 .fileList {
@@ -37,6 +55,69 @@
   font-size: 0.78rem;
   color: var(--sf-muted-mid);
   flex-shrink: 0;
+}
+
+.fileListControls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.fileListCheckbox {
+  cursor: pointer;
+}
+
+.fileSearchInput {
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  border: 1px solid var(--sf-border);
+  border-radius: 6px;
+  background: var(--sf-surface-input);
+  color: var(--sf-ink);
+}
+
+.fileListActions {
+  display: flex;
+  gap: 8px;
+}
+
+.batchDeleteBtn {
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--sf-danger);
+  background: var(--sf-danger-subtle);
+  color: var(--sf-danger);
+}
+
+.historyBtn {
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--sf-border);
+  background: var(--sf-surface-elevated);
+  color: var(--sf-ink);
+}
+
+.syncStatusText {
+  font-size: 0.75rem;
+  color: var(--sf-muted-mid);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.editorContainer {
+  position: relative;
+}
+
+.emptyStateText {
+  color: var(--sf-muted-mid);
 }
 
 .fileListScroll {
@@ -156,8 +237,8 @@
   color: var(--sf-warning);
 }
 
-.syncStatus.offline {
-  color: var(--sf-danger);
+.syncStatus.local {
+  color: var(--sf-muted-mid);
 }
 
 .aiAssistBtn,
@@ -170,7 +251,7 @@
   cursor: pointer;
   border: 1px solid var(--sf-border-mid);
   transition: background 0.1s;
-  background: #fff;
+  background: var(--sf-surface-warm);
   color: var(--sf-ink-secondary);
 }
 
