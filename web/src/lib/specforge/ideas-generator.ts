@@ -120,6 +120,37 @@ export function normalizeIdeaScaffold(input: Partial<IdeaScaffold>): IdeaScaffol
   };
 }
 
+export type IdeaValidationError = {
+  field: string;
+  message: string;
+};
+
+export function validateIdeaScaffold(scaffold: IdeaScaffold): IdeaValidationError[] {
+  const errors: IdeaValidationError[] = [];
+
+  if (!scaffold.title || scaffold.title.trim().length < 3) {
+    errors.push({ field: "title", message: "Title must be at least 3 characters" });
+  }
+
+  if (!scaffold.thesis || scaffold.thesis.trim().length < 10) {
+    errors.push({ field: "thesis", message: "Thesis must be at least 10 characters" });
+  }
+
+  if (!scaffold.problem || scaffold.problem.trim().length < 10) {
+    errors.push({ field: "problem", message: "Problem must be at least 10 characters" });
+  }
+
+  if (!scaffold.targetUser || scaffold.targetUser.trim().length < 5) {
+    errors.push({ field: "targetUser", message: "Target user must be at least 5 characters" });
+  }
+
+  if (!scaffold.solutionApproach || scaffold.solutionApproach.trim().length < 10) {
+    errors.push({ field: "solutionApproach", message: "Solution approach must be at least 10 characters" });
+  }
+
+  return errors;
+}
+
 function toBulletList(value: string): string[] {
   return value
     .split("\n")
