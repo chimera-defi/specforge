@@ -78,10 +78,14 @@ function escapeHtml(text: string): string {
 interface CodeEditorProps {
   ytext: Y.Text;
   filename: string;
+  providerRef: React.RefObject<HocuspocusProvider | WebsocketProvider | null>;
+  activeActor: { name: string; color: string };
+  remoteCursors: Record<string, { x: number; y: number; name: string; color: string }>;
 }
 
-function CodeEditor({ ytext, filename }: CodeEditorProps) {
+function CodeEditor({ ytext, filename, providerRef, activeActor, remoteCursors }: CodeEditorProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const textarea = textareaRef.current;
@@ -104,6 +108,34 @@ function CodeEditor({ ytext, filename }: CodeEditorProps) {
 
     textarea.addEventListener("input", handleChange);
 
+    // Track cursor position for collaboration
+    const handleSelectionChange = () => {
+      if (!providerRef.current?.awareness) return;
+      
+      const cursorPosition = textarea.selectionStart;
+      const textBeforeCursor = textarea.value.substring(0, cursorPosition);
+      const lines = textBeforeCursor.split('\n');
+      const line = lines.length;
+      const col = lines[lines.length - 1].length + 1;
+
+      // Calculate approximate pixel position
+      const lineHeight = 16; // Approximate line height for monospace font
+      const charWidth = 8; // Approximate character width for monospace font
+      const x = col * charWidth;
+      const y = line * lineHeight;
+
+      providerRef.current.awareness.setLocalStateField("cursor", {
+        x,
+        y,
+        name: activeActor.name,
+        color: activeActor.color,
+      });
+    };
+
+    textarea.addEventListener("selectionchange", handleSelectionChange);
+    textarea.addEventListener("keyup", handleSelectionChange);
+    textarea.addEventListener("click", handleSelectionChange);
+
     // Sync Yjs -> textarea (remote changes)
     const handleYjsChange = () => {
       const cursorPosition = textarea.selectionStart;
@@ -124,16 +156,22 @@ function CodeEditor({ ytext, filename }: CodeEditorProps) {
 
     return () => {
       textarea.removeEventListener("input", handleChange);
+      textarea.removeEventListener("selectionchange", handleSelectionChange);
+      textarea.removeEventListener("keyup", handleSelectionChange);
+      textarea.removeEventListener("click", handleSelectionChange);
       ytext.unobserve(handleYjsChange);
     };
-  }, [ytext]);
+  }, [ytext, providerRef, activeActor]);
 
   return (
-    <textarea
-      ref={textareaRef}
-      className={styles.codeTextarea}
-      spellCheck={false}
-    />
+    <div ref={containerRef} style={{ position: "relative" }}>
+      <textarea
+        ref={textareaRef}
+        className={styles.codeTextarea}
+        spellCheck={false}
+      />
+      <RemoteCursors cursors={remoteCursors} />
+    </div>
   );
 }
 
@@ -828,7 +866,13 @@ export function CollaborativeFileBrowser({
                   <RemoteCursors cursors={remoteCursors} />
                 </div>
               ) : ytextRef.current ? (
-                <CodeEditor ytext={ytextRef.current} filename={selected.filename} />
+                <CodeEditor
+                  ytext={ytextRef.current}
+                  filename={selected.filename}
+                  providerRef={providerRef}
+                  activeActor={activeActor}
+                  remoteCursors={remoteCursors}
+                />
               ) : null}
             </div>
           </>
