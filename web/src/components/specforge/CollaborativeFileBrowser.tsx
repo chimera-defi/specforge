@@ -199,7 +199,9 @@ export function CollaborativeFileBrowser({
   const [files, setFiles] = useState<WorkspaceFile[]>([]);
   const [selected, setSelected] = useState<WorkspaceFile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [syncState, setSyncState] = useState<"connecting" | "live" | "local">("local");
+  const [syncState, setSyncState] = useState<"connecting" | "live" | "local" | "offline">("local");
+  const [isNetworkOnline, setIsNetworkOnline] = useState(true);
+  const [concurrentEditors, setConcurrentEditors] = useState<string[]>([]);
   const [aiAssisting, setAiAssisting] = useState(false);
   const [ideaValidationSession, setIdeaValidationSession] = useState<{ completed: number; total: number } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -327,6 +329,27 @@ export function CollaborativeFileBrowser({
     });
   }, [selected?.filename, activeActor.name, activeActor.color]);
 
+  // Detect network status
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsNetworkOnline(true);
+    };
+    const handleOffline = () => {
+      setIsNetworkOnline(false);
+    };
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    
+    // Initial check
+    setIsNetworkOnline(navigator.onLine);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
   // Setup Yjs collaboration when file is selected
   useEffect(() => {
     if (!selected) return;
@@ -360,7 +383,13 @@ export function CollaborativeFileBrowser({
       providerRef.current = provider;
 
       provider.on("status", (status: any) => {
-        setSyncState(status.status === "connected" ? "live" : "local");
+        setSyncState(
+          !isNetworkOnline 
+            ? "offline" 
+            : status.status === "connected" 
+              ? "live" 
+              : "local"
+        );
       });
 
       // Track connected users and per-file presence
@@ -373,6 +402,9 @@ export function CollaborativeFileBrowser({
           const cursors: Record<string, { x: number; y: number; name: string; color: string }> = {};
           // Update per-file presence
           const presence: Record<string, Array<{ name: string; color: string }>> = {};
+          // Track concurrent editors for current file
+          const currentFileEditors: string[] = [];
+          
           states.forEach((state, clientId) => {
             if (state.cursor && clientId !== provider.awareness!.clientID) {
               cursors[clientId.toString()] = state.cursor;
@@ -387,11 +419,17 @@ export function CollaborativeFileBrowser({
                   name: state.user.name,
                   color: state.user.color,
                 });
+                
+                // Track if editing current file
+                if (selected && file === selected.filename) {
+                  currentFileEditors.push(state.user.name);
+                }
               }
             }
           });
           setRemoteCursors(cursors);
           setFilePresence(presence);
+          setConcurrentEditors(currentFileEditors);
         });
       }
     } else {
@@ -425,7 +463,13 @@ export function CollaborativeFileBrowser({
       }
 
       provider.on("status", (status: any) => {
-        setSyncState(status.status === "connected" ? "live" : "local");
+        setSyncState(
+          !isNetworkOnline 
+            ? "offline" 
+            : status.status === "connected" 
+              ? "live" 
+              : "local"
+        );
       });
 
       // Track connected users and per-file presence
@@ -438,6 +482,9 @@ export function CollaborativeFileBrowser({
           const cursors: Record<string, { x: number; y: number; name: string; color: string }> = {};
           // Update per-file presence
           const presence: Record<string, Array<{ name: string; color: string }>> = {};
+          // Track concurrent editors for current file
+          const currentFileEditors: string[] = [];
+          
           states.forEach((state, clientId) => {
             if (state.cursor && clientId !== provider.awareness!.clientID) {
               cursors[clientId.toString()] = state.cursor;
@@ -452,11 +499,17 @@ export function CollaborativeFileBrowser({
                   name: state.user.name,
                   color: state.user.color,
                 });
+                
+                // Track if editing current file
+                if (selected && file === selected.filename) {
+                  currentFileEditors.push(state.user.name);
+                }
               }
             }
           });
           setRemoteCursors(cursors);
           setFilePresence(presence);
+          setConcurrentEditors(currentFileEditors);
         });
       }
 
@@ -829,13 +882,18 @@ export function CollaborativeFileBrowser({
         {selected ? (
           <>
             <div className={styles.viewerHeader}>
+              {syncState === "offline" && (
+                <div className={styles.offlineBanner} style={{ gridColumn: "1 / -1", marginBottom: "8px" }}>
+                  📡 You're offline. Edits are saved locally and will sync when you reconnect.
+                </div>
+              )}
               <span className={styles.filename}>{selected.filename}</span>
               <div className={styles.viewerActions}>
                 <span className={styles.syncStatusText}>
                   👥 {connectedUsers} {connectedUsers === 1 ? "user" : "users"}
                 </span>
                 <span className={`${styles.syncStatus} ${styles[syncState]}`}>
-                  {syncState === "live" ? "● Live" : syncState === "connecting" ? "● Connecting..." : "● Local"}
+                  {syncState === "live" ? "● Live" : syncState === "connecting" ? "● Connecting..." : syncState === "offline" ? "● Offline - edits sync when connected" : "● Local"}
                 </span>
                 <button
                   onClick={() => {
@@ -860,6 +918,11 @@ export function CollaborativeFileBrowser({
             </div>
 
             <div className={styles.editorArea}>
+              {concurrentEditors.length > 0 && (
+                <div className={styles.conflictWarning}>
+                  ⚠️ {concurrentEditors.join(", ")} {concurrentEditors.length === 1 ? "is" : "are"} also editing this file. Changes sync automatically via CRDT.
+                </div>
+              )}
               {isMarkdownFile && editor ? (
                 <div className={styles.editorContainer}>
                   <EditorContent editor={editor} />
