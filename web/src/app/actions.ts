@@ -11,6 +11,8 @@ import {
   createDocument,
   createPilotAccessRequest,
   createWorkspaceMembership,
+  deleteWorkspaceMembership,
+  updateWorkspaceMembershipRole,
   getDocument,
   createPatchProposal,
   decidePatch,
@@ -716,4 +718,56 @@ export async function createIdeaDocumentAction(scaffold: Partial<IdeaScaffold>) 
   
   // Redirect to the new document
   redirect(buildRedirectPath(`/workspace?document=${created.document_id}&stage=draft`, {}));
+}
+
+export async function deleteWorkspaceMemberAction(formData: FormData) {
+  const { currentActor } = await getActionActorRef();
+  const membershipId = String(formData.get("membership_id"));
+  const returnTo = String(formData.get("return_to") || "/workspace");
+
+  if (!membershipId) {
+    redirect(buildRedirectPath(returnTo, { error: "missing_membership_id" }));
+  }
+
+  // Prevent deleting the active session
+  const activeMembership = await listWorkspaceMemberships(currentActor.workspace_id);
+  const isDeletingSelf = activeMembership.some(m => m.membership_id === membershipId && m.actor_id === currentActor.actor_id);
+  
+  if (isDeletingSelf) {
+    redirect(buildRedirectPath(returnTo, { error: "cannot_delete_self" }));
+  }
+
+  // Prevent deleting the final member
+  if (activeMembership.length <= 1) {
+    redirect(buildRedirectPath(returnTo, { error: "cannot_delete_final_member" }));
+  }
+
+  const deleted = await deleteWorkspaceMembership(membershipId);
+  
+  if (!deleted) {
+    redirect(buildRedirectPath(returnTo, { error: "member_not_found" }));
+  }
+
+  revalidatePath("/workspace");
+  redirect(buildRedirectPath(returnTo, { success: "member_deleted" }));
+}
+
+export async function updateWorkspaceMemberRoleAction(formData: FormData) {
+  const { currentActor } = await getActionActorRef();
+  const membershipId = String(formData.get("membership_id"));
+  const role = String(formData.get("role"));
+  const returnTo = String(formData.get("return_to") || "/workspace");
+
+  if (!membershipId || !role) {
+    redirect(buildRedirectPath(returnTo, { error: "missing_fields" }));
+  }
+
+  const updated = await updateWorkspaceMembershipRole(membershipId, role);
+  
+  if (!updated) {
+    redirect(buildRedirectPath(returnTo, { error: "member_not_found" }));
+  }
+
+  revalidatePath("/workspace");
+  redirect(buildRedirectPath(returnTo, { success: "role_updated" }));
 }

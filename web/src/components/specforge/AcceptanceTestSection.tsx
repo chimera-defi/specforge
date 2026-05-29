@@ -92,10 +92,10 @@ export function AcceptanceTestSection({
             marginBottom: "12px",
             padding: "8px 14px",
             borderRadius: "6px",
-            background: runResult.failed === 0 ? "#f0fdf4" : "#fef9c3",
-            border: `1px solid ${runResult.failed === 0 ? "#86efac" : "#fde047"}`,
+            background: runResult.failed === 0 ? "var(--sf-success-subtle)" : "var(--sf-warning-subtle)",
+            border: `1px solid ${runResult.failed === 0 ? "var(--sf-success)" : "var(--sf-warning)"}`,
             fontSize: "13px",
-            color: "#374151",
+            color: "var(--sf-ink)",
           }}
         >
           Evaluated {runResult.evaluated} pending tests — {runResult.passed} passed, {runResult.failed} need spec expansion.

@@ -34,10 +34,10 @@ const EMPTY_DRAFT: AcceptanceTestDraft = {
 };
 
 const statusColors: Record<AcceptanceTest["status"], string> = {
-  pending: "#6b7280",
-  pass: "#16a34a",
-  fail: "#dc2626",
-  skip: "#9ca3af",
+  pending: "var(--sf-muted-light)",
+  pass: "var(--sf-success)",
+  fail: "var(--sf-danger)",
+  skip: "var(--sf-muted-lighter)",
 };
 
 export function AcceptanceTestMatrix({
@@ -107,7 +107,7 @@ export function AcceptanceTestMatrix({
   const inputStyle: React.CSSProperties = {
     padding: "6px 10px",
     fontSize: "13px",
-    border: "1px solid #d1d5db",
+    border: "1px solid var(--sf-border)",
     borderRadius: "6px",
     width: "100%",
     boxSizing: "border-box",
@@ -115,7 +115,7 @@ export function AcceptanceTestMatrix({
 
   const actionButtonStyle: React.CSSProperties = {
     fontSize: "12px",
-    color: "#9ca3af",
+    color: "var(--sf-muted-lighter)",
     background: "none",
     border: "none",
     cursor: "pointer",
@@ -142,8 +142,8 @@ export function AcceptanceTestMatrix({
             padding: "6px 14px",
             fontSize: "13px",
             borderRadius: "6px",
-            border: "1px solid #d1d5db",
-            background: running ? "#f3f4f6" : "#fff",
+            border: "1px solid var(--sf-border)",
+            background: running ? "var(--sf-surface-light)" : "var(--sf-surface-input)",
             cursor: running ? "wait" : "pointer",
           }}
         >
@@ -169,9 +169,9 @@ export function AcceptanceTestMatrix({
                     style={{
                       textAlign: "left",
                       padding: "6px 8px",
-                      borderBottom: "1px solid #e5e7eb",
+                      borderBottom: "1px solid var(--sf-border-mid)",
                       fontWeight: 500,
-                      color: "#6b7280",
+                      color: "var(--sf-muted-light)",
                     }}
                   >
                     {header}
@@ -190,7 +190,7 @@ export function AcceptanceTestMatrix({
                       <td
                         style={{
                           padding: "6px 8px",
-                          borderBottom: "1px solid #f3f4f6",
+                          borderBottom: "1px solid var(--sf-border-faint)",
                         }}
                       >
                         <input
@@ -207,7 +207,7 @@ export function AcceptanceTestMatrix({
                       <td
                         style={{
                           padding: "6px 8px",
-                          borderBottom: "1px solid #f3f4f6",
+                          borderBottom: "1px solid var(--sf-border-faint)",
                         }}
                       >
                         <input
@@ -224,7 +224,7 @@ export function AcceptanceTestMatrix({
                       <td
                         style={{
                           padding: "6px 8px",
-                          borderBottom: "1px solid #f3f4f6",
+                          borderBottom: "1px solid var(--sf-border-faint)",
                         }}
                       >
                         <input
@@ -241,7 +241,7 @@ export function AcceptanceTestMatrix({
                       <td
                         style={{
                           padding: "6px 8px",
-                          borderBottom: "1px solid #f3f4f6",
+                          borderBottom: "1px solid var(--sf-border-faint)",
                         }}
                       >
                         <span
@@ -256,7 +256,7 @@ export function AcceptanceTestMatrix({
                       <td
                         style={{
                           padding: "6px 8px",
-                          borderBottom: "1px solid #f3f4f6",
+                          borderBottom: "1px solid var(--sf-border-faint)",
                           whiteSpace: "nowrap",
                         }}
                       >
@@ -265,7 +265,7 @@ export function AcceptanceTestMatrix({
                           disabled={saving}
                           style={{
                             ...actionButtonStyle,
-                            color: saving ? "#d1d5db" : "#16a34a",
+                            color: saving ? "var(--sf-muted-light)" : "var(--sf-success)",
                             cursor: saving ? "wait" : "pointer",
                           }}
                         >
@@ -276,7 +276,7 @@ export function AcceptanceTestMatrix({
                           disabled={saving}
                           style={{
                             ...actionButtonStyle,
-                            color: saving ? "#d1d5db" : "#6b7280",
+                            color: saving ? "var(--sf-muted-light)" : "var(--sf-muted-lighter)",
                             cursor: saving ? "not-allowed" : "pointer",
                           }}
                         >
@@ -289,7 +289,7 @@ export function AcceptanceTestMatrix({
                       <td
                         style={{
                           padding: "6px 8px",
-                          borderBottom: "1px solid #f3f4f6",
+                          borderBottom: "1px solid var(--sf-border-faint)",
                         }}
                       >
                         {test.feature}
@@ -297,7 +297,7 @@ export function AcceptanceTestMatrix({
                       <td
                         style={{
                           padding: "6px 8px",
-                          borderBottom: "1px solid #f3f4f6",
+                          borderBottom: "1px solid var(--sf-border-faint)",
                         }}
                       >
                         {test.test_case}
@@ -305,7 +305,7 @@ export function AcceptanceTestMatrix({
                       <td
                         style={{
                           padding: "6px 8px",
-                          borderBottom: "1px solid #f3f4f6",
+                          borderBottom: "1px solid var(--sf-border-faint)",
                         }}
                       >
                         {test.expected_result}
@@ -313,7 +313,7 @@ export function AcceptanceTestMatrix({
                       <td
                         style={{
                           padding: "6px 8px",
-                          borderBottom: "1px solid #f3f4f6",
+                          borderBottom: "1px solid var(--sf-border-faint)",
                         }}
                       >
                         <span
@@ -328,7 +328,7 @@ export function AcceptanceTestMatrix({
                       <td
                         style={{
                           padding: "6px 8px",
-                          borderBottom: "1px solid #f3f4f6",
+                          borderBottom: "1px solid var(--sf-border-faint)",
                           whiteSpace: "nowrap",
                         }}
                       >
@@ -372,7 +372,7 @@ export function AcceptanceTestMatrix({
           style={{
             padding: "6px 10px",
             fontSize: "13px",
-            border: "1px solid #d1d5db",
+            border: "1px solid var(--sf-border)",
             borderRadius: "6px",
           }}
         />
@@ -383,7 +383,7 @@ export function AcceptanceTestMatrix({
           style={{
             padding: "6px 10px",
             fontSize: "13px",
-            border: "1px solid #d1d5db",
+            border: "1px solid var(--sf-border)",
             borderRadius: "6px",
           }}
         />
@@ -396,7 +396,7 @@ export function AcceptanceTestMatrix({
           style={{
             padding: "6px 10px",
             fontSize: "13px",
-            border: "1px solid #d1d5db",
+            border: "1px solid var(--sf-border)",
             borderRadius: "6px",
           }}
         />
@@ -407,7 +407,7 @@ export function AcceptanceTestMatrix({
             padding: "6px 14px",
             fontSize: "13px",
             borderRadius: "6px",
-            border: "1px solid #d1d5db",
+            border: "1px solid var(--sf-border)",
             background: adding ? "#f3f4f6" : "#fff",
             cursor: adding ? "wait" : "pointer",
           }}
