@@ -493,6 +493,7 @@ export function CollaborativeFileBrowser({
   }, [editor, selected]);
 
   async function fetchFiles() {
+    let triggeredInitialize = false;
     try {
       const res = await fetch(`/api/documents/${documentId}/files`);
       if (!res.ok) throw new Error("Failed to fetch files");
@@ -502,18 +503,22 @@ export function CollaborativeFileBrowser({
         setSelected(data.files[0]);
       } else if (!isInitializing) {
         // Auto-initialize if no files exist and not already initializing
-        setIsInitializing(true);
+        triggeredInitialize = true;
         await initializeFiles();
-        setIsInitializing(false);
       }
     } catch (error) {
       console.error("Failed to fetch files:", error);
     } finally {
-      setLoading(false);
+      // Only clear loading if we didn't trigger auto-initialize
+      // (initializeFiles will handle clearing loading after it completes)
+      if (!triggeredInitialize) {
+        setLoading(false);
+      }
     }
   }
 
   async function initializeFiles() {
+    setIsInitializing(true);
     try {
       const res = await fetch(`/api/documents/${documentId}/files/initialize`, {
         method: "POST",
@@ -523,6 +528,9 @@ export function CollaborativeFileBrowser({
     } catch (error) {
       console.error("Failed to initialize files:", error);
       alert("Failed to initialize files");
+    } finally {
+      setIsInitializing(false);
+      setLoading(false);
     }
   }
 
