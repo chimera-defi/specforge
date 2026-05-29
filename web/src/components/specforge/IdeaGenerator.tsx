@@ -5,13 +5,7 @@ import { useState } from "react";
 import type { IdeaScaffold, IdeaValidationError } from "@/lib/specforge/ideas-generator";
 import { validateIdeaScaffold } from "@/lib/specforge/ideas-generator";
 import { agentApi } from "@/lib/api-client";
-import { sanitizeInput } from "@/lib/utils/sanitize";
-import {
-  getFieldError,
-  getFieldErrorId,
-  hasFieldError,
-  getValidationAnnouncement,
-} from "@/lib/utils/validation-helpers";
+import { sanitizeInput, getFieldError, getFieldErrorId, hasFieldError, getValidationAnnouncement } from "@/lib/utils/sanitize";
 
 interface IdeaGeneratorProps {
   onGenerate: (scaffold: Partial<IdeaScaffold>) => void;
