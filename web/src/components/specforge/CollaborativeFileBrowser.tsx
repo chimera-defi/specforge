@@ -172,6 +172,7 @@ export function CollaborativeFileBrowser({
   const [loadingVersions, setLoadingVersions] = useState(false);
   const [remoteCursors, setRemoteCursors] = useState<Record<string, { x: number; y: number; name: string; color: string }>>({});
   const [isInitializing, setIsInitializing] = useState(false);
+  const [filePresence, setFilePresence] = useState<Record<string, Array<{ name: string; color: string }>>>({});
 
   // Yjs document and provider for the selected file
   const ydocRef = useRef<Y.Doc | null>(null);
@@ -221,9 +222,13 @@ export function CollaborativeFileBrowser({
       const { from } = editor.state.selection;
       try {
         const coords = editor.view.coordsAtPos(from);
+        const scrollContainer = editor.view.dom.closest('.ProseMirror')?.parentElement;
+        const scrollTop = scrollContainer?.scrollTop ?? 0;
+        const scrollLeft = scrollContainer?.scrollLeft ?? 0;
+        
         providerRef.current.awareness.setLocalStateField("cursor", {
-          x: coords.left,
-          y: coords.top,
+          x: coords.left - scrollLeft,
+          y: coords.top - scrollTop,
           name: activeActor.name,
           color: activeActor.color,
         });
@@ -306,7 +311,7 @@ export function CollaborativeFileBrowser({
         setSyncState(status.status === "connected" ? "live" : "local");
       });
 
-      // Track connected users using awareness
+      // Track connected users and per-file presence
       if (provider.awareness) {
         provider.awareness.on("change", () => {
           const states = provider.awareness!.getStates();
@@ -314,12 +319,27 @@ export function CollaborativeFileBrowser({
           
           // Update remote cursors
           const cursors: Record<string, { x: number; y: number; name: string; color: string }> = {};
+          // Update per-file presence
+          const presence: Record<string, Array<{ name: string; color: string }>> = {};
           states.forEach((state, clientId) => {
             if (state.cursor && clientId !== provider.awareness!.clientID) {
               cursors[clientId.toString()] = state.cursor;
             }
+            if (state.user && clientId !== provider.awareness!.clientID) {
+              const file = state.user.currentFile;
+              if (file) {
+                if (!presence[file]) {
+                  presence[file] = [];
+                }
+                presence[file].push({
+                  name: state.user.name,
+                  color: state.user.color,
+                });
+              }
+            }
           });
           setRemoteCursors(cursors);
+          setFilePresence(presence);
         });
       }
     } else {
@@ -343,11 +363,20 @@ export function CollaborativeFileBrowser({
       );
       providerRef.current = provider;
 
+      // Set local state for code files too
+      if (provider.awareness) {
+        provider.awareness.setLocalStateField("user", {
+          name: activeActor.name,
+          color: activeActor.color,
+          currentFile: selected.filename,
+        });
+      }
+
       provider.on("status", (status: any) => {
         setSyncState(status.status === "connected" ? "live" : "local");
       });
 
-      // Track connected users using awareness
+      // Track connected users and per-file presence
       if (provider.awareness) {
         provider.awareness.on("change", () => {
           const states = provider.awareness!.getStates();
@@ -355,12 +384,27 @@ export function CollaborativeFileBrowser({
           
           // Update remote cursors
           const cursors: Record<string, { x: number; y: number; name: string; color: string }> = {};
+          // Update per-file presence
+          const presence: Record<string, Array<{ name: string; color: string }>> = {};
           states.forEach((state, clientId) => {
             if (state.cursor && clientId !== provider.awareness!.clientID) {
               cursors[clientId.toString()] = state.cursor;
             }
+            if (state.user && clientId !== provider.awareness!.clientID) {
+              const file = state.user.currentFile;
+              if (file) {
+                if (!presence[file]) {
+                  presence[file] = [];
+                }
+                presence[file].push({
+                  name: state.user.name,
+                  color: state.user.color,
+                });
+              }
+            }
           });
           setRemoteCursors(cursors);
+          setFilePresence(presence);
         });
       }
 
@@ -714,6 +758,7 @@ export function CollaborativeFileBrowser({
                   onSelect={() => selectFile(file)}
                   onToggleSelection={() => toggleFileSelection(file.file_id)}
                   onDelete={() => deleteFile(file.file_id)}
+                  presence={filePresence[file.filename] || []}
                 />
               ))}
             </ul>
@@ -791,10 +836,15 @@ export function CollaborativeFileBrowser({
               <button
                 className={styles.initBtn}
                 onClick={async () => {
+                  if (isInitializing) return; // Prevent double-click
                   setIsInitializing(true);
-                  await initializeFiles();
-                  setIsInitializing(false);
+                  try {
+                    await initializeFiles();
+                  } finally {
+                    setIsInitializing(false);
+                  }
                 }}
+                disabled={isInitializing}
               >
                 Initialize Default Files
               </button>

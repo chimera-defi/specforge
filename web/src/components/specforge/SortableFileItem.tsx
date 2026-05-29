@@ -19,6 +19,7 @@ interface SortableFileItemProps {
   onSelect: () => void;
   onToggleSelection: () => void;
   onDelete: () => void;
+  presence?: Array<{ name: string; color: string }>;
 }
 
 export function SortableFileItem({
@@ -29,6 +30,7 @@ export function SortableFileItem({
   onSelect,
   onToggleSelection,
   onDelete,
+  presence = [],
 }: SortableFileItemProps) {
   const {
     attributes,
@@ -73,6 +75,36 @@ export function SortableFileItem({
           <span style={{ marginRight: "6px" }}>{getFileIcon(file.filename)}</span>
           {file.filename}
         </button>
+        {presence.length > 0 && (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "2px",
+              marginLeft: "8px",
+            }}
+            title={presence.map(p => p.name).join(", ")}
+          >
+            {presence.slice(0, 3).map((p, idx) => (
+              <div
+                key={idx}
+                style={{
+                  width: "8px",
+                  height: "8px",
+                  borderRadius: "50%",
+                  backgroundColor: p.color,
+                  border: "1px solid var(--sf-border)",
+                }}
+                title={p.name}
+              />
+            ))}
+            {presence.length > 3 && (
+              <span style={{ fontSize: "0.7rem", color: "var(--sf-muted-mid)" }}>
+                +{presence.length - 3}
+              </span>
+            )}
+          </div>
+        )}
         <button
           className={styles.removeBtn}
           onClick={onDelete}
