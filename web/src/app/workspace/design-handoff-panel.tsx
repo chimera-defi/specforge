@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { documentApi } from "@/lib/api-client";
 import styles from "../page.module.css";
 
 type FeedbackSection = "ux-pack" | "design-system" | "general";
@@ -50,19 +51,11 @@ export function DesignHandoffPanel({ uxPack, designSystem, reviewChecklist, prom
     setSubmitted(null);
 
     try {
-      const response = await fetch(`/api/documents/${documentId}/design-feedback`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ feedback: feedback.trim(), section: feedbackSection }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setFeedbackError(data.error?.message ?? "Failed to submit feedback");
-        return;
-      }
-
+      const data = await documentApi.submitDesignFeedback(documentId, {
+        feedback: feedback.trim(),
+        section: feedbackSection,
+      }) as { patch_id: string };
+      
       setSubmitted(data.patch_id);
       setFeedback("");
     } catch {

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import { workspaceApi } from "@/lib/api-client";
 import styles from "../page.module.css";
 
 type SubscriptionStatus = "active" | "past_due" | "canceled" | "trialing";
@@ -78,14 +79,9 @@ export function BillingStatusPanel() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/workspace/billing")
-      .then(async (response) => {
-        if (!response.ok) {
-          throw new Error("Billing status unavailable");
-        }
-
-        const payload = (await response.json()) as BillingApiResponse;
-        setData(payload);
+    workspaceApi.getBilling()
+      .then((payload) => {
+        setData(payload as BillingApiResponse);
         setError(null);
       })
       .catch(() => {

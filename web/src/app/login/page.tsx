@@ -4,6 +4,7 @@ import { Suspense, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { SiteNav } from "@/components/site-nav";
+import { authApi } from "@/lib/api-client";
 
 function LoginForm() {
   const router = useRouter();
@@ -21,14 +22,10 @@ function LoginForm() {
 
     setError(null);
     startTransition(async () => {
-      const res = await fetch("/api/auth/demo-login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      });
-      if (res.ok) {
+      try {
+        await authApi.demoLogin({ username, password });
         router.push(redirect);
-      } else {
+      } catch {
         setError("Invalid credentials.");
       }
     });

@@ -5,6 +5,7 @@ import { useMemo, useState, useTransition } from "react";
 import { createDocumentAction } from "./actions";
 import styles from "./page.module.css";
 import type { AgentAssistToolStatus } from "@/lib/specforge/agent-assist";
+import { agentApi } from "@/lib/api-client";
 import {
   DEFAULT_GUIDED_SPEC_INPUT,
   normalizeGuidedSpecInput,
@@ -92,16 +93,6 @@ type AssistResponse = {
   statuses: AgentAssistToolStatus[];
 };
 
-type AssistErrorResponse = {
-  error?: string;
-  message?: string;
-  quota?: {
-    limit: number | null;
-    used: number;
-    remaining: number | null;
-  };
-};
-
 export function GuidedDraftBuilder({
   initialValues,
   toolStatuses,
@@ -139,47 +130,39 @@ export function GuidedDraftBuilder({
       // Use the system prompt from the selected preset
       const systemPrompt = PRESET_SYSTEM_PROMPTS[assistPreset];
 
-      const response = await fetch("/api/agent/assist", {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({
+      try {
+        const payload = await agentApi.assist({
           brief,
           tool,
           systemPrompt,
           contextPrompt: "",
-        }),
-      });
-
-      if (!response.ok) {
-        const errorPayload = (await response.json().catch(() => null)) as AssistErrorResponse | null;
+        }) as AssistResponse | null;
+        
+        if (!payload?.fields) {
+          setAssistSource("Assist failed");
+          setAssistNotes(["The assist returned an unexpected response. Keep editing manually or retry."]);
+          return;
+        }
+        setFields(payload.fields);
+        setAssistSource(
+          payload.tool === "heuristic"
+            ? "Built-in fallback populated the fields."
+            : `${payload.tool.replaceAll("_", " ")} populated the fields.`,
+        );
+        setAssistNotes(payload.notes);
+      } catch (e) {
         setAssistSource("Assist failed");
-        if (response.status === 429 && errorPayload?.quota) {
+        if (e instanceof Error && "status" in e && (e as { status?: number }).status === 429) {
+          const errorPayload = (e as { quota?: { used: number; limit?: number }; message?: string });
           setAssistNotes([
             errorPayload.message ??
               "This workspace has used its included assist quota. Keep editing manually or upgrade the plan.",
-            `Assist runs used: ${errorPayload.quota.used}/${errorPayload.quota.limit ?? "unlimited"}.`,
-          ]);
+            errorPayload.quota ? `Assist runs used: ${errorPayload.quota.used}/${errorPayload.quota.limit ?? "unlimited"}.` : "",
+          ].filter(Boolean));
           return;
         }
         setAssistNotes(["The assist request failed. Keep editing manually or retry."]);
-        return;
       }
-
-      const payload = await response.json().catch(() => null) as AssistResponse | null;
-      if (!payload?.fields) {
-        setAssistSource("Assist failed");
-        setAssistNotes(["The assist returned an unexpected response. Keep editing manually or retry."]);
-        return;
-      }
-      setFields(payload.fields);
-      setAssistSource(
-        payload.tool === "heuristic"
-          ? "Built-in fallback populated the fields."
-          : `${payload.tool.replaceAll("_", " ")} populated the fields.`,
-      );
-      setAssistNotes(payload.notes);
     });
   }
 

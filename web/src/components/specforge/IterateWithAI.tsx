@@ -12,6 +12,7 @@
  */
 
 import { useCallback, useState } from "react";
+import { documentApi } from "@/lib/api-client";
 
 type Props = {
   documentId: string;
@@ -51,26 +52,13 @@ export function IterateWithAI({
     setResult(null);
 
     try {
-      const res = await fetch(
-        `/api/documents/${documentId}/sections/${blockId}/iterate`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            message: trimmed,
-            actor_id: actorId,
-            actor_type: "human",
-          }),
-        },
-      );
-
-      if (!res.ok) {
-        const d = await res.json().catch(() => ({}));
-        throw new Error(d.error ?? `HTTP ${res.status}`);
-      }
-
-      const data = await res.json();
-      setResult(data.result ?? data);
+      const data = await documentApi.iterateSection(documentId, blockId, {
+        message: trimmed,
+        actor_id: actorId,
+        actor_type: "human",
+      }) as { result?: IterationResult };
+      
+      setResult(data.result ?? null);
       setMessage("");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unknown error");

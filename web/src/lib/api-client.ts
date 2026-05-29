@@ -147,6 +147,10 @@ export const documentApi = {
   update: (id: string, data: unknown) => put(API_ENDPOINTS.DOCUMENT_BY_ID(id), data),
   patch: (id: string, data: unknown) => patch(API_ENDPOINTS.DOCUMENT_BY_ID(id), data),
   delete: (id: string) => del(API_ENDPOINTS.DOCUMENT_BY_ID(id)),
+  iterateSection: (documentId: string, blockId: string, data: unknown) => 
+    post(API_ENDPOINTS.SECTIONS_ITERATE(documentId, blockId), data),
+  submitDesignFeedback: (documentId: string, data: unknown) => 
+    post(API_ENDPOINTS.DESIGN_FEEDBACK(documentId), data),
 };
 
 /**
@@ -176,6 +180,15 @@ export const fileApi = {
 export const agentApi = {
   assist: (data: unknown) => post(API_ENDPOINTS.AGENT_ASSIST, data),
   diagnostics: () => get(API_ENDPOINTS.AGENT_ASSIST_DIAGNOSTICS),
+};
+
+/**
+ * Auth API
+ */
+export const authApi = {
+  demoLogin: (data: unknown) => post(API_ENDPOINTS.AUTH_DEMO_LOGIN, data),
+  login: (data: unknown) => post(API_ENDPOINTS.AUTH_LOGIN, data),
+  logout: () => post(API_ENDPOINTS.AUTH_LOGOUT, {}),
 };
 
 /**

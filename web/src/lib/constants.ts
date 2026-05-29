@@ -40,6 +40,9 @@ export const API_ENDPOINTS = {
   DOCUMENTS: "/api/documents",
   DOCUMENT_BY_ID: (id: string) => `/api/documents/${id}`,
   
+  // Sections
+  SECTIONS_ITERATE: (documentId: string, blockId: string) => `/api/documents/${documentId}/sections/${blockId}/iterate`,
+  
   // Clarifications
   CLARIFICATIONS: (documentId: string) => `/api/documents/${documentId}/clarifications`,
   
