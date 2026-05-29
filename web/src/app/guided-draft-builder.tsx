@@ -268,6 +268,7 @@ export function GuidedDraftBuilder({
           value={fields.title}
           onChange={(event) => updateField("title", event.target.value)}
           data-testid="create-document-title"
+          placeholder="e.g., SpecForge MVP, Server Management Agent, Team Collab Tool"
         />
       </label>
       <details className={styles.wizardSection} open>
@@ -283,6 +284,7 @@ export function GuidedDraftBuilder({
               rows={4}
               value={fields.problem}
               onChange={(event) => updateField("problem", event.target.value)}
+              placeholder="e.g., Teams lose momentum between idea, spec, review, and build handoff. Current tools are disconnected and don't provide traceability."
             />
           </label>
           <label>
@@ -292,6 +294,7 @@ export function GuidedDraftBuilder({
               rows={4}
               value={fields.goals}
               onChange={(event) => updateField("goals", event.target.value)}
+              placeholder="e.g., Produce a build-ready spec, Support human and agent collaboration, Keep review and attribution explicit"
             />
           </label>
           <label>
@@ -301,6 +304,7 @@ export function GuidedDraftBuilder({
               rows={3}
               value={fields.users}
               onChange={(event) => updateField("users", event.target.value)}
+              placeholder="e.g., Product-minded founder, PM + engineer pair, Coding agent operator"
             />
           </label>
         </div>
@@ -318,6 +322,7 @@ export function GuidedDraftBuilder({
               rows={4}
               value={fields.scope}
               onChange={(event) => updateField("scope", event.target.value)}
+              placeholder="e.g., Guided spec creation, Shared authoring canvas, Patch review and export handoff"
             />
           </label>
           <label>
@@ -327,6 +332,7 @@ export function GuidedDraftBuilder({
               rows={4}
               value={fields.requirements}
               onChange={(event) => updateField("requirements", event.target.value)}
+              placeholder="e.g., Guided spec wizard with required sections, Shared multiplayer canvas with attribution, Human approval queue for agent patches"
             />
           </label>
           <label>
@@ -336,6 +342,7 @@ export function GuidedDraftBuilder({
               rows={3}
               value={fields.nonGoals}
               onChange={(event) => updateField("nonGoals", event.target.value)}
+              placeholder="e.g., General-purpose project management, Full autonomous delivery platform"
             />
           </label>
         </div>
@@ -358,6 +365,7 @@ export function GuidedDraftBuilder({
               rows={5}
               value={fields.uxPack}
               onChange={(event) => updateField("uxPack", event.target.value)}
+              placeholder="e.g., Primary surface: collaborative web workspace, Key screens: landing page, workspace, editor, review queue, Failure states: stale-room reload, quota reached, auth required"
             />
           </label>
         </div>
@@ -375,6 +383,7 @@ export function GuidedDraftBuilder({
               rows={4}
               value={fields.constraints}
               onChange={(event) => updateField("constraints", event.target.value)}
+              placeholder="e.g., Use off-the-shelf collaboration libraries, Keep human approval in the loop, Stay inside curated starter handoff paths"
             />
           </label>
           <label>
@@ -384,6 +393,7 @@ export function GuidedDraftBuilder({
               rows={3}
               value={fields.successSignals}
               onChange={(event) => updateField("successSignals", event.target.value)}
+              placeholder="e.g., Spec reaches readiness without unresolved review work, Handoff bundle is deterministic, Starter output is runnable"
             />
           </label>
           <label>
@@ -393,6 +403,7 @@ export function GuidedDraftBuilder({
               rows={4}
               value={fields.tasks}
               onChange={(event) => updateField("tasks", event.target.value)}
+              placeholder="e.g., Collect core requirements, Draft the canonical spec, Review agent patches, Export the handoff bundle, Generate the starter app"
             />
           </label>
         </div>

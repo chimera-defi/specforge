@@ -46,6 +46,10 @@ export type IdeaScaffold = {
   // Risks & constraints
   technicalRisks: string;
   constraints: string;
+  
+  // Business & competition
+  competitiveAnalysis: string;
+  businessModel: string;
 };
 
 export const DEFAULT_IDEA_SCAFFOLD: IdeaScaffold = {
@@ -77,6 +81,8 @@ export const DEFAULT_IDEA_SCAFFOLD: IdeaScaffold = {
   successMetrics: "",
   technicalRisks: "",
   constraints: "",
+  competitiveAnalysis: "",
+  businessModel: "",
 };
 
 export function normalizeIdeaScaffold(input: Partial<IdeaScaffold>): IdeaScaffold {
@@ -109,6 +115,8 @@ export function normalizeIdeaScaffold(input: Partial<IdeaScaffold>): IdeaScaffol
     successMetrics: input.successMetrics?.trim() || "",
     technicalRisks: input.technicalRisks?.trim() || "",
     constraints: input.constraints?.trim() || "",
+    competitiveAnalysis: input.competitiveAnalysis?.trim() || "",
+    businessModel: input.businessModel?.trim() || "",
   };
 }
 

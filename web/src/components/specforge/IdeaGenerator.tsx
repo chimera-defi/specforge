@@ -40,6 +40,8 @@ export function IdeaGenerator({ onGenerate, onCancel }: IdeaGeneratorProps) {
     successMetrics: "",
     technicalRisks: "",
     constraints: "",
+    competitiveAnalysis: "",
+    businessModel: "",
   });
 
   const [briefDescription, setBriefDescription] = useState("");
@@ -67,7 +69,7 @@ export function IdeaGenerator({ onGenerate, onCancel }: IdeaGeneratorProps) {
     try {
       const data = await agentApi.assist({
         brief: briefDescription,
-        systemPrompt: "You are helping a user fill in an idea scaffold for a product. Extract the following fields from their brief: title, thesis, elevatorPitch, problem, currentAlternatives, whyNow, targetUser, userSegment, marketSize, solutionApproach, keyDifferentiator, mvpScope, phase1Features, futureFeatures, nonGoals, primarySurfaces, keyScreens, acceptanceTests, successMetrics, technicalRisks, constraints. Return as JSON with these exact field names.",
+        systemPrompt: "You are helping a user fill in an idea scaffold for a product. Extract the following fields from their brief: title, thesis, elevatorPitch, problem, currentAlternatives, whyNow, targetUser, userSegment, marketSize, solutionApproach, keyDifferentiator, mvpScope, phase1Features, futureFeatures, nonGoals, primarySurfaces, keyScreens, acceptanceTests, successMetrics, technicalRisks, constraints, competitiveAnalysis, businessModel. Return as JSON with these exact field names.",
         contextPrompt: briefDescription,
       }) as { fields?: Partial<IdeaScaffold> };
       
@@ -372,6 +374,53 @@ export function IdeaGenerator({ onGenerate, onCancel }: IdeaGeneratorProps) {
                 onChange={(e) => handleChange("futureWork", e.target.value)}
                 placeholder="What's the longer-term vision beyond MVP?"
                 rows={2}
+                style={{
+                  width: "100%",
+                  padding: "8px 12px",
+                  border: "1px solid var(--sf-border)",
+                  borderRadius: "6px",
+                  fontSize: "0.9rem",
+                  fontFamily: "inherit",
+                }}
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* Business & Competition */}
+        <section>
+          <h2 style={{ fontSize: "1.1rem", fontWeight: 600, marginBottom: "12px" }}>
+            Business & Competition
+          </h2>
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            <div>
+              <label style={{ display: "block", fontWeight: 500, marginBottom: "4px" }}>
+                Competitive Analysis
+              </label>
+              <textarea
+                value={scaffold.competitiveAnalysis}
+                onChange={(e) => handleChange("competitiveAnalysis", e.target.value)}
+                placeholder="Who are the main competitors? What are their strengths and weaknesses? What's your unique advantage?"
+                rows={4}
+                style={{
+                  width: "100%",
+                  padding: "8px 12px",
+                  border: "1px solid var(--sf-border)",
+                  borderRadius: "6px",
+                  fontSize: "0.9rem",
+                  fontFamily: "inherit",
+                }}
+              />
+            </div>
+            <div>
+              <label style={{ display: "block", fontWeight: 500, marginBottom: "4px" }}>
+                Business Model
+              </label>
+              <textarea
+                value={scaffold.businessModel}
+                onChange={(e) => handleChange("businessModel", e.target.value)}
+                placeholder="How will this make money? What are the revenue streams? What's the go-to-market strategy?"
+                rows={4}
                 style={{
                   width: "100%",
                   padding: "8px 12px",
