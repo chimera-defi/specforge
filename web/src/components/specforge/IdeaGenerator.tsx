@@ -6,6 +6,12 @@ import type { IdeaScaffold, IdeaValidationError } from "@/lib/specforge/ideas-ge
 import { validateIdeaScaffold } from "@/lib/specforge/ideas-generator";
 import { agentApi } from "@/lib/api-client";
 import { sanitizeInput } from "@/lib/utils/sanitize";
+import {
+  getFieldError,
+  getFieldErrorId,
+  hasFieldError,
+  getValidationAnnouncement,
+} from "@/lib/utils/validation-helpers";
 
 interface IdeaGeneratorProps {
   onGenerate: (scaffold: Partial<IdeaScaffold>) => void;
@@ -66,26 +72,9 @@ export function IdeaGenerator({ onGenerate, onCancel }: IdeaGeneratorProps) {
     setScaffold(prev => ({ ...prev, [field]: sanitizeInput(value) }));
     // Clear validation error for this field when user types
     setValidationErrors(prev => prev.filter(error => error.field !== field));
+    // Reset submitting state when user types
+    setIsSubmitting(false);
   };
-
-  function getFieldError(fieldName: string): string | undefined {
-    return validationErrors.find(error => error.field === fieldName)?.message;
-  }
-
-  function getFieldErrorId(fieldName: string): string {
-    return `${fieldName}-error`;
-  }
-
-  function hasFieldError(fieldName: string): boolean {
-    return getFieldError(fieldName) !== undefined;
-  }
-
-  function getValidationAnnouncement(): string {
-    if (validationErrors.length === 0) {
-      return "";
-    }
-    return `Form has ${validationErrors.length} validation error${validationErrors.length === 1 ? "" : "s"}. Please correct the highlighted fields.`;
-  }
 
   const handleAssist = async () => {
     if (!briefDescription.trim()) {
@@ -179,13 +168,13 @@ export function IdeaGenerator({ onGenerate, onCancel }: IdeaGeneratorProps) {
       </section>
 
       <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-        {getValidationAnnouncement() && (
+        {getValidationAnnouncement(validationErrors) && (
           <div
             role="status"
             aria-live="polite"
             style={{ color: "var(--sf-error)", marginBottom: "16px", padding: "8px", backgroundColor: "var(--sf-error-bg)", borderRadius: "6px" }}
           >
-            {getValidationAnnouncement()}
+            {getValidationAnnouncement(validationErrors)}
           </div>
         )}
 
@@ -204,8 +193,8 @@ export function IdeaGenerator({ onGenerate, onCancel }: IdeaGeneratorProps) {
                 value={scaffold.title}
                 onChange={(e) => handleChange("title", e.target.value)}
                 placeholder="My Awesome Product"
-                aria-invalid={hasFieldError("title")}
-                aria-describedby={hasFieldError("title") ? getFieldErrorId("title") : undefined}
+                aria-invalid={hasFieldError("title", validationErrors)}
+                aria-describedby={hasFieldError("title", validationErrors) ? getFieldErrorId("title") : undefined}
                 style={{
                   width: "100%",
                   padding: "8px 12px",
@@ -215,13 +204,13 @@ export function IdeaGenerator({ onGenerate, onCancel }: IdeaGeneratorProps) {
                 }}
                 required
               />
-              {getFieldError("title") && (
+              {getFieldError("title", validationErrors) && (
                 <span
                   id={getFieldErrorId("title")}
                   role="alert"
                   style={{ color: "var(--sf-error)", fontSize: "0.875rem", marginTop: "4px", display: "block" }}
                 >
-                  {getFieldError("title")}
+                  {getFieldError("title", validationErrors)}
                 </span>
               )}
             </div>
@@ -234,8 +223,8 @@ export function IdeaGenerator({ onGenerate, onCancel }: IdeaGeneratorProps) {
                 onChange={(e) => handleChange("thesis", e.target.value)}
                 placeholder="What is this and why does it matter?"
                 rows={3}
-                aria-invalid={hasFieldError("thesis")}
-                aria-describedby={hasFieldError("thesis") ? getFieldErrorId("thesis") : undefined}
+                aria-invalid={hasFieldError("thesis", validationErrors)}
+                aria-describedby={hasFieldError("thesis", validationErrors) ? getFieldErrorId("thesis") : undefined}
                 style={{
                   width: "100%",
                   padding: "8px 12px",
@@ -246,13 +235,13 @@ export function IdeaGenerator({ onGenerate, onCancel }: IdeaGeneratorProps) {
                 }}
                 required
               />
-              {getFieldError("thesis") && (
+              {getFieldError("thesis", validationErrors) && (
                 <span
                   id={getFieldErrorId("thesis")}
                   role="alert"
                   style={{ color: "var(--sf-error)", fontSize: "0.875rem", marginTop: "4px", display: "block" }}
                 >
-                  {getFieldError("thesis")}
+                  {getFieldError("thesis", validationErrors)}
                 </span>
               )}
             </div>
@@ -293,8 +282,8 @@ export function IdeaGenerator({ onGenerate, onCancel }: IdeaGeneratorProps) {
                 onChange={(e) => handleChange("problem", e.target.value)}
                 placeholder="What's broken or missing?"
                 rows={3}
-                aria-invalid={hasFieldError("problem")}
-                aria-describedby={hasFieldError("problem") ? getFieldErrorId("problem") : undefined}
+                aria-invalid={hasFieldError("problem", validationErrors)}
+                aria-describedby={hasFieldError("problem", validationErrors) ? getFieldErrorId("problem") : undefined}
                 style={{
                   width: "100%",
                   padding: "8px 12px",
@@ -305,13 +294,13 @@ export function IdeaGenerator({ onGenerate, onCancel }: IdeaGeneratorProps) {
                 }}
                 required
               />
-              {getFieldError("problem") && (
+              {getFieldError("problem", validationErrors) && (
                 <span
                   id={getFieldErrorId("problem")}
                   role="alert"
                   style={{ color: "var(--sf-error)", fontSize: "0.875rem", marginTop: "4px", display: "block" }}
                 >
-                  {getFieldError("problem")}
+                  {getFieldError("problem", validationErrors)}
                 </span>
               )}
             </div>
@@ -371,8 +360,8 @@ export function IdeaGenerator({ onGenerate, onCancel }: IdeaGeneratorProps) {
                 value={scaffold.targetUser}
                 onChange={(e) => handleChange("targetUser", e.target.value)}
                 placeholder="Who is this for?"
-                aria-invalid={hasFieldError("targetUser")}
-                aria-describedby={hasFieldError("targetUser") ? getFieldErrorId("targetUser") : undefined}
+                aria-invalid={hasFieldError("targetUser", validationErrors)}
+                aria-describedby={hasFieldError("targetUser", validationErrors) ? getFieldErrorId("targetUser") : undefined}
                 style={{
                   width: "100%",
                   padding: "8px 12px",
@@ -382,13 +371,13 @@ export function IdeaGenerator({ onGenerate, onCancel }: IdeaGeneratorProps) {
                 }}
                 required
               />
-              {getFieldError("targetUser") && (
+              {getFieldError("targetUser", validationErrors) && (
                 <span
                   id={getFieldErrorId("targetUser")}
                   role="alert"
                   style={{ color: "var(--sf-error)", fontSize: "0.875rem", marginTop: "4px", display: "block" }}
                 >
-                  {getFieldError("targetUser")}
+                  {getFieldError("targetUser", validationErrors)}
                 </span>
               )}
             </div>
@@ -401,8 +390,8 @@ export function IdeaGenerator({ onGenerate, onCancel }: IdeaGeneratorProps) {
                 onChange={(e) => handleChange("solutionApproach", e.target.value)}
                 placeholder="How will you solve it?"
                 rows={3}
-                aria-invalid={hasFieldError("solutionApproach")}
-                aria-describedby={hasFieldError("solutionApproach") ? getFieldErrorId("solutionApproach") : undefined}
+                aria-invalid={hasFieldError("solutionApproach", validationErrors)}
+                aria-describedby={hasFieldError("solutionApproach", validationErrors) ? getFieldErrorId("solutionApproach") : undefined}
                 style={{
                   width: "100%",
                   padding: "8px 12px",
@@ -413,13 +402,13 @@ export function IdeaGenerator({ onGenerate, onCancel }: IdeaGeneratorProps) {
                 }}
                 required
               />
-              {getFieldError("solutionApproach") && (
+              {getFieldError("solutionApproach", validationErrors) && (
                 <span
                   id={getFieldErrorId("solutionApproach")}
                   role="alert"
                   style={{ color: "var(--sf-error)", fontSize: "0.875rem", marginTop: "4px", display: "block" }}
                 >
-                  {getFieldError("solutionApproach")}
+                  {getFieldError("solutionApproach", validationErrors)}
                 </span>
               )}
             </div>
