@@ -141,14 +141,26 @@ export function del<T = unknown>(url: string, options?: FetchOptions): Promise<T
 
 /**
  * Document API
+ * 
+ * Methods for document CRUD operations and AI-powered iteration.
  */
 export const documentApi = {
+  /** Get a document by ID with optional fetch options (e.g., cache: "no-store") */
   getById: (id: string, options?: FetchOptions) => get(API_ENDPOINTS.DOCUMENT_BY_ID(id), options),
+  /** Update entire document */
   update: (id: string, data: unknown) => put(API_ENDPOINTS.DOCUMENT_BY_ID(id), data),
+  /** Partially update document (used for auto-save) */
   patch: (id: string, data: unknown) => patch(API_ENDPOINTS.DOCUMENT_BY_ID(id), data),
+  /** Delete a document */
   delete: (id: string) => del(API_ENDPOINTS.DOCUMENT_BY_ID(id)),
+  /** 
+   * Iterate on a document section using AI
+   * Calls Claude CLI or heuristic fallback to create a PatchProposal
+   * Used by both IterateWithAI inline and chat modes
+   */
   iterateSection: (documentId: string, blockId: string, data: unknown) => 
     post(API_ENDPOINTS.SECTIONS_ITERATE(documentId, blockId), data),
+  /** Submit design feedback for a document */
   submitDesignFeedback: (documentId: string, data: unknown) => 
     post(API_ENDPOINTS.DESIGN_FEEDBACK(documentId), data),
 };

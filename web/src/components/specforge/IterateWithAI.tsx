@@ -1,38 +1,87 @@
 "use client";
 
 /**
- * IterateWithAI
+ * IterateWithAI - Unified AI-powered document iteration component
  *
- * Unified component for AI-powered document iteration.
- * Supports two modes:
- * - "inline": Inline block iteration for review stage (block-level)
- * - "chat": Chat-like interface for document workspace (document-level with message history)
+ * This component provides AI-assisted document iteration in two distinct modes:
  *
- * Both modes use the same underlying API endpoint (/api/documents/[id]/sections/[blockId]/iterate)
- * which calls Claude CLI or heuristic fallback and creates governed PatchProposals.
+ * ## Mode: "inline" (for Review Stage)
+ * - Best for: Block-level iteration in the review stage
+ * - UI: Expandable inline form within document blocks
+ * - Use case: Iterating on specific sections while reviewing
+ * - Requires: blockId, blockHeading, decideHref
+ *
+ * @example
+ * ```tsx
+ * <IterateWithAI
+ *   mode="inline"
+ *   documentId={docId}
+ *   blockId={blockId}
+ *   blockHeading={block.heading}
+ *   actorId={actorId}
+ *   decideHref="/workspace?stage=decide"
+ * />
+ * ```
+ *
+ * ## Mode: "chat" (for Document Workspace)
+ * - Best for: Document-level iteration with conversational interface
+ * - UI: Fixed chat panel in bottom-right corner with message history
+ * - Use case: Iterating on the entire document after AI Assist
+ * - Requires: documentId, show (conditional display)
+ * - Optional: blockId (defaults to "document" for document-level iteration)
+ *
+ * @example
+ * ```tsx
+ * <IterateWithAI
+ *   mode="chat"
+ *   documentId={docId}
+ *   actorId={actorId}
+ *   documentTitle={doc.title}
+ *   show={aiAssistUsed}
+ * />
+ * ```
+ *
+ * ## API Integration
+ * Both modes use the same underlying endpoint: `/api/documents/[id]/sections/[blockId]/iterate`
+ * - Calls Claude CLI or heuristic fallback
+ * - Creates governed PatchProposals
+ * - Patches are queued in the decision queue for review
+ *
+ * ## When to Use Each Mode
+ * - Use "inline" when you need to iterate on specific blocks during review
+ * - Use "chat" when you want a persistent conversational interface for document-level iteration
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { documentApi } from "@/lib/api-client";
 
 type InlineProps = {
+  /** Component mode - must be "inline" for this props type */
   mode: "inline";
+  /** Document ID to iterate on */
   documentId: string;
+  /** Block ID to iterate on (specific section) */
   blockId: string;
+  /** Block heading for context display */
   blockHeading: string;
+  /** Current actor ID performing the iteration */
   actorId: string;
-  /** Link to the decision queue for this document */
+  /** Link to the decision queue for reviewing created patches */
   decideHref: string;
 };
 
 type ChatProps = {
+  /** Component mode - must be "chat" for this props type */
   mode: "chat";
+  /** Document ID to iterate on */
   documentId: string;
-  blockId?: string; // Optional for chat mode - will use first block if not provided
+  /** Block ID to iterate on (optional - defaults to "document" for document-level iteration) */
+  blockId?: string;
+  /** Current actor ID performing the iteration */
   actorId: string;
-  /** Optional document context for chat mode */
+  /** Document title for context in chat messages */
   documentTitle?: string;
-  /** Whether to show the button (appears after AI Assist is used) */
+  /** Whether to show the chat button (typically controlled by aiAssistUsed state) */
   show?: boolean;
 };
 
@@ -78,6 +127,7 @@ export function IterateWithAI(props: Props) {
   const actorId = props.actorId;
   
   // For chat mode, use default blockId if not provided
+  // The "document" blockId allows document-level iteration when no specific block is targeted
   const blockId = mode === "chat" 
     ? (props.blockId ?? "document") // Use "document" as default block ID for document-level iteration
     : (props as InlineProps).blockId;
