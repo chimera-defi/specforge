@@ -43,11 +43,11 @@ export function validateField(
 }
 
 /**
- * Validate multiple fields at once
+ * Validate multiple fields at once (accepts partial rules)
  */
 export function validateFields<T extends string>(
   fields: Record<T, string | undefined>,
-  rules: Record<T, { minLength: number; example: string; displayName?: string }>
+  rules: Partial<Record<T, { minLength: number; example: string; displayName?: string }>>
 ): { field: T; message: string }[] {
   const errors: { field: T; message: string }[] = [];
 
