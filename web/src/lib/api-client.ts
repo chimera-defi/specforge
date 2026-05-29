@@ -143,7 +143,7 @@ export function del<T = unknown>(url: string, options?: FetchOptions): Promise<T
  * Document API
  */
 export const documentApi = {
-  getById: (id: string) => get(API_ENDPOINTS.DOCUMENT_BY_ID(id)),
+  getById: (id: string, options?: FetchOptions) => get(API_ENDPOINTS.DOCUMENT_BY_ID(id), options),
   update: (id: string, data: unknown) => put(API_ENDPOINTS.DOCUMENT_BY_ID(id), data),
   patch: (id: string, data: unknown) => patch(API_ENDPOINTS.DOCUMENT_BY_ID(id), data),
   delete: (id: string) => del(API_ENDPOINTS.DOCUMENT_BY_ID(id)),
@@ -196,6 +196,7 @@ export const authApi = {
  */
 export const collabApi = {
   getSession: () => get(API_ENDPOINTS.COLLAB_SESSION),
+  createSession: (data: unknown) => post(API_ENDPOINTS.COLLAB_SESSION, data),
 };
 
 /**

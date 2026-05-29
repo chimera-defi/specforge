@@ -16,7 +16,7 @@ import { AIAssistButton } from "@/components/specforge/AIAssistButton";
 import { IterateWithAIChat } from "@/components/specforge/IterateWithAIChat";
 import type { AgentAssistToolStatus } from "@/lib/specforge/agent-assist";
 import { useToast } from "@/components/specforge/useToast";
-import { documentApi, agentApi } from "@/lib/api-client";
+import { documentApi, agentApi, collabApi } from "@/lib/api-client";
 
 type Props = {
   document: DocumentRecord;
@@ -245,22 +245,11 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
       name: roomName,
       document: ydoc,
       token: async () => {
-        const response = await fetch("/api/collab/session", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            document_id: document.document_id,
-            version: document.version,
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error(`Unable to mint collab session for ${roomName}`);
-        }
-
-        const payload = (await response.json()) as { token?: string };
+        const payload = await collabApi.createSession({
+          document_id: document.document_id,
+          version: document.version,
+        }) as { token?: string };
+        
         if (!payload.token) {
           throw new Error(`Missing collab token for ${roomName}`);
         }
@@ -345,16 +334,10 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
     }
 
     try {
-      const response = await fetch(`/api/documents/${document.document_id}`, {
+      const payload = await documentApi.getById(document.document_id, {
         cache: "no-store",
-      });
+      }) as { document?: { version?: number } };
 
-      if (!response.ok) {
-        updateSyncState("error", `Recovery check failed for ${roomName}`);
-        return;
-      }
-
-      const payload = (await response.json()) as { document?: { version?: number } };
       const latestVersion = payload.document?.version ?? document.version;
 
       if (latestVersion > document.version) {
