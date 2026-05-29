@@ -2983,63 +2983,69 @@ export async function initializeDefaultWorkspaceFiles(
   document: DocumentRecord,
   options?: StoreOptions,
 ): Promise<void> {
-  const existingFiles = await listWorkspaceFiles(documentId, options);
-  if (existingFiles.length > 0) {
-    return; // Already initialized
-  }
+  try {
+    const existingFiles = await listWorkspaceFiles(documentId, options);
+    if (existingFiles.length > 0) {
+      return; // Already initialized
+    }
 
-  const workspaceId = options?.workspaceId ?? process.env.SPECFORGE_WORKSPACE_ID ?? "default";
+    const workspaceId = options?.workspaceId ?? process.env.SPECFORGE_WORKSPACE_ID ?? "default";
 
-  // Check for idea validation sessions and create IDEA_VALIDATION.md if they exist
-  const sessions = await listPlanSessions(documentId, workspaceId);
-  if (sessions.length > 0) {
-    const session = sessions[0];
-    const completedStages = session.stages.filter((s) => s.status === "completed");
+    // Check for idea validation sessions and create IDEA_VALIDATION.md if they exist
+    const sessions = await listPlanSessions(documentId, workspaceId);
+    if (sessions.length > 0) {
+      const session = sessions[0];
+      const completedStages = session.stages.filter((s) => s.status === "completed");
 
-    if (completedStages.length > 0) {
-      // Build IDEA_VALIDATION.md from the session
-      let ideaValidationContent = "# Idea Validation\n\n";
-      ideaValidationContent += `Completed on: ${session.created_at}\n`;
-      ideaValidationContent += `Mode: ${session.mode}\n\n`;
-      ideaValidationContent += `Stages completed: ${completedStages.length}/${session.stages.length}\n\n`;
+      if (completedStages.length > 0) {
+        // Build IDEA_VALIDATION.md from the session
+        let ideaValidationContent = "# Idea Validation\n\n";
+        ideaValidationContent += `Completed on: ${session.created_at}\n`;
+        ideaValidationContent += `Mode: ${session.mode}\n\n`;
+        ideaValidationContent += `Stages completed: ${completedStages.length}/${session.stages.length}\n\n`;
 
-      for (const stage of completedStages) {
-        ideaValidationContent += `## ${stage.name}\n\n`;
-        if (stage.answers) {
-          for (const [key, answer] of Object.entries(stage.answers)) {
-            ideaValidationContent += `**${key}**: ${answer}\n\n`;
+        for (const stage of completedStages) {
+          ideaValidationContent += `## ${stage.name}\n\n`;
+          if (stage.answers) {
+            for (const [key, answer] of Object.entries(stage.answers)) {
+              ideaValidationContent += `**${key}**: ${answer}\n\n`;
+            }
+          }
+          if (stage.patch_id) {
+            ideaValidationContent += `> Patch created: ${stage.patch_id}\n\n`;
           }
         }
-        if (stage.patch_id) {
-          ideaValidationContent += `> Patch created: ${stage.patch_id}\n\n`;
-        }
-      }
 
+        await createWorkspaceFile(
+          {
+            document_id: documentId,
+            filename: "IDEA_VALIDATION.md",
+            content: ideaValidationContent,
+            file_type: "markdown",
+          },
+          options,
+        );
+      }
+    }
+
+    const exportBundle = exportDocumentBundle(document, [], []);
+    const files = exportBundle.files;
+
+    for (const [filename, content] of Object.entries(files)) {
       await createWorkspaceFile(
         {
           document_id: documentId,
-          filename: "IDEA_VALIDATION.md",
-          content: ideaValidationContent,
-          file_type: "markdown",
+          filename,
+          content,
+          file_type: filename.endsWith('.json') ? 'json' : 'markdown',
         },
         options,
       );
     }
-  }
-
-  const exportBundle = exportDocumentBundle(document, [], []);
-  const files = exportBundle.files;
-
-  for (const [filename, content] of Object.entries(files)) {
-    await createWorkspaceFile(
-      {
-        document_id: documentId,
-        filename,
-        content,
-        file_type: filename.endsWith('.json') ? 'json' : 'markdown',
-      },
-      options,
-    );
+  } catch (error) {
+    console.error(`Failed to initialize workspace files for document ${documentId}:`, error);
+    // Don't throw - allow document creation to succeed even if file initialization fails
+    // User can manually trigger export later to generate files
   }
 }
 
