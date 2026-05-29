@@ -134,6 +134,8 @@ export async function POST(_request: Request, { params }: Params) {
         exportBundle,
         executionBrief: bundle.files["AGENT_HANDOFF.md"] ?? null,
         launchPacket: bundle.files["FIRST_60_MINUTES.md"] ?? null,
+        // Include original document metadata for complete traceability
+        documentMetadata: document.metadata ?? {},
       };
 
       return NextResponse.json(handoff, { status: 200 });
