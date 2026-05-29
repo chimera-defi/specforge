@@ -13,7 +13,7 @@ import { markdownToEditorHtml, tiptapJsonToMarkdown } from "@/lib/specforge/edit
 import { buildRoomName } from "@/lib/specforge/collab-auth";
 import { logger } from "@/lib/logger";
 import { AIAssistButton } from "@/components/specforge/AIAssistButton";
-import { IterateWithAIChat } from "@/components/specforge/IterateWithAIChat";
+import { IterateWithAI } from "@/components/specforge/IterateWithAI";
 import type { AgentAssistToolStatus } from "@/lib/specforge/agent-assist";
 import { useToast } from "@/components/specforge/useToast";
 import { documentApi, agentApi, collabApi } from "@/lib/api-client";
@@ -1014,12 +1014,11 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
         <EditorContent editor={editor} />
       </div>
       <ToastContainer />
-      <IterateWithAIChat
+      <IterateWithAI
+        mode="chat"
         documentId={document.document_id}
-        documentContent={document.markdown}
         documentTitle={document.title}
         actorId={activeActor.actor_id}
-        filePath={`docs/${document.document_id}.md`}
         show={aiAssistUsed}
       />
     </div>

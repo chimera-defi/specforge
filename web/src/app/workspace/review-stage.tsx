@@ -345,6 +345,7 @@ export function ReviewStage({
                       : "No review activity yet."}
                   </span>
                   <IterateWithAI
+                    mode="inline"
                     documentId={activeDocument.document_id}
                     blockId={block.block_id}
                     blockHeading={block.heading}

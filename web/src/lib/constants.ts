@@ -111,9 +111,7 @@ export const API_ENDPOINTS = {
   PLAN_SESSION: (documentId: string, sessionId: string) => 
     `/api/documents/${documentId}/plan-sessions/${sessionId}`,
   
-  // Iterate chat
-  ITERATE_CHAT: (documentId: string) => `/api/documents/${documentId}/iterate-chat`,
-} as const;
+  } as const;
 
 export const ERROR_MESSAGES = {
   NETWORK_ERROR: "Network error. Please check your connection.",

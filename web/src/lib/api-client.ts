@@ -211,13 +211,6 @@ export const ideaValidationApi = {
 };
 
 /**
- * Iterate Chat API
- */
-export const iterateChatApi = {
-  send: (documentId: string, data: unknown) => post(API_ENDPOINTS.ITERATE_CHAT(documentId), data),
-};
-
-/**
  * Acceptance Test API
  */
 export const acceptanceTestApi = {
