@@ -171,6 +171,7 @@ export function CollaborativeFileBrowser({
   const [fileVersions, setFileVersions] = useState<any[]>([]);
   const [loadingVersions, setLoadingVersions] = useState(false);
   const [remoteCursors, setRemoteCursors] = useState<Record<string, { x: number; y: number; name: string; color: string }>>({});
+  const [isInitializing, setIsInitializing] = useState(false);
 
   // Yjs document and provider for the selected file
   const ydocRef = useRef<Y.Doc | null>(null);
@@ -422,6 +423,11 @@ export function CollaborativeFileBrowser({
       setFiles(data.files || []);
       if (data.files && data.files.length > 0) {
         setSelected(data.files[0]);
+      } else if (!isInitializing) {
+        // Auto-initialize if no files exist and not already initializing
+        setIsInitializing(true);
+        await initializeFiles();
+        setIsInitializing(false);
       }
     } catch (error) {
       console.error("Failed to fetch files:", error);
@@ -779,12 +785,20 @@ export function CollaborativeFileBrowser({
         ) : (
           <div className={styles.empty}>
             <p>No files in workspace yet.</p>
-            <button
-              className={styles.initBtn}
-              onClick={initializeFiles}
-            >
-              Initialize Default Files
-            </button>
+            {isInitializing ? (
+              <p style={{ color: "var(--sf-muted-mid)" }}>Initializing default files...</p>
+            ) : (
+              <button
+                className={styles.initBtn}
+                onClick={async () => {
+                  setIsInitializing(true);
+                  await initializeFiles();
+                  setIsInitializing(false);
+                }}
+              >
+                Initialize Default Files
+              </button>
+            )}
           </div>
         )}
       </main>
