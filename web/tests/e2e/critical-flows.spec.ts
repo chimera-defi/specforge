@@ -59,7 +59,7 @@ test.describe("SpecForge E2E - Critical Flows", () => {
     }
 
     // Wait for page to load
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Look for the "Idea Generator" button
     const ideaGeneratorButton = page.getByText("Idea Generator");
@@ -99,7 +99,7 @@ test.describe("SpecForge E2E - Critical Flows", () => {
     }
 
     // Wait for page to load
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Verify the page loaded successfully
     const bodyContent = await page.textContent("body");
@@ -123,7 +123,7 @@ test.describe("SpecForge E2E - Critical Flows", () => {
     }
 
     // Wait for page to load
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Verify the page loaded successfully
     const bodyContent = await page.textContent("body");
@@ -146,7 +146,7 @@ test.describe("SpecForge E2E - Critical Flows", () => {
     }
 
     // Wait for page to load
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Verify the page loaded successfully
     const bodyContent = await page.textContent("body");
@@ -169,7 +169,7 @@ test.describe("SpecForge E2E - Critical Flows", () => {
     }
 
     // Wait for page to load
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Verify the page loaded successfully
     const bodyContent = await page.textContent("body");

@@ -6,7 +6,7 @@ test("renders the integrated SpecForge demo and captures a screenshot", async ({
 }) => {
   await page.goto("/");
 
-  await expect(page.getByText("SpecForge", { exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "SpecForge" }).first()).toBeVisible();
   await expect(
     page.getByRole("heading", {
       name: "AI edits. Human decisions. One launch packet.",
@@ -61,7 +61,7 @@ test("captures north-star copy variants for review", async ({ page }) => {
   for (const variantId of heroVariantOrder) {
     const variant = heroVariants[variantId];
     await page.goto(`/?variant=${variantId}`);
-    await expect(page.getByText("SpecForge", { exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: "SpecForge" }).first()).toBeVisible();
     await expect(page.getByRole("heading", { name: variant.headline })).toBeVisible();
 
     await page.screenshot({
@@ -359,7 +359,7 @@ test("renders the guided flow on a mobile viewport", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
 
-  await expect(page.getByText("SpecForge", { exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "SpecForge" }).first()).toBeVisible();
   await expect(page.getByRole("link", { name: "Pilot access", exact: true })).toBeVisible();
   await expect(page.getByText("Spec collaboration for AI-assisted teams")).toBeVisible();
 
