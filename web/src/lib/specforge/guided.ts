@@ -87,23 +87,23 @@ export function validateGuidedSpecInput(input: GuidedSpecInput): ValidationError
   const errors: ValidationError[] = [];
 
   if (!input.title || input.title.trim().length < 3) {
-    errors.push({ field: "title", message: "Title must be at least 3 characters" });
+    errors.push({ field: "title", message: "Title must be at least 3 characters (e.g., 'SpecForge MVP')" });
   }
 
   if (!input.problem || input.problem.trim().length < 10) {
-    errors.push({ field: "problem", message: "Problem must be at least 10 characters" });
+    errors.push({ field: "problem", message: "Problem must be at least 10 characters (describe the pain point)" });
   }
 
   if (!input.goals || input.goals.trim().length < 10) {
-    errors.push({ field: "goals", message: "Goals must be at least 10 characters" });
+    errors.push({ field: "goals", message: "Goals must be at least 10 characters (what you want to achieve)" });
   }
 
   if (!input.users || input.users.trim().length < 5) {
-    errors.push({ field: "users", message: "Users must be at least 5 characters" });
+    errors.push({ field: "users", message: "Users must be at least 5 characters (who is this for?)" });
   }
 
   if (!input.scope || input.scope.trim().length < 10) {
-    errors.push({ field: "scope", message: "Scope must be at least 10 characters" });
+    errors.push({ field: "scope", message: "Scope must be at least 10 characters (what's in/out of scope)" });
   }
 
   return errors;

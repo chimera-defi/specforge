@@ -129,23 +129,23 @@ export function validateIdeaScaffold(scaffold: IdeaScaffold): IdeaValidationErro
   const errors: IdeaValidationError[] = [];
 
   if (!scaffold.title || scaffold.title.trim().length < 3) {
-    errors.push({ field: "title", message: "Title must be at least 3 characters" });
+    errors.push({ field: "title", message: "Title must be at least 3 characters (e.g., 'My Awesome Product')" });
   }
 
   if (!scaffold.thesis || scaffold.thesis.trim().length < 10) {
-    errors.push({ field: "thesis", message: "Thesis must be at least 10 characters" });
+    errors.push({ field: "thesis", message: "Thesis must be at least 10 characters (what is this and why it matters?)" });
   }
 
   if (!scaffold.problem || scaffold.problem.trim().length < 10) {
-    errors.push({ field: "problem", message: "Problem must be at least 10 characters" });
+    errors.push({ field: "problem", message: "Problem must be at least 10 characters (what's broken or missing?)" });
   }
 
   if (!scaffold.targetUser || scaffold.targetUser.trim().length < 5) {
-    errors.push({ field: "targetUser", message: "Target user must be at least 5 characters" });
+    errors.push({ field: "targetUser", message: "Target user must be at least 5 characters (who specifically is this for?)" });
   }
 
   if (!scaffold.solutionApproach || scaffold.solutionApproach.trim().length < 10) {
-    errors.push({ field: "solutionApproach", message: "Solution approach must be at least 10 characters" });
+    errors.push({ field: "solutionApproach", message: "Solution approach must be at least 10 characters (how will you solve it?)" });
   }
 
   return errors;

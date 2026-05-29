@@ -13,6 +13,7 @@ import {
   type GuidedSpecInput,
   type ValidationError,
 } from "@/lib/specforge/guided";
+import { sanitizeInput } from "@/lib/utils/sanitize";
 
 type AssistPreset = "idea-to-spec" | "block-iteration" | "clarification-answer" | "design-feedback" | "planning-assist";
 
@@ -113,6 +114,7 @@ export function GuidedDraftBuilder({
   const [assistSource, setAssistSource] = useState<string>("No assist run yet.");
   const [isPending, startTransition] = useTransition();
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const availableToolCount = useMemo(
     () => toolStatuses.filter((status) => status.available).length,
@@ -120,7 +122,7 @@ export function GuidedDraftBuilder({
   );
 
   function updateField<K extends keyof GuidedSpecInput>(key: K, value: GuidedSpecInput[K]) {
-    setFields((current) => ({ ...current, [key]: value }));
+    setFields((current) => ({ ...current, [key]: typeof value === "string" ? sanitizeInput(value as string) : value }));
     // Clear validation error for this field when user types
     setValidationErrors((prev) => prev.filter((error) => error.field !== key));
   }
@@ -204,7 +206,9 @@ export function GuidedDraftBuilder({
       onSubmit={(e) => {
         if (!validateForm()) {
           e.preventDefault();
+          return;
         }
+        setIsSubmitting(true);
       }}
     >
       <input type="hidden" name="mode" value="guided" />
@@ -512,7 +516,9 @@ export function GuidedDraftBuilder({
           </label>
         </div>
       </details>
-      <button type="submit">Create guided draft</button>
+      <button type="submit" disabled={isSubmitting}>
+        {isSubmitting ? "Creating..." : "Create guided draft"}
+      </button>
     </form>
   );
 }

@@ -80,6 +80,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Errors clear when user types
   - Form submission blocked when validation fails
 
+- **UX and Security Improvements**
+  - Added loading states to guided form submission (disabled button, "Creating..." text)
+  - Added loading states to IdeaGenerator form submission (disabled button, "Generating..." text)
+  - Improved error messages with helpful guidance and examples
+  - Added input sanitization utility (sanitizeInput, sanitizeMarkdown, isInputSafe)
+  - Applied input sanitization to all form fields in guided form and IdeaGenerator
+  - Added Content-Security-Policy headers via Next.js middleware
+  - Added additional security headers (X-Content-Type-Options, X-Frame-Options, X-XSS-Protection, Referrer-Policy, Permissions-Policy)
+  - CSP policy configured for scripts, styles, images, fonts, and connect sources
+
 ### Changed
 - Updated README with bridge component documentation
 - Added bridge startup instructions and health check URLs
