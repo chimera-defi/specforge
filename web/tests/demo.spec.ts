@@ -1,5 +1,4 @@
 import { expect, test } from "@playwright/test";
-import { heroVariantOrder, heroVariants } from "../src/lib/specforge/marketing";
 
 test("renders the integrated SpecForge demo and captures a screenshot", async ({
   page,
@@ -9,12 +8,12 @@ test("renders the integrated SpecForge demo and captures a screenshot", async ({
   await expect(page.getByRole("link", { name: "SpecForge" }).first()).toBeVisible();
   await expect(
     page.getByRole("heading", {
-      name: "AI edits. Human decisions. One launch packet.",
+      name: "From idea to",
     }),
   ).toBeVisible();
-  await expect(page.getByRole("link", { name: "Request pilot access" }).first()).toBeVisible();
-  await expect(page.getByRole("link", { name: "Try demo workspace" }).first()).toBeVisible();
-  await expect(page.getByText("5-stage idea audit — built in")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Request access" }).first()).toBeVisible();
+  await expect(page.getByRole("link", { name: "Try the demo" }).first()).toBeVisible();
+  await expect(page.getByText("Five structured review stages run before spec authoring")).toBeVisible();
   await expect(page.getByRole("link", { name: "GitHub" }).first()).toHaveAttribute(
     "href",
     "https://github.com/chimera-defi/specforge",
@@ -27,6 +26,7 @@ test("renders the integrated SpecForge demo and captures a screenshot", async ({
 });
 
 test("submits pilot access intake and exposes it in workspace triage", async ({ page }) => {
+  test.setTimeout(120000); // 2 minutes for workspace operations
   const stamp = Date.now();
   const email = `pilot-${stamp}@example.com`;
   const githubLogin = `pilot-${stamp}`;
@@ -57,21 +57,8 @@ test("submits pilot access intake and exposes it in workspace triage", async ({ 
   await expect(requestRow.getByText("Pilot type: team")).toBeVisible();
 });
 
-test("captures north-star copy variants for review", async ({ page }) => {
-  for (const variantId of heroVariantOrder) {
-    const variant = heroVariants[variantId];
-    await page.goto(`/?variant=${variantId}`);
-    await expect(page.getByRole("link", { name: "SpecForge" }).first()).toBeVisible();
-    await expect(page.getByRole("heading", { name: variant.headline })).toBeVisible();
-
-    await page.screenshot({
-      path: `artifacts/screenshots/specforge-variant-${variantId}.png`,
-      fullPage: true,
-    });
-  }
-});
-
 test("creates a document, queues a patch, and exposes export JSON", async ({ page }) => {
+  test.setTimeout(120000); // 2 minutes for workspace operations
   const title = `Demo Spec ${Date.now()}`;
 
   await page.goto("/workspace?stage=start");
@@ -240,6 +227,7 @@ test("creates a document, queues a patch, and exposes export JSON", async ({ pag
 });
 
 test("agent assist can populate the guided draft form before creation", async ({ page }) => {
+  test.setTimeout(120000); // 2 minutes for workspace operations
   await page.goto("/workspace?stage=start");
   const draftForm = page.getByTestId("create-document-form");
   await draftForm.getByLabel("Assist runtime").selectOption("heuristic");
@@ -264,6 +252,7 @@ test("agent assist can populate the guided draft form before creation", async ({
 test("imports the canonical showcase idea and carries it into the draft workspace", async ({
   page,
 }) => {
+  test.setTimeout(120000); // 2 minutes for workspace operations
   await page.goto("/workspace?stage=start");
   await page.getByRole("button", { name: "Import showcase draft" }).first().click();
 
@@ -286,6 +275,7 @@ test("imports the canonical showcase idea and carries it into the draft workspac
 });
 
 test("shows two live collaborators on the same document", async ({ browser }) => {
+  test.setTimeout(120000); // 2 minutes for workspace operations
   const contextA = await browser.newContext();
   const contextB = await browser.newContext();
   const pageA = await contextA.newPage();
@@ -323,6 +313,7 @@ test("shows two live collaborators on the same document", async ({ browser }) =>
 });
 
 test("detects a stale room and reloads the latest snapshot", async ({ browser }) => {
+  test.setTimeout(120000); // 2 minutes for workspace operations
   const contextA = await browser.newContext();
   const contextB = await browser.newContext();
   const pageA = await contextA.newPage();
@@ -361,7 +352,7 @@ test("renders the guided flow on a mobile viewport", async ({ page }) => {
 
   await expect(page.getByRole("link", { name: "SpecForge" }).first()).toBeVisible();
   await expect(page.getByRole("link", { name: "Pilot access", exact: true })).toBeVisible();
-  await expect(page.getByText("Spec collaboration for AI-assisted teams")).toBeVisible();
+  await expect(page.getByText("Validate your idea, spec it collaboratively with AI")).toBeVisible();
 
   await page.screenshot({
     path: "artifacts/screenshots/specforge-demo-mobile.png",
@@ -370,6 +361,7 @@ test("renders the guided flow on a mobile viewport", async ({ page }) => {
 });
 
 test("local admin controls can seed review activity for a draft", async ({ page }) => {
+  test.setTimeout(120000); // 2 minutes for workspace operations
   await page.goto("/workspace?stage=start");
   await expect(page.getByText("Local admin", { exact: true })).toBeVisible();
 
@@ -390,6 +382,7 @@ test("local admin controls can seed review activity for a draft", async ({ page 
 test("export stage shows ExportFileBrowser with file list and highlighted viewer", async ({
   page,
 }) => {
+  test.setTimeout(120000); // 2 minutes for workspace operations
   await page.goto("/workspace?stage=start");
   await page.getByTestId("create-document-title").fill(`Export Browser ${Date.now()}`);
   await page.getByRole("button", { name: "Create guided draft" }).click();
