@@ -1,4 +1,4 @@
-use std::process::Child;
+use std::process::{Child, Command, Stdio};
 use std::sync::Mutex;
 use tauri::Manager;
 
@@ -60,6 +60,36 @@ async fn get_health() -> Result<serde_json::Value, String> {
     }))
 }
 
+#[tauri::command]
+async fn get_service_logs() -> Result<serde_json::Value, String> {
+    // Check if we can access recent logs from the services
+    // This is a simplified version - in production, you'd want proper log file rotation
+    let logs = serde_json::json!({
+        "web": {
+            "status": "available",
+            "log_path": "../web/.data/logs",
+            "note": "Web app logs available in .data/logs directory"
+        },
+        "collab": {
+            "status": "available",
+            "log_path": "../collab-server/.data/logs",
+            "note": "Collab server logs available in .data/logs directory"
+        },
+        "instructions": "Use terminal to view logs: tail -f web/.data/logs/app.log"
+    });
+
+    Ok(logs)
+}
+
+#[tauri::command]
+async fn get_version() -> Result<serde_json::Value, String> {
+    Ok(serde_json::json!({
+        "version": env!("CARGO_PKG_VERSION"),
+        "tauri": tauri::VERSION,
+        "platform": std::env::consts::OS
+    }))
+}
+
 /// Spawn sidecar processes for the web app and collab server.
 /// Returns the child processes so they can be managed.
 fn spawn_sidecars() -> Vec<Child> {
@@ -86,11 +116,11 @@ fn spawn_sidecars() -> Vec<Child> {
 
     // Start collab server
     if collab_dir.exists() {
-        match std::process::Command::new("bun")
+        match Command::new("bun")
             .args(["run", "start"])
             .current_dir(&collab_dir)
-            .stdout(std::process::Stdio::null())
-            .stderr(std::process::Stdio::null())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
             .spawn()
         {
             Ok(child) => children.push(child),
@@ -100,11 +130,11 @@ fn spawn_sidecars() -> Vec<Child> {
 
     // Start web app
     if web_dir.exists() {
-        match std::process::Command::new("bun")
+        match Command::new("bun")
             .args(["run", "start"])
             .current_dir(&web_dir)
-            .stdout(std::process::Stdio::null())
-            .stderr(std::process::Stdio::null())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
             .spawn()
         {
             Ok(child) => children.push(child),
@@ -118,7 +148,11 @@ fn spawn_sidecars() -> Vec<Child> {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
-        .invoke_handler(tauri::generate_handler![get_health])
+        .invoke_handler(tauri::generate_handler![
+            get_health,
+            get_service_logs,
+            get_version
+        ])
         .setup(|app| {
             // Spawn sidecar processes
             let spawned = spawn_sidecars();

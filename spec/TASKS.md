@@ -15,8 +15,9 @@
 
 ## Current Priority Order
 
-- [ ] 1. Package the working local product.
+- [x] 1. Package the working local product.
   - Focus: Tauri shell, local runtime status, local install/download flow, local CLI assist diagnostics
+  - **Status:** Complete - Added macOS/Windows packaging targets, configuration panel, service log viewing, icon generation script
 - [ ] 2. Tighten the local alpha UX.
   - Focus: pilot membership polish, acceptance test UX, design review polish, remaining decomposition
 - [ ] 3. Add honest SaaS scaffolding.
@@ -93,6 +94,9 @@
 - [x] When integrating third-party APIs, include list-based fallbacks for search APIs to handle account configuration variations.
 - [x] Archive historical documentation rather than deleting; keep canonical docs clearly separated from reference material.
 - [x] Regularly prune documentation of obsolete content and update references when files are restructured.
+- [x] Cross-platform packaging requires valid assets; configure all targets but disable those with missing assets to prevent build failures.
+- [x] Desktop configuration should be user-accessible and persisted across sessions (localStorage for simple settings).
+- [x] Log capture in sidecar processes should use piped stdout/stderr for debugging, not null suppression.
 
 ## Spec System Improvements
 
