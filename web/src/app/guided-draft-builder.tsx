@@ -13,13 +13,7 @@ import {
   type GuidedSpecInput,
   type ValidationError,
 } from "@/lib/specforge/guided";
-import { sanitizeInput } from "@/lib/utils/sanitize";
-import {
-  getFieldError,
-  getFieldErrorId,
-  hasFieldError,
-  getValidationAnnouncement,
-} from "@/lib/utils/validation-helpers";
+import { sanitizeInput, getFieldError, getFieldErrorId, hasFieldError, getValidationAnnouncement } from "@/lib/utils/sanitize";
 
 type AssistPreset = "idea-to-spec" | "block-iteration" | "clarification-answer" | "design-feedback" | "planning-assist";
 

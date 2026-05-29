@@ -1,5 +1,5 @@
 /**
- * Input sanitization utilities for security
+ * Input sanitization and validation utilities
  */
 
 /**
@@ -28,36 +28,42 @@ export function sanitizeInput(input: string): string {
 }
 
 /**
- * Sanitizes user input for use in markdown contexts
- * Allows basic markdown but removes HTML tags
+ * Get error message for a specific field
  */
-export function sanitizeMarkdown(input: string): string {
-  if (!input) return "";
-
-  return (
-    input
-      // Remove HTML tags but keep markdown syntax
-      .replace(/<[^>]+>/g, "")
-      // Remove javascript: in links
-      .replace(/javascript:/gi, "")
-      // Trim
-      .trim()
-  );
+export function getFieldError<T extends { field: string; message: string }>(
+  fieldName: string,
+  validationErrors: T[]
+): string | undefined {
+  return validationErrors.find((error) => error.field === fieldName)?.message;
 }
 
 /**
- * Validates that a string doesn't contain potentially dangerous patterns
+ * Generate unique ID for field error message
  */
-export function isInputSafe(input: string): boolean {
-  if (!input) return true;
+export function getFieldErrorId(fieldName: string): string {
+  return `${fieldName}-error`;
+}
 
-  const dangerousPatterns = [
-    /<script/i,
-    /javascript:/i,
-    /vbscript:/i,
-    /on\w+\s*=/i,
-    /data:\s*image\/svg\+xml/i,
-  ];
+/**
+ * Check if a field has validation errors
+ */
+export function hasFieldError<T extends { field: string; message: string }>(
+  fieldName: string,
+  validationErrors: T[]
+): boolean {
+  return getFieldError(fieldName, validationErrors) !== undefined;
+}
 
-  return !dangerousPatterns.some((pattern) => pattern.test(input));
+/**
+ * Generate screen reader announcement for validation errors
+ */
+export function getValidationAnnouncement<T extends { field: string; message: string }>(
+  validationErrors: T[]
+): string {
+  if (validationErrors.length === 0) {
+    return "";
+  }
+  return `Form has ${validationErrors.length} validation error${
+    validationErrors.length === 1 ? "" : "s"
+  }. Please correct the highlighted fields.`;
 }
