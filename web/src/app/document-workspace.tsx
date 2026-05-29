@@ -16,6 +16,7 @@ import { AIAssistButton } from "@/components/specforge/AIAssistButton";
 import { IterateWithAIChat } from "@/components/specforge/IterateWithAIChat";
 import type { AgentAssistToolStatus } from "@/lib/specforge/agent-assist";
 import { useToast } from "@/components/specforge/useToast";
+import { documentApi, agentApi } from "@/lib/api-client";
 
 type Props = {
   document: DocumentRecord;
@@ -134,19 +135,16 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
   const handleRefreshFromDatabase = useCallback(async () => {
     setIsRefreshing(true);
     try {
-      const response = await fetch(`/api/documents/${document.document_id}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch document from database");
-      }
-      const data = await response.json();
+      const data = await documentApi.getById(document.document_id) as { document?: { version?: number; markdown?: string } };
       const latestDocument = data.document;
 
       if (latestDocument && latestDocument.markdown && editorRef.current) {
         editorRef.current.commands.setContent(markdownToEditorHtml(latestDocument.markdown));
-        logger.info(`Refreshed from database: v${latestDocument.version}`);
-        lastKnownVersionRef.current = latestDocument.version;
+        const version = latestDocument.version ?? document.version;
+        logger.info(`Refreshed from database: v${version}`);
+        lastKnownVersionRef.current = version;
         setHasUnsavedChanges(false);
-        showToast(`Refreshed from database (v${latestDocument.version})`, "success");
+        showToast(`Refreshed from database (v${version})`, "success");
       }
     } catch (error) {
       console.error("Refresh failed:", error);
@@ -183,24 +181,14 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
           return;
         }
 
-        const response = await fetch(`/api/documents/${document.document_id}`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            title: document.title,
-            markdown,
-            editor_json: editorJson,
-          }),
+        await documentApi.patch(document.document_id, {
+          title: document.title,
+          markdown,
+          editor_json: editorJson,
         });
 
-        if (response.ok) {
-          setHasUnsavedChanges(false);
-          logger.info(`Auto-saved document: ${document.document_id}`);
-        } else {
-          logger.error(`Auto-save failed for document: ${document.document_id}`);
-        }
+        setHasUnsavedChanges(false);
+        logger.info(`Auto-saved document: ${document.document_id}`);
       } catch (error) {
         logger.error(`Auto-save error for document: ${document.document_id}`, error instanceof Error ? error : new Error(String(error)));
       } finally {
@@ -729,22 +717,11 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
 
     startTransition(async () => {
       updateSyncState("saving", `Saving ${roomName}...`);
-      const response = await fetch(`/api/documents/${document.document_id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          title: document.title,
-          markdown,
-          editor_json: editorJson,
-        }),
+      await documentApi.patch(document.document_id, {
+        title: document.title,
+        markdown,
+        editor_json: editorJson,
       });
-
-      if (!response.ok) {
-        updateSyncState("error", `Save failed for ${roomName}`);
-        return;
-      }
 
       updateSyncState("recovering", `Saved snapshot for ${roomName}`);
       router.refresh();
@@ -947,15 +924,7 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
           onAssist={async (tool, input, systemPrompt, contextPrompt) => {
             const loadingToastId = showToast("AI assist running...", "info", 0);
             try {
-              const response = await fetch("/api/agent/assist", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ tool, input, systemPrompt, contextPrompt }),
-              });
-              if (!response.ok) {
-                throw new Error("AI assist failed");
-              }
-              const payload = await response.json();
+              const payload = await agentApi.assist({ tool, input, systemPrompt, contextPrompt }) as { notes?: string[] };
               if (payload.notes && Array.isArray(payload.notes)) {
                 alert(payload.notes.join("\n"));
               }

@@ -145,6 +145,7 @@ export function del<T = unknown>(url: string, options?: FetchOptions): Promise<T
 export const documentApi = {
   getById: (id: string) => get(API_ENDPOINTS.DOCUMENT_BY_ID(id)),
   update: (id: string, data: unknown) => put(API_ENDPOINTS.DOCUMENT_BY_ID(id), data),
+  patch: (id: string, data: unknown) => patch(API_ENDPOINTS.DOCUMENT_BY_ID(id), data),
   delete: (id: string) => del(API_ENDPOINTS.DOCUMENT_BY_ID(id)),
 };
 
@@ -175,6 +176,13 @@ export const fileApi = {
 export const agentApi = {
   assist: (data: unknown) => post(API_ENDPOINTS.AGENT_ASSIST, data),
   diagnostics: () => get(API_ENDPOINTS.AGENT_ASSIST_DIAGNOSTICS),
+};
+
+/**
+ * Collab API
+ */
+export const collabApi = {
+  getSession: () => get(API_ENDPOINTS.COLLAB_SESSION),
 };
 
 /**
