@@ -13,6 +13,7 @@ import { markdownToEditorHtml, tiptapJsonToMarkdown } from "@/lib/specforge/edit
 import { buildRoomName } from "@/lib/specforge/collab-auth";
 import { logger } from "@/lib/logger";
 import { AIAssistButton } from "@/components/specforge/AIAssistButton";
+import { IterateWithAIChat } from "@/components/specforge/IterateWithAIChat";
 import type { AgentAssistToolStatus } from "@/lib/specforge/agent-assist";
 import { useToast } from "@/components/specforge/useToast";
 
@@ -115,6 +116,7 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [aiAssistUsed, setAiAssistUsed] = useState(false);
   const { showToast, removeToast, ToastContainer } = useToast();
   const surfaceRef = useRef<HTMLDivElement | null>(null);
   const isMountedRef = useRef(false);
@@ -959,6 +961,7 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
               }
               removeToast(loadingToastId);
               showToast("AI assist completed successfully", "success");
+              setAiAssistUsed(true);
             } catch (error) {
               removeToast(loadingToastId);
               showToast("AI assist failed", "error");
@@ -1059,6 +1062,14 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
         <EditorContent editor={editor} />
       </div>
       <ToastContainer />
+      <IterateWithAIChat
+        documentId={document.document_id}
+        documentContent={document.markdown}
+        documentTitle={document.title}
+        actorId={activeActor.actor_id}
+        filePath={`docs/${document.document_id}.md`}
+        show={aiAssistUsed}
+      />
     </div>
   );
 }
