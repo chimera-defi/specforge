@@ -622,7 +622,7 @@ describe("specforge store", () => {
   });
 
   it("creates and retrieves workspace files", async () => {
-    const options = await makeOptions();
+    const options = { ...(await makeOptions()), backend: "pglite" as const };
     const document = await createDocument(
       { workspace_id: "test-ws", title: "Test Doc", initial_markdown: "# Test" },
       options,
@@ -647,7 +647,7 @@ describe("specforge store", () => {
   });
 
   it("lists workspace files for a document", async () => {
-    const options = await makeOptions();
+    const options = { ...(await makeOptions()), backend: "pglite" as const };
     const document = await createDocument(
       { workspace_id: "test-ws", title: "Test Doc", initial_markdown: "# Test" },
       options,
@@ -678,7 +678,7 @@ describe("specforge store", () => {
   });
 
   it("gets workspace file by name", async () => {
-    const options = await makeOptions();
+    const options = { ...(await makeOptions()), backend: "pglite" as const };
     const document = await createDocument(
       { workspace_id: "test-ws", title: "Test Doc", initial_markdown: "# Test" },
       options,
@@ -699,7 +699,7 @@ describe("specforge store", () => {
   });
 
   it("updates workspace file content", async () => {
-    const options = await makeOptions();
+    const options = { ...(await makeOptions()), backend: "pglite" as const };
     const document = await createDocument(
       { workspace_id: "test-ws", title: "Test Doc", initial_markdown: "# Test" },
       options,
@@ -728,7 +728,7 @@ describe("specforge store", () => {
   });
 
   it("deletes workspace files", async () => {
-    const options = await makeOptions();
+    const options = { ...(await makeOptions()), backend: "pglite" as const };
     const document = await createDocument(
       { workspace_id: "test-ws", title: "Test Doc", initial_markdown: "# Test" },
       options,
@@ -751,7 +751,7 @@ describe("specforge store", () => {
   });
 
   it("upserts workspace files on duplicate filename", async () => {
-    const options = await makeOptions();
+    const options = { ...(await makeOptions()), backend: "pglite" as const };
     const document = await createDocument(
       { workspace_id: "test-ws", title: "Test Doc", initial_markdown: "# Test" },
       options,
