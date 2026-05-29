@@ -161,7 +161,7 @@ export function CollaborativeFileBrowser({
   const [files, setFiles] = useState<WorkspaceFile[]>([]);
   const [selected, setSelected] = useState<WorkspaceFile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [syncState, setSyncState] = useState<"connecting" | "live" | "offline">("connecting");
+  const [syncState, setSyncState] = useState<"connecting" | "live" | "local">("local");
   const [aiAssisting, setAiAssisting] = useState(false);
   const [ideaValidationSession, setIdeaValidationSession] = useState<{ completed: number; total: number } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -303,7 +303,7 @@ export function CollaborativeFileBrowser({
       providerRef.current = provider;
 
       provider.on("status", (status: any) => {
-        setSyncState(status.status === "connected" ? "live" : "offline");
+        setSyncState(status.status === "connected" ? "live" : "local");
       });
 
       // Track connected users using awareness
@@ -344,7 +344,7 @@ export function CollaborativeFileBrowser({
       providerRef.current = provider;
 
       provider.on("status", (status: any) => {
-        setSyncState(status.status === "connected" ? "live" : "offline");
+        setSyncState(status.status === "connected" ? "live" : "local");
       });
 
       // Track connected users using awareness
@@ -738,7 +738,7 @@ export function CollaborativeFileBrowser({
                   👥 {connectedUsers} {connectedUsers === 1 ? "user" : "users"}
                 </span>
                 <span className={`${styles.syncStatus} ${styles[syncState]}`}>
-                  {syncState === "live" ? "● Live" : syncState === "connecting" ? "● Connecting..." : "● Offline"}
+                  {syncState === "live" ? "● Live" : syncState === "connecting" ? "● Connecting..." : "● Local"}
                 </span>
                 <button
                   onClick={() => {
