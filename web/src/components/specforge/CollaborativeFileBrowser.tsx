@@ -432,14 +432,33 @@ export function CollaborativeFileBrowser({
 
   // Debounced save to avoid excessive API calls
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const pendingSaveRef = useRef<{ fileId: string; content: string } | null>(null);
+  
   const debouncedSave = (fileId: string, content: string) => {
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
     }
+    pendingSaveRef.current = { fileId, content };
     saveTimeoutRef.current = setTimeout(() => {
-      saveFileContent(fileId, content);
+      if (pendingSaveRef.current) {
+        saveFileContent(pendingSaveRef.current.fileId, pendingSaveRef.current.content);
+        pendingSaveRef.current = null;
+      }
     }, 1000); // Save after 1 second of inactivity
   };
+
+  // Flush pending saves on unmount to prevent data loss
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+      if (pendingSaveRef.current) {
+        // Save any pending content before unmount
+        saveFileContent(pendingSaveRef.current.fileId, pendingSaveRef.current.content);
+      }
+    };
+  }, []);
 
   async function saveFileContent(fileId: string, content: string) {
     try {
