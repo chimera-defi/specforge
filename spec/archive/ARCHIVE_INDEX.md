@@ -5,6 +5,7 @@ This directory contains historical and obsolete documentation preserved for refe
 ## Archived Files
 
 ### Session Documentation
+- `SESSION_SUMMARY_2026-05-29.md` - Complete session summary of UX polish, SaaS scaffolding, and documentation work
 - `SESSION_REVIEW.md` - Review of UX polish and SaaS scaffolding work (2026-05-29)
 - `DOC_CONSOLIDATION_PLAN.md` - Documentation consolidation plan and execution
 
