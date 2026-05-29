@@ -30,6 +30,7 @@ import { ReviewStage } from "./review-stage";
 import { RuntimeStatusPanel } from "./runtime-status-panel";
 import { OpsStatusPanel } from "./ops-status-panel";
 import { BillingStatusPanel } from "./billing-status-panel";
+import { Stage, stageOrder } from "./stage-utils";
 import styles from "../page.module.css";
 import { getAgentAssistToolStatuses } from "@/lib/specforge/agent-assist";
 import { readBacklogState } from "@/lib/specforge/backlog";
@@ -66,8 +67,6 @@ import {
 
 export const dynamic = "force-dynamic";
 
-type Stage = "start" | "plan" | "draft" | "review" | "decide" | "export";
-
 type Props = {
   searchParams?: Promise<{
     document?: string;
@@ -78,8 +77,6 @@ type Props = {
     triage_status?: string;
   }>;
 };
-
-const stageOrder: Stage[] = ["start", "plan", "draft", "review", "decide", "export"];
 
 function formatPilotAccessDate(value: string) {
   const date = new Date(value);
