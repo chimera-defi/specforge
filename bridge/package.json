@@ -1,0 +1,21 @@
+{
+  "name": "specforge-bridge",
+  "version": "0.1.0",
+  "description": "Local bridge for SpecForge hybrid hosted + local CLI access",
+  "type": "module",
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "start": "bun src/index.ts",
+    "build": "bun build src/index.ts --outdir dist --target node",
+    "test": "echo 'No tests yet - design spike'",
+    "lint": "echo 'No linting yet - design spike'"
+  },
+  "keywords": [
+    "specforge",
+    "bridge",
+    "cli",
+    "hybrid"
+  ],
+  "author": "SpecForge",
+  "license": "MIT"
+}
