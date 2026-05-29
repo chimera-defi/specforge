@@ -509,17 +509,60 @@ class StripeBillingProvider implements BillingProviderInterface {
     return payload.url;
   }
 
-  async cancelSubscription(_workspaceId: string): Promise<void> {
+  async cancelSubscription(workspaceId: string): Promise<void> {
     this.assertStripeEnv(["STRIPE_SECRET_KEY"]);
-    throw new BillingProviderError({
-      message: "Stripe subscription cancellation is not implemented",
-      code: "BILLING_PROVIDER_REQUEST_FAILED",
-      status: 501,
-      details: {
-        provider: "stripe",
-        operation: "cancelSubscription",
-      },
-    });
+    
+    const query = encodeURIComponent(`metadata['workspace_id']:'${workspaceId}'`);
+    
+    try {
+      const searchPayload = await this.stripeGetJson<StripeListResponse<StripeSubscription>>(
+        `https://api.stripe.com/v1/subscriptions/search?query=${query}&limit=1`,
+      );
+      const subscription = searchPayload.data?.[0];
+      
+      if (!subscription?.id) {
+        throw new BillingProviderError({
+          message: "No active subscription found for workspace",
+          code: "BILLING_PROVIDER_REQUEST_FAILED",
+          status: 404,
+          details: { provider: "stripe", workspaceId },
+        });
+      }
+
+      const response = await fetch(`https://api.stripe.com/v1/subscriptions/${subscription.id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${this.getSecretKey()}`,
+        },
+      });
+
+      if (!response.ok) {
+        const stripeBody = await response.text();
+        throw new BillingProviderError({
+          message: "Stripe subscription cancellation failed",
+          code: "BILLING_PROVIDER_REQUEST_FAILED",
+          status: 502,
+          details: {
+            provider: "stripe",
+            stripeStatus: response.status,
+            stripeBody: stripeBody.slice(0, 500),
+          },
+        });
+      }
+    } catch (error) {
+      if (error instanceof BillingProviderError) {
+        throw error;
+      }
+      throw new BillingProviderError({
+        message: "Stripe subscription cancellation failed",
+        code: "BILLING_PROVIDER_REQUEST_FAILED",
+        status: 502,
+        details: {
+          provider: "stripe",
+          originalError: error instanceof Error ? error.message : String(error),
+        },
+      });
+    }
   }
 }
 
