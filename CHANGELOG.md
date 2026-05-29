@@ -63,6 +63,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added Business Model Canvas sections: Value Propositions, Customer Segments, Channels, Revenue Streams, Key Resources, Cost Structure
   - Added detailed sections: Pricing Strategy, Unit Economics, Go-to-Market Strategy, Revenue Milestones, Business Risks
 
+- **Accessibility Improvements**
+  - Added ARIA attributes to validation error messages (aria-invalid, aria-describedby, role="alert")
+  - Added unique IDs to error message spans for proper association
+  - Added screen reader live region for validation status announcements
+  - Error announcements include error count and guidance
+  - Improved screen reader experience for guided form validation
+
 ### Changed
 - Updated README with bridge component documentation
 - Added bridge startup instructions and health check URLs
