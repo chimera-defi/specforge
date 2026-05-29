@@ -23,6 +23,7 @@ import {
   resetWorkspaceDocuments,
   resolveCommentThread,
   updateWorkspacePlan,
+  initializeDefaultWorkspaceFiles,
 } from "@/lib/specforge/store";
 import {
   buildGuidedSpecMarkdown,
@@ -715,7 +716,10 @@ export async function createIdeaDocumentAction(scaffold: Partial<IdeaScaffold>) 
       creation_mode: "idea_generated",
     },
   });
-  
+
+  // Initialize workspace files from the generated spec
+  await initializeDefaultWorkspaceFiles(created.document_id, created);
+
   // Redirect to the new document
   redirect(buildRedirectPath(`/workspace?document=${created.document_id}&stage=draft`, {}));
 }
