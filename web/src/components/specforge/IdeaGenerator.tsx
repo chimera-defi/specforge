@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { normalizeIdeaScaffold, type IdeaScaffold } from "@/lib/specforge/ideas-generator";
+import type { AgentAssistToolStatus } from "@/lib/specforge/agent-assist";
 
 interface IdeaGeneratorProps {
   onGenerate: (scaffold: Partial<IdeaScaffold>) => void;
@@ -41,6 +42,10 @@ export function IdeaGenerator({ onGenerate, onCancel }: IdeaGeneratorProps) {
     constraints: "",
   });
 
+  const [briefDescription, setBriefDescription] = useState("");
+  const [isAssisting, setIsAssisting] = useState(false);
+  const [assistError, setAssistError] = useState<string | null>(null);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onGenerate(scaffold);
@@ -48,6 +53,46 @@ export function IdeaGenerator({ onGenerate, onCancel }: IdeaGeneratorProps) {
 
   const handleChange = (field: keyof IdeaScaffold, value: string) => {
     setScaffold(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleAssist = async () => {
+    if (!briefDescription.trim()) {
+      setAssistError("Please enter a brief description first");
+      return;
+    }
+
+    setIsAssisting(true);
+    setAssistError(null);
+
+    try {
+      const response = await fetch("/api/agent/assist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          preset: "idea-to-spec",
+          context: briefDescription,
+          target_format: "idea_scaffold",
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Assist request failed");
+      }
+
+      const data = await response.json();
+      
+      // Populate scaffold from AI response
+      if (data.fields) {
+        setScaffold(prev => ({
+          ...prev,
+          ...data.fields,
+        }));
+      }
+    } catch (error) {
+      setAssistError(error instanceof Error ? error.message : "Failed to get AI assistance");
+    } finally {
+      setIsAssisting(false);
+    }
   };
 
   return (
@@ -60,6 +105,56 @@ export function IdeaGenerator({ onGenerate, onCancel }: IdeaGeneratorProps) {
           Fill in the idea scaffold to generate both an idea pack and a build-ready spec.
         </p>
       </div>
+
+      {/* AI Assist Section */}
+      <section style={{ marginBottom: "24px", padding: "16px", border: "1px solid var(--sf-border)", borderRadius: "8px", backgroundColor: "var(--sf-surface-cool)" }}>
+        <h2 style={{ fontSize: "1rem", fontWeight: 600, marginBottom: "12px" }}>
+          AI Assist - Quick Start
+        </h2>
+        <p style={{ fontSize: "0.875rem", color: "var(--sf-muted-mid)", marginBottom: "12px" }}>
+          Describe your idea in a few sentences and AI will help fill in the scaffold fields.
+        </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+          <textarea
+            value={briefDescription}
+            onChange={(e) => setBriefDescription(e.target.value)}
+            placeholder="e.g., A CLI tool that helps developers quickly scaffold new projects with best practices built-in..."
+            rows={3}
+            style={{
+              width: "100%",
+              padding: "8px 12px",
+              border: "1px solid var(--sf-border)",
+              borderRadius: "6px",
+              fontSize: "0.9rem",
+              fontFamily: "inherit",
+              resize: "vertical",
+            }}
+          />
+          <button
+            type="button"
+            onClick={handleAssist}
+            disabled={isAssisting || !briefDescription.trim()}
+            style={{
+              padding: "8px 16px",
+              borderRadius: "6px",
+              border: "none",
+              backgroundColor: isAssisting ? "var(--sf-muted-subtle)" : "var(--sf-primary)",
+              color: "var(--sf-surface-warm)",
+              fontSize: "0.875rem",
+              fontWeight: 500,
+              cursor: isAssisting ? "not-allowed" : "pointer",
+              opacity: isAssisting ? 0.7 : 1,
+            }}
+          >
+            {isAssisting ? "Generating..." : "Auto-Fill with AI"}
+          </button>
+          {assistError && (
+            <div style={{ color: "var(--sf-error)", fontSize: "0.875rem" }}>
+              {assistError}
+            </div>
+          )}
+        </div>
+      </section>
 
       <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
         {/* Core Idea */}
