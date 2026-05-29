@@ -40,6 +40,11 @@ export const API_ENDPOINTS = {
   DOCUMENTS: "/api/documents",
   DOCUMENT_BY_ID: (id: string) => `/api/documents/${id}`,
   
+  // Acceptance tests
+  ACCEPTANCE_TESTS: (documentId: string) => `/api/documents/${documentId}/acceptance-tests`,
+  ACCEPTANCE_TEST_BY_ID: (documentId: string, testId: string) => `/api/documents/${documentId}/acceptance-tests/${testId}`,
+  ACCEPTANCE_TESTS_RUN: (documentId: string) => `/api/documents/${documentId}/acceptance-tests/run`,
+  
   // Files
   FILES: (documentId: string) => `/api/documents/${documentId}/files`,
   FILE_BY_ID: (documentId: string, fileId: string) => `/api/documents/${documentId}/files/${fileId}`,
@@ -90,11 +95,18 @@ export const API_ENDPOINTS = {
   IDEA_VALIDATION_SESSIONS: (documentId: string) => `/api/documents/${documentId}/idea-validation-sessions`,
   IDEA_VALIDATION_SESSION: (documentId: string, sessionId: string) => 
     `/api/documents/${documentId}/idea-validation-sessions/${sessionId}`,
+  IDEA_VALIDATION_SESSION_ADVANCE: (documentId: string, sessionId: string) => 
+    `/api/documents/${documentId}/idea-validation-sessions/${sessionId}/advance`,
+  IDEA_VALIDATION_SESSION_SKIP: (documentId: string, sessionId: string) => 
+    `/api/documents/${documentId}/idea-validation-sessions/${sessionId}/skip-stage`,
   
   // Plan sessions
   PLAN_SESSIONS: (documentId: string) => `/api/documents/${documentId}/plan-sessions`,
   PLAN_SESSION: (documentId: string, sessionId: string) => 
     `/api/documents/${documentId}/plan-sessions/${sessionId}`,
+  
+  // Iterate chat
+  ITERATE_CHAT: (documentId: string) => `/api/documents/${documentId}/iterate-chat`,
 } as const;
 
 export const ERROR_MESSAGES = {

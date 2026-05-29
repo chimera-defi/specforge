@@ -9,6 +9,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { iterateChatApi } from "@/lib/api-client";
 
 type Message = {
   role: "user" | "assistant";
@@ -76,28 +77,21 @@ export function IterateWithAIChat({
     setError(null);
 
     try {
-      const res = await fetch(`/api/documents/${documentId}/iterate-chat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: trimmed,
-          actor_id: actorId,
-          actor_type: "human",
-          context: {
-            documentContent,
-            documentTitle,
-            filePath,
-          },
-        }),
-      });
-
-      if (!res.ok) {
-        const d = await res.json().catch(() => ({}));
-        throw new Error(d.error ?? `HTTP ${res.status}`);
-      }
-
-      const data = await res.json();
-      const result: IterationResponse = data.result ?? data;
+      const data = await iterateChatApi.send(documentId, {
+        message: trimmed,
+        actor_id: actorId,
+        actor_type: "human",
+        context: {
+          documentContent,
+          documentTitle,
+          filePath,
+        },
+      }) as { result?: IterationResponse };
+      const result: IterationResponse = data.result ?? {
+        patch_id: "mock",
+        proposed_content: "Mock response",
+        tool: "heuristic",
+      };
       
       // Add assistant response
       const assistantMessage: Message = {

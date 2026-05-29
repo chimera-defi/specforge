@@ -16,6 +16,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 
+import { ideaValidationApi } from "@/lib/api-client";
+
 // ---------------------------------------------------------------------------
 // Static stage definitions (mirrors STAGE_DEFINITIONS in plan-session.ts)
 // ---------------------------------------------------------------------------
@@ -180,9 +182,7 @@ export function IdeaValidationPanel({ documentId, actorId, specWizardHref }: Pro
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch(`/api/documents/${documentId}/idea-validation-sessions`);
-        if (!res.ok) return;
-        const data = await res.json();
+        const data = await ideaValidationApi.getSessions(documentId) as { sessions?: PlanSession[] };
         const sessions: PlanSession[] = data.sessions ?? [];
         if (sessions.length > 0) {
           setSession(sessions[0]);
@@ -219,23 +219,14 @@ export function IdeaValidationPanel({ documentId, actorId, specWizardHref }: Pro
     setError(null);
     setAuthRequired(false);
     try {
-      const res = await fetch(`/api/documents/${documentId}/idea-validation-sessions`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ actor_id: actorId, actor_type: "human", mode: "startup" }),
-      });
-      if (res.status === 401) {
-        setAuthRequired(true);
-        return;
-      }
-      if (!res.ok) {
-        const d = await res.json().catch(() => ({}));
-        throw new Error(d.error ?? "Failed to create planning session");
-      }
-      const data = await res.json();
+      const data = await ideaValidationApi.create(documentId, { actor_id: actorId, actor_type: "human", mode: "startup" }) as { session: PlanSession };
       setSession(data.session);
       setQuestionIdx(0);
     } catch (e) {
+      if (e instanceof Error && e.message.includes("401")) {
+        setAuthRequired(true);
+        return;
+      }
       setError(e instanceof Error ? e.message : "Unknown error");
     } finally {
       setLoading(false);
@@ -262,27 +253,15 @@ export function IdeaValidationPanel({ documentId, actorId, specWizardHref }: Pro
     setError(null);
     try {
       const stageAnswers = answers[activeStage.name] ?? {};
-      const res = await fetch(
-        `/api/documents/${documentId}/idea-validation-sessions/${session.session_id}/advance`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            stage_name: activeStage.name,
-            answers: stageAnswers,
-            actor_id: actorId,
-            actor_type: "human",
-          }),
-        },
-      );
-      if (!res.ok) {
-        const d = await res.json().catch(() => ({}));
-        throw new Error(d.error ?? "Failed to complete stage");
-      }
-      const data = await res.json();
+      const data = await ideaValidationApi.advance(documentId, session.session_id, {
+        stage_name: activeStage.name,
+        answers: stageAnswers,
+        actor_id: actorId,
+        actor_type: "human",
+      }) as { session: PlanSession; patchId?: string };
       setSession(data.session);
       if (data.patchId) {
-        setCreatedPatches((prev) => [...prev, data.patchId]);
+        setCreatedPatches((prev) => [...prev, data.patchId!]);
       }
       setQuestionIdx(0);
     } catch (e) {
@@ -297,19 +276,10 @@ export function IdeaValidationPanel({ documentId, actorId, specWizardHref }: Pro
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(
-        `/api/documents/${documentId}/idea-validation-sessions/${session.session_id}/skip-stage`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ stage_name: activeStage.name, actor_id: actorId }),
-        },
-      );
-      if (!res.ok) {
-        const d = await res.json().catch(() => ({}));
-        throw new Error(d.error ?? "Failed to skip stage");
-      }
-      const data = await res.json();
+      const data = await ideaValidationApi.skip(documentId, session.session_id, {
+        stage_name: activeStage.name,
+        actor_id: actorId,
+      }) as { session: PlanSession };
       setSession(data.session);
       setQuestionIdx(0);
     } catch (e) {

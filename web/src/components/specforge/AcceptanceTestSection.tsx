@@ -17,6 +17,7 @@ import {
   AcceptanceTestMatrix,
   type AcceptanceTestDraft,
 } from "./AcceptanceTestMatrix";
+import { acceptanceTestApi } from "@/lib/api-client";
 
 type RunResult = {
   evaluated: number;
@@ -36,53 +37,36 @@ export function AcceptanceTestSection({
   const [tests, setTests] = useState<AcceptanceTest[]>(initialTests);
   const [runResult, setRunResult] = useState<RunResult | null>(null);
 
-  const base = `/api/documents/${documentId}/acceptance-tests`;
-
   const handleAddTest = useCallback(
     async (draft: AcceptanceTestDraft) => {
-      const res = await fetch(base, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(draft),
-      });
-      if (!res.ok) return;
-      const json = await res.json() as { matrix: { tests: AcceptanceTest[] } };
+      const json = await acceptanceTestApi.create(documentId, draft) as { matrix: { tests: AcceptanceTest[] } };
       setTests(json.matrix.tests);
     },
-    [base],
+    [documentId],
   );
 
   const handleUpdateTest = useCallback(
     async (testId: string, updates: Partial<AcceptanceTestDraft>) => {
-      const res = await fetch(`${base}/${testId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updates),
-      });
-      if (!res.ok) return;
-      const json = await res.json() as { test: AcceptanceTest };
+      const json = await acceptanceTestApi.update(documentId, testId, updates) as { test: AcceptanceTest };
       setTests((prev) => prev.map((t) => (t.test_id === testId ? json.test : t)));
     },
-    [base],
+    [documentId],
   );
 
   const handleDeleteTest = useCallback(
     async (testId: string) => {
-      const res = await fetch(`${base}/${testId}`, { method: "DELETE" });
-      if (!res.ok) return;
+      await acceptanceTestApi.delete(documentId, testId);
       setTests((prev) => prev.filter((t) => t.test_id !== testId));
     },
-    [base],
+    [documentId],
   );
 
   const handleRunTests = useCallback(async () => {
     setRunResult(null);
-    const res = await fetch(`${base}/run`, { method: "POST" });
-    if (!res.ok) return;
-    const json = await res.json() as RunResult & { matrix: { tests: AcceptanceTest[] } };
+    const json = await acceptanceTestApi.run(documentId) as RunResult & { matrix: { tests: AcceptanceTest[] } };
     setTests(json.matrix.tests);
     setRunResult({ evaluated: json.evaluated, passed: json.passed, failed: json.failed });
-  }, [base]);
+  }, [documentId]);
 
   return (
     <div>

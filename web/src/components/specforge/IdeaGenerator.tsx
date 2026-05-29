@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import type { IdeaScaffold } from "@/lib/specforge/ideas-generator";
+import { agentApi } from "@/lib/api-client";
 
 interface IdeaGeneratorProps {
   onGenerate: (scaffold: Partial<IdeaScaffold>) => void;
@@ -64,21 +65,11 @@ export function IdeaGenerator({ onGenerate, onCancel }: IdeaGeneratorProps) {
     setAssistError(null);
 
     try {
-      const response = await fetch("/api/agent/assist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          brief: briefDescription,
-          systemPrompt: "You are helping a user fill in an idea scaffold for a product. Extract the following fields from their brief: title, thesis, elevatorPitch, problem, currentAlternatives, whyNow, targetUser, userSegment, marketSize, solutionApproach, keyDifferentiator, mvpScope, phase1Features, futureFeatures, nonGoals, primarySurfaces, keyScreens, acceptanceTests, successMetrics, technicalRisks, constraints. Return as JSON with these exact field names.",
-          contextPrompt: briefDescription,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Assist request failed");
-      }
-
-      const data = await response.json();
+      const data = await agentApi.assist({
+        brief: briefDescription,
+        systemPrompt: "You are helping a user fill in an idea scaffold for a product. Extract the following fields from their brief: title, thesis, elevatorPitch, problem, currentAlternatives, whyNow, targetUser, userSegment, marketSize, solutionApproach, keyDifferentiator, mvpScope, phase1Features, futureFeatures, nonGoals, primarySurfaces, keyScreens, acceptanceTests, successMetrics, technicalRisks, constraints. Return as JSON with these exact field names.",
+        contextPrompt: briefDescription,
+      }) as { fields?: Partial<IdeaScaffold> };
       
       // Populate scaffold from AI response
       if (data.fields) {

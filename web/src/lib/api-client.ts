@@ -191,6 +191,28 @@ export const collabApi = {
 export const ideaValidationApi = {
   getSessions: (documentId: string) => get(API_ENDPOINTS.IDEA_VALIDATION_SESSIONS(documentId)),
   getSession: (documentId: string, sessionId: string) => get(API_ENDPOINTS.IDEA_VALIDATION_SESSION(documentId, sessionId)),
+  create: (documentId: string, data: unknown) => post(API_ENDPOINTS.IDEA_VALIDATION_SESSIONS(documentId), data),
+  advance: (documentId: string, sessionId: string, data: unknown) => post(API_ENDPOINTS.IDEA_VALIDATION_SESSION_ADVANCE(documentId, sessionId), data),
+  skip: (documentId: string, sessionId: string, data: unknown) => post(API_ENDPOINTS.IDEA_VALIDATION_SESSION_SKIP(documentId, sessionId), data),
+};
+
+/**
+ * Iterate Chat API
+ */
+export const iterateChatApi = {
+  send: (documentId: string, data: unknown) => post(API_ENDPOINTS.ITERATE_CHAT(documentId), data),
+};
+
+/**
+ * Acceptance Test API
+ */
+export const acceptanceTestApi = {
+  list: (documentId: string) => get(API_ENDPOINTS.ACCEPTANCE_TESTS(documentId)),
+  getById: (documentId: string, testId: string) => get(API_ENDPOINTS.ACCEPTANCE_TEST_BY_ID(documentId, testId)),
+  create: (documentId: string, data: unknown) => post(API_ENDPOINTS.ACCEPTANCE_TESTS(documentId), data),
+  update: (documentId: string, testId: string, data: unknown) => put(API_ENDPOINTS.ACCEPTANCE_TEST_BY_ID(documentId, testId), data),
+  delete: (documentId: string, testId: string) => del(API_ENDPOINTS.ACCEPTANCE_TEST_BY_ID(documentId, testId)),
+  run: (documentId: string) => post(API_ENDPOINTS.ACCEPTANCE_TESTS_RUN(documentId)),
 };
 
 /**
