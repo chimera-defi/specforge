@@ -36,6 +36,7 @@ import { FILE_TEMPLATES } from "./fileTemplates";
 import { getFileIcon } from "./fileIcons";
 import { SortableFileItem } from "./SortableFileItem";
 import { FileHistoryModal } from "./FileHistoryModal";
+import { RemoteCursors } from "./RemoteCursors";
 
 // Register languages
 hljs.registerLanguage("json", hljsJson);
@@ -169,6 +170,7 @@ export function CollaborativeFileBrowser({
   const [showHistory, setShowHistory] = useState(false);
   const [fileVersions, setFileVersions] = useState<any[]>([]);
   const [loadingVersions, setLoadingVersions] = useState(false);
+  const [remoteCursors, setRemoteCursors] = useState<Record<string, { x: number; y: number; name: string; color: string }>>({});
 
   // Yjs document and provider for the selected file
   const ydocRef = useRef<Y.Doc | null>(null);
@@ -210,6 +212,23 @@ export function CollaborativeFileBrowser({
       attributes: {
         class: "prose prose-sm max-w-none focus:outline-none min-h-full",
       },
+    },
+    onUpdate: ({ editor }) => {
+      if (!providerRef.current?.awareness) return;
+      
+      // Broadcast cursor position
+      const { from } = editor.state.selection;
+      try {
+        const coords = editor.view.coordsAtPos(from);
+        providerRef.current.awareness.setLocalStateField("cursor", {
+          x: coords.left,
+          y: coords.top,
+          name: activeActor.name,
+          color: activeActor.color,
+        });
+      } catch {
+        // Ignore errors when cursor is outside viewport
+      }
     },
     immediatelyRender: false,
   }, [selected, ydocRef.current]);
@@ -289,8 +308,17 @@ export function CollaborativeFileBrowser({
       // Track connected users using awareness
       if (provider.awareness) {
         provider.awareness.on("change", () => {
-          const states = Array.from(provider.awareness!.getStates().values());
-          setConnectedUsers(Math.max(1, states.length));
+          const states = provider.awareness!.getStates();
+          setConnectedUsers(Math.max(1, states.size));
+          
+          // Update remote cursors
+          const cursors: Record<string, { x: number; y: number; name: string; color: string }> = {};
+          states.forEach((state, clientId) => {
+            if (state.cursor && clientId !== provider.awareness!.clientID) {
+              cursors[clientId.toString()] = state.cursor;
+            }
+          });
+          setRemoteCursors(cursors);
         });
       }
     } else {
@@ -321,8 +349,17 @@ export function CollaborativeFileBrowser({
       // Track connected users using awareness
       if (provider.awareness) {
         provider.awareness.on("change", () => {
-          const states = Array.from(provider.awareness!.getStates().values());
-          setConnectedUsers(Math.max(1, states.length));
+          const states = provider.awareness!.getStates();
+          setConnectedUsers(Math.max(1, states.size));
+          
+          // Update remote cursors
+          const cursors: Record<string, { x: number; y: number; name: string; color: string }> = {};
+          states.forEach((state, clientId) => {
+            if (state.cursor && clientId !== provider.awareness!.clientID) {
+              cursors[clientId.toString()] = state.cursor;
+            }
+          });
+          setRemoteCursors(cursors);
         });
       }
 
@@ -730,7 +767,10 @@ export function CollaborativeFileBrowser({
 
             <div className={styles.editorArea}>
               {isMarkdownFile && editor ? (
-                <EditorContent editor={editor} />
+                <div style={{ position: "relative" }}>
+                  <EditorContent editor={editor} />
+                  <RemoteCursors cursors={remoteCursors} />
+                </div>
               ) : ytextRef.current ? (
                 <CodeEditor ytext={ytextRef.current} filename={selected.filename} />
               ) : null}
