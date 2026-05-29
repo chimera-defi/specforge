@@ -135,6 +135,21 @@ export function GuidedDraftBuilder({
     return validationErrors.find((error) => error.field === fieldName)?.message;
   }
 
+  function getFieldErrorId(fieldName: string): string {
+    return `${fieldName}-error`;
+  }
+
+  function hasFieldError(fieldName: string): boolean {
+    return getFieldError(fieldName) !== undefined;
+  }
+
+  function getValidationAnnouncement(): string {
+    if (validationErrors.length === 0) {
+      return "";
+    }
+    return `Form has ${validationErrors.length} validation error${validationErrors.length === 1 ? "" : "s"}. Please correct the highlighted fields.`;
+  }
+
   function populateFromAssist() {
     if (!brief.trim()) {
       setAssistNotes(["Add a short idea brief before asking the agent assist to populate fields."]);
@@ -193,6 +208,16 @@ export function GuidedDraftBuilder({
       }}
     >
       <input type="hidden" name="mode" value="guided" />
+
+      {getValidationAnnouncement() && (
+        <div
+          role="status"
+          aria-live="polite"
+          style={{ color: "var(--sf-error)", marginBottom: "16px", padding: "8px", backgroundColor: "var(--sf-error-bg)", borderRadius: "6px" }}
+        >
+          {getValidationAnnouncement()}
+        </div>
+      )}
 
       <details className={styles.wizardSection} open>
         <summary className={styles.disclosureSummary}>
@@ -293,9 +318,15 @@ export function GuidedDraftBuilder({
           onChange={(event) => updateField("title", event.target.value)}
           data-testid="create-document-title"
           placeholder="e.g., SpecForge MVP, Server Management Agent, Team Collab Tool"
+          aria-invalid={hasFieldError("title")}
+          aria-describedby={hasFieldError("title") ? getFieldErrorId("title") : undefined}
         />
         {getFieldError("title") && (
-          <span style={{ color: "var(--sf-error)", fontSize: "0.875rem", marginTop: "4px", display: "block" }}>
+          <span
+            id={getFieldErrorId("title")}
+            role="alert"
+            style={{ color: "var(--sf-error)", fontSize: "0.875rem", marginTop: "4px", display: "block" }}
+          >
             {getFieldError("title")}
           </span>
         )}
@@ -314,9 +345,15 @@ export function GuidedDraftBuilder({
               value={fields.problem}
               onChange={(event) => updateField("problem", event.target.value)}
               placeholder="e.g., Teams lose momentum between idea, spec, review, and build handoff. Current tools are disconnected and don't provide traceability."
+              aria-invalid={hasFieldError("problem")}
+              aria-describedby={hasFieldError("problem") ? getFieldErrorId("problem") : undefined}
             />
             {getFieldError("problem") && (
-              <span style={{ color: "var(--sf-error)", fontSize: "0.875rem", marginTop: "4px", display: "block" }}>
+              <span
+                id={getFieldErrorId("problem")}
+                role="alert"
+                style={{ color: "var(--sf-error)", fontSize: "0.875rem", marginTop: "4px", display: "block" }}
+              >
                 {getFieldError("problem")}
               </span>
             )}
@@ -329,9 +366,15 @@ export function GuidedDraftBuilder({
               value={fields.goals}
               onChange={(event) => updateField("goals", event.target.value)}
               placeholder="e.g., Produce a build-ready spec, Support human and agent collaboration, Keep review and attribution explicit"
+              aria-invalid={hasFieldError("goals")}
+              aria-describedby={hasFieldError("goals") ? getFieldErrorId("goals") : undefined}
             />
             {getFieldError("goals") && (
-              <span style={{ color: "var(--sf-error)", fontSize: "0.875rem", marginTop: "4px", display: "block" }}>
+              <span
+                id={getFieldErrorId("goals")}
+                role="alert"
+                style={{ color: "var(--sf-error)", fontSize: "0.875rem", marginTop: "4px", display: "block" }}
+              >
                 {getFieldError("goals")}
               </span>
             )}
@@ -344,9 +387,15 @@ export function GuidedDraftBuilder({
               value={fields.users}
               onChange={(event) => updateField("users", event.target.value)}
               placeholder="e.g., Product-minded founder, PM + engineer pair, Coding agent operator"
+              aria-invalid={hasFieldError("users")}
+              aria-describedby={hasFieldError("users") ? getFieldErrorId("users") : undefined}
             />
             {getFieldError("users") && (
-              <span style={{ color: "var(--sf-error)", fontSize: "0.875rem", marginTop: "4px", display: "block" }}>
+              <span
+                id={getFieldErrorId("users")}
+                role="alert"
+                style={{ color: "var(--sf-error)", fontSize: "0.875rem", marginTop: "4px", display: "block" }}
+              >
                 {getFieldError("users")}
               </span>
             )}
@@ -367,9 +416,15 @@ export function GuidedDraftBuilder({
               value={fields.scope}
               onChange={(event) => updateField("scope", event.target.value)}
               placeholder="e.g., Guided spec creation, Shared authoring canvas, Patch review and export handoff"
+              aria-invalid={hasFieldError("scope")}
+              aria-describedby={hasFieldError("scope") ? getFieldErrorId("scope") : undefined}
             />
             {getFieldError("scope") && (
-              <span style={{ color: "var(--sf-error)", fontSize: "0.875rem", marginTop: "4px", display: "block" }}>
+              <span
+                id={getFieldErrorId("scope")}
+                role="alert"
+                style={{ color: "var(--sf-error)", fontSize: "0.875rem", marginTop: "4px", display: "block" }}
+              >
                 {getFieldError("scope")}
               </span>
             )}
