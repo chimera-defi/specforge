@@ -75,7 +75,7 @@ bun run dev:collab
 Optional: Start the local bridge for hybrid hosted + local CLI access:
 
 ```bash
-cd bridge && bun run dev
+bun run dev:bridge
 ```
 
 Open:
@@ -121,4 +121,4 @@ bun run test:acceptance
 bun run build:web
 ```
 
-Run `bun run test:cli` when touching `cli/`, `bun run build:desktop` when touching `desktop/`, and `cd bridge && bun run start` when touching `bridge/`.
+Run `bun run test:cli` when touching `cli/`, `bun run build:desktop` when touching `desktop/`, and `bun run dev:bridge` when touching `bridge/`.

@@ -9,13 +9,15 @@
     "cli",
     "orchestrator",
     "collab-server",
-    "desktop"
+    "desktop",
+    "bridge"
   ],
   "description": "SpecForge collaborative markdown spec studio - Bun workspace root",
   "scripts": {
     "dev:up": "bun --filter specforge-web dev & bun --filter specforge-collab-server dev",
     "dev:web": "bun --filter specforge-web dev",
     "dev:collab": "bun --filter specforge-collab-server dev",
+    "dev:bridge": "cd bridge && bun run dev",
     "specforge": "bun --filter @specforge/cli specforge",
     "docker:up": "docker compose up --build",
     "docker:down": "docker compose down",
