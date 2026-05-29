@@ -152,7 +152,7 @@ export function DocumentWorkspace({ document, activeActor, authMode, blockSummar
     } finally {
       setIsRefreshing(false);
     }
-  }, [document.document_id, showToast]);
+  }, [document.document_id, document.version, showToast]);
 
   // Auto-save function with debouncing
   const triggerAutoSave = useCallback(() => {

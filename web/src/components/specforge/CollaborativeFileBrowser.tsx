@@ -6,7 +6,7 @@ import hljsJson from "highlight.js/lib/languages/json";
 import hljsMarkdown from "highlight.js/lib/languages/markdown";
 import hljsTypescript from "highlight.js/lib/languages/typescript";
 import hljsYaml from "highlight.js/lib/languages/yaml";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { EditorContent, useEditor } from "@tiptap/react";
 import Collaboration from "@tiptap/extension-collaboration";
 import StarterKit from "@tiptap/starter-kit";
@@ -572,6 +572,18 @@ export function CollaborativeFileBrowser({
     }, 1000); // Save after 1 second of inactivity
   };
 
+  const saveFileContent = useCallback(async (fileId: string, content: string) => {
+    try {
+      await fileApi.update(documentId, fileId, { content });
+      // Update local state
+      setFiles((prev) =>
+        prev.map((f) => (f.file_id === fileId ? { ...f, content } : f)),
+      );
+    } catch (error) {
+      console.error("Failed to save file:", error);
+    }
+  }, [documentId]);
+
   // Flush pending saves on unmount to prevent data loss
   useEffect(() => {
     return () => {
@@ -583,19 +595,7 @@ export function CollaborativeFileBrowser({
         saveFileContent(pendingSaveRef.current.fileId, pendingSaveRef.current.content);
       }
     };
-  }, []);
-
-  async function saveFileContent(fileId: string, content: string) {
-    try {
-      await fileApi.update(documentId, fileId, { content });
-      // Update local state
-      setFiles((prev) =>
-        prev.map((f) => (f.file_id === fileId ? { ...f, content } : f)),
-      );
-    } catch (error) {
-      console.error("Failed to save file:", error);
-    }
-  }
+  }, [saveFileContent]);
 
   // Save Tiptap markdown changes
   useEffect(() => {
