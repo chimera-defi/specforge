@@ -25,9 +25,11 @@ export function IdeaGenerator({ onGenerate, onCancel }: IdeaGeneratorProps) {
     runtimeTopology: "local-only",
     distributionModel: "",
     agentIntegration: "",
+    releaseStage: "alpha",
     mvpScope: "",
     phase1Features: "",
     futureFeatures: "",
+    futureWork: "",
     nonGoals: "",
     primarySurfaces: "",
     keyScreens: "",
@@ -255,6 +257,45 @@ export function IdeaGenerator({ onGenerate, onCancel }: IdeaGeneratorProps) {
                 <option value="hosted-only">Hosted-only (SaaS service)</option>
                 <option value="hybrid">Hybrid (local + hosted)</option>
               </select>
+            </div>
+            <div>
+              <label style={{ display: "block", fontWeight: 500, marginBottom: "4px" }}>
+                Release Stage
+              </label>
+              <select
+                value={scaffold.releaseStage}
+                onChange={(e) => handleChange("releaseStage", e.target.value as any)}
+                style={{
+                  width: "100%",
+                  padding: "8px 12px",
+                  border: "1px solid var(--sf-border)",
+                  borderRadius: "6px",
+                  fontSize: "0.9rem",
+                }}
+              >
+                <option value="alpha">Alpha (internal testing)</option>
+                <option value="beta">Beta (limited external)</option>
+                <option value="production">Production (public)</option>
+              </select>
+            </div>
+            <div>
+              <label style={{ display: "block", fontWeight: 500, marginBottom: "4px" }}>
+                Future Work (Longer-term Vision)
+              </label>
+              <textarea
+                value={scaffold.futureWork}
+                onChange={(e) => handleChange("futureWork", e.target.value)}
+                placeholder="What's the longer-term vision beyond MVP?"
+                rows={2}
+                style={{
+                  width: "100%",
+                  padding: "8px 12px",
+                  border: "1px solid var(--sf-border)",
+                  borderRadius: "6px",
+                  fontSize: "0.9rem",
+                  fontFamily: "inherit",
+                }}
+              />
             </div>
           </div>
         </section>

@@ -24,11 +24,13 @@ export type IdeaScaffold = {
   runtimeTopology: "local-only" | "hosted-only" | "hybrid";
   distributionModel: string;
   agentIntegration: string;
+  releaseStage: "alpha" | "beta" | "production";
   
   // Scope & phases
   mvpScope: string;
   phase1Features: string;
   futureFeatures: string;
+  futureWork: string;
   nonGoals: string;
   
   // UX & Design
@@ -61,9 +63,11 @@ export const DEFAULT_IDEA_SCAFFOLD: IdeaScaffold = {
   runtimeTopology: "local-only",
   distributionModel: "",
   agentIntegration: "",
+  releaseStage: "alpha",
   mvpScope: "",
   phase1Features: "",
   futureFeatures: "",
+  futureWork: "",
   nonGoals: "",
   primarySurfaces: "",
   keyScreens: "",
@@ -91,9 +95,11 @@ export function normalizeIdeaScaffold(input: Partial<IdeaScaffold>): IdeaScaffol
     runtimeTopology: input.runtimeTopology || "local-only",
     distributionModel: input.distributionModel?.trim() || "",
     agentIntegration: input.agentIntegration?.trim() || "",
+    releaseStage: input.releaseStage || "alpha",
     mvpScope: input.mvpScope?.trim() || "",
     phase1Features: input.phase1Features?.trim() || "",
     futureFeatures: input.futureFeatures?.trim() || "",
+    futureWork: input.futureWork?.trim() || "",
     nonGoals: input.nonGoals?.trim() || "",
     primarySurfaces: input.primarySurfaces?.trim() || "",
     keyScreens: input.keyScreens?.trim() || "",
@@ -156,6 +162,8 @@ export function buildIdeaMarkdown(scaffold: IdeaScaffold): string {
     "",
     `**Runtime Topology:** ${scaffold.runtimeTopology}`,
     "",
+    `**Release Stage:** ${scaffold.releaseStage}`,
+    "",
     formatSection("Distribution Model", scaffold.distributionModel, "How will users run this?"),
     "",
     formatSection("Agent Integration", scaffold.agentIntegration, "How do AI agents work with this?"),
@@ -166,6 +174,8 @@ export function buildIdeaMarkdown(scaffold: IdeaScaffold): string {
     formatSection("Phase 1 Features", scaffold.phase1Features, "What's in the first release?"),
     "",
     formatSection("Future Features", scaffold.futureFeatures, "What comes later?"),
+    "",
+    formatSection("Future Work", scaffold.futureWork, "What's the longer-term vision?"),
     "",
     formatSection("Non-Goals", scaffold.nonGoals, "What are you explicitly NOT doing?"),
     "",
