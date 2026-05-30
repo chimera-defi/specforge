@@ -106,11 +106,6 @@ export const API_ENDPOINTS = {
   IDEA_VALIDATION_SESSION_SKIP: (documentId: string, sessionId: string) => 
     `/api/documents/${documentId}/idea-validation-sessions/${sessionId}/skip-stage`,
   
-  // Plan sessions
-  PLAN_SESSIONS: (documentId: string) => `/api/documents/${documentId}/plan-sessions`,
-  PLAN_SESSION: (documentId: string, sessionId: string) => 
-    `/api/documents/${documentId}/plan-sessions/${sessionId}`,
-  
   } as const;
 
 export const ERROR_MESSAGES = {
