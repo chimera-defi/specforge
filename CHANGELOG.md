@@ -8,105 +8,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- **Desktop Packaging** (Item #1)
-  - macOS packaging targets: dmg, app
-  - Windows packaging targets: msi, nsis
-  - Icon generation script with ImageMagick support
-  - Service log viewing Tauri commands (`get_service_logs`, `get_version`)
-  - Desktop configuration panel with configurable ports and timeout
-  - Enhanced sidecar logging with piped stdout/stderr capture
-  - localStorage persistence for desktop settings
-
-- **Local Alpha UX Polish** (Item #2)
-  - Migrated acceptance test components to Tailwind classes
-  - Migrated design review components to Tailwind classes
-  - Removed 152 lines of inline CSS for better maintainability
-  - Improved design system compliance across components
-
-- **SaaS Scaffolding** (Item #3)
-  - Complete Stripe billing provider abstraction
-  - Billing provider switching via `BILLING_PROVIDER` env var
-  - Full Stripe API integration (subscriptions, checkout, cancellation)
-  - Webhook signature verification with timing tolerance
-  - Comprehensive entitlements system with quotas and feature flags
-  - Hosted ops surfaces (diagnostics, backups, incidents, summary)
-  - Added missing Stripe environment variables to production template
-
-- **Hybrid Bridge Model** (Item #4)
-  - Local bridge HTTP server implementation (design spike)
-  - Health check endpoint at `localhost:4323/health`
-  - CLI proxy endpoint with validation and error handling
-  - Graceful shutdown handling (SIGTERM, SIGINT)
-  - Bridge documentation and package configuration
-  - Diagnostics export already fully functional at `/api/ops/diagnostics-pack`
-
-- **Ideas Generator Improvements** (Item #5)
-  - Enhanced guided fields with specific examples and better placeholders
-  - Added competitiveAnalysis and businessModel fields to IdeaScaffold
-  - Added COMPETITIVE_ANALYSIS.md export artifact
-  - Added BUSINESS_MODEL.md export artifact
-  - Improved export bundle with 15 total artifacts
-  - Added competitiveAnalysis and businessModel form fields to IdeaGenerator UI
-  - Updated AI assist prompt to populate new fields
-
-- **Form Validation**
-  - Added validation function for GuidedSpecInput
-  - Required fields: title (3+ chars), problem (10+ chars), goals (10+ chars), users (5+ chars), scope (10+ chars)
-  - Added inline error messages for required fields
-  - Form submission blocked when validation fails
-  - Errors clear when user types
-
-- **Export Artifact Enhancement**
-  - Enhanced COMPETITIVE_ANALYSIS.md with comprehensive template
-  - Added structured sections: Competitive Landscape, Competitive Advantages, Competitive Moat, Market Positioning, Threat Assessment, Competitive Strategy
-  - Enhanced BUSINESS_MODEL.md with comprehensive template
-  - Added Business Model Canvas sections: Value Propositions, Customer Segments, Channels, Revenue Streams, Key Resources, Cost Structure
-  - Added detailed sections: Pricing Strategy, Unit Economics, Go-to-Market Strategy, Revenue Milestones, Business Risks
-
-- **Accessibility Improvements**
-  - Added ARIA attributes to validation error messages (aria-invalid, aria-describedby, role="alert")
-  - Added unique IDs to error message spans for proper association
-  - Added screen reader live region for validation status announcements
-  - Error announcements include error count and guidance
-  - Improved screen reader experience for guided form validation
-
-- **IdeaGenerator Form Validation**
-  - Added validateIdeaScaffold function to ideas-generator.ts
-  - Required fields: title (3+ chars), thesis (10+ chars), problem (10+ chars), targetUser (5+ chars), solutionApproach (10+ chars)
-  - Added validation error state management to IdeaGenerator component
-  - Added inline error messages for required fields
-  - Added ARIA attributes for accessibility (aria-invalid, aria-describedby, role="alert")
-  - Added screen reader live region for validation announcements
-  - Errors clear when user types
-  - Form submission blocked when validation fails
-
-- **UX and Security Improvements**
-  - Added loading states to guided form submission (disabled button, "Creating..." text)
-  - Added loading states to IdeaGenerator form submission (disabled button, "Generating..." text)
-  - Improved error messages with helpful guidance and examples
-  - Added input sanitization utility (sanitizeInput, sanitizeMarkdown, isInputSafe)
-  - Applied input sanitization to all form fields in guided form and IdeaGenerator
-  - Added Content-Security-Policy headers via Next.js middleware
-  - Added additional security headers (X-Content-Type-Options, X-Frame-Options, X-XSS-Protection, Referrer-Policy, Permissions-Policy)
-  - CSP policy configured for scripts, styles, images, fonts, and connect sources
+- **Desktop Packaging** — macOS (dmg, app) and Windows (msi, nsis) targets with service log viewing
+- **SaaS Scaffolding** — Complete Stripe billing integration with entitlements system
+- **Hybrid Bridge Model** — Local bridge for hybrid hosted + local CLI access
+- **Ideas Generator** — Enhanced fields (competitiveAnalysis, businessModel) with comprehensive export artifacts
+- **Form Validation** — Required field validation with inline errors and accessibility support
+- **Export Artifacts** — Enhanced COMPETITIVE_ANALYSIS.md and BUSINESS_MODEL.md templates
+- **UX & Security** — Loading states, input sanitization, CSP headers, security hardening
 
 ### Changed
-- Updated README with bridge component documentation
-- Added bridge startup instructions and health check URLs
-- Updated TASKS.md to mark all priority items as complete
+- Updated README with bridge documentation
+- Marked all priority TASKS.md items as complete
 
 ### Security
-- Verified no hardcoded secrets in source code
-- Confirmed CSP policies are appropriately scoped
-- Bridge server binds to localhost only for security
-- Stripe webhook signature verification with configurable tolerance
+- Verified no hardcoded secrets
+- Configured CSP policies appropriately
+- Bridge binds to localhost only
+- Stripe webhook signature verification
 
 ## [0.1.0] - 2026-05-29
 
 ### Added
 - Initial SpecForge MVP release
-- Multiplayer spec-creation workspace with Tiptap + Yjs + Hocuspocus
-- Five-stage validation workflow (problem framing, CEO review, engineering review, design, security)
+- Multiplayer spec-creation workspace (Tiptap + Yjs + Hocuspocus)
+- Five-stage validation workflow (problem, CEO, engineering, design, security)
 - Agent patch proposal system with block-level review
 - Governed handoff bundle export (PRD, SPEC, TASKS, agent brief)
 - Pilot access form with triage panel
@@ -116,19 +41,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Local-first persistence with pglite
 - Collaboration server with real-time editing
 - Design system with dark theme support
-- Acceptance test matrix with inline CRUD operations
-- Design handoff panel with feedback submission
+- Acceptance test matrix with inline CRUD
+- Design handoff panel with feedback
 - Billing provider abstraction (local/stripe)
 - Workspace entitlements and quotas
-- Ops diagnostics pack export
-- Backup management system
-- Incident tracking
+- Ops diagnostics, backups, incident tracking
 
 ### Security
-- Workspace-scoped authorization (owner/editor/viewer roles)
+- Workspace-scoped authorization (owner/editor/viewer)
 - GitHub OAuth for pilot access
 - Local dev bypass for MVP
-- All API endpoints require authentication except `/auth/*`
+- API authentication except `/auth/*`
 - CSP policies for XSS prevention
 - No eval/innerHTML in production code
 
@@ -143,6 +66,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Release Notes
 
 For detailed release information, see:
-- `spec/TASKS.md` - Current backlog and work items
-- `spec/SPEC.md` - Product specification
-- `spec/ARCHITECTURE_DECISIONS.md` - Architectural decisions
+- `spec/TASKS.md` — Current backlog
+- `spec/SPEC.md` — Product specification
+- `spec/ARCHITECTURE_DECISIONS.md` — Architectural decisions
