@@ -1,18 +1,22 @@
 ## SpecForge Tech Stack
 
 ### Default Stack
-1. Application shell: `Next.js` + `React` + `TypeScript`
+1. Application shell: `Next.js 16.2.0` + `React` + `TypeScript` (Turbopack)
 2. Editor: `Tiptap`
 3. Realtime sync: `Yjs`
 4. Collaboration server: `Hocuspocus`
-5. Primary database: `Postgres`
+5. Primary database: `Postgres` (hosted) / `PGlite` (local)
 6. Background jobs: lightweight TypeScript worker
 7. Delivery orchestration: Node.js parity runner around `codex exec`
 8. Runner artifacts: latest handoff + meta learnings under `.cursor/artifacts/`
 9. Current runner posture: useful for status/brief/context and bounded prep, but still not a trusted unattended backlog closer
 10. Testing:
-   - `Vitest` for unit and contract tests
-   - `Playwright` for end-to-end and screenshot flows
+   - `Vitest` for unit and contract tests (256 tests)
+   - `Playwright` for end-to-end and screenshot flows (11 critical flows)
+11. Desktop packaging: `Tauri` shell with macOS (dmg, app) and Windows (msi, nsis) targets
+12. Local bridge: HTTP bridge for hybrid hosted + local CLI access (localhost:4323)
+13. Billing: `Stripe` integration with entitlements system
+14. Authentication: `GitHub OAuth` for pilot mode
 
 ### Runtime Topology
 1. Web app:
@@ -21,6 +25,7 @@
    - document APIs
    - patch review APIs
    - export orchestration
+   - idea validation sessions (5-stage)
 2. Collaboration service:
    - websocket sync
    - signed room authentication
@@ -47,17 +52,28 @@
    - `specforge` guided wizard over the shared OpenSpec core
    - local slash-command style `/specforge` alias support
    - local smoke coverage for non-browser spec creation
-6. Shared persistence:
+   - TUI for interactive terminal workflows
+6. Desktop shell:
+   - Tauri wrapper with configuration panel
+   - Service log viewing commands
+   - Local runtime status monitoring
+   - macOS (dmg, app) and Windows (msi, nsis) packaging
+7. Local bridge:
+   - HTTP server for hybrid hosted + local CLI access
+   - Health check endpoint (localhost:4323/health)
+   - CLI proxy endpoint with validation
+   - Graceful shutdown handling
+8. Shared persistence:
    - PGlite snapshot sharing for local demo/test flows
    - Postgres for hosted application state
    - optional blob storage only if snapshots/exports outgrow database ergonomics
-7. Deployment rehearsal:
+9. Deployment rehearsal:
    - Dockerfiles for `web` and `collab-server`
    - `docker-compose.yml` with health checks for `web`, `collab-server`, and `postgres`
-8. Observability baseline:
-   - structured JSON logs in `web` and `collab-server`
-   - request IDs via middleware/response headers
-   - `/api/health`, `/api/metrics`, `/api/ops/summary`, `/api/workspace/billing`, and collab `/health` + `/metrics`
+10. Observability baseline:
+    - structured JSON logs in `web` and `collab-server`
+    - request IDs via middleware/response headers
+    - `/api/health`, `/api/metrics`, `/api/ops/summary`, `/api/workspace/billing`, and collab `/health` + `/metrics`
 
 ### Target Package Topology
 1. `specforge-core`
@@ -66,11 +82,14 @@
    - shared export bundle, execution-brief, launch-packet, starter template catalogue, and curated TypeScript starter builder
    - continuing extraction target for broader OpenSpec schema plus the remaining store-adapter and workspace-wiring layer
    - export / handoff / launch-packet builders
+   - idea validation logic (5-stage)
 2. `specforge-web`
    - landing, pricing, workspace UI
    - auth/session and HTTP APIs
+   - marketing surfaces
 3. `specforge-collab`
    - Yjs/Hocuspocus runtime
+   - multi-file workspace collaboration
 4. `specforge-orchestrator`
    - shared backlog parsing and delivery target mapping today
    - intents, claims, context, signals and bounded delivery loop as the broader boundary
@@ -78,6 +97,15 @@
    - first `/specforge` style CLI wizard now shipped
    - fuller TUI/assistant flow remains post-parity work
    - local agent-runtime reuse for Codex/Claude when present
+6. `specforge-desktop`
+   - Tauri shell wrapper
+   - Configuration panel
+   - Service log viewing
+   - macOS and Windows packaging
+7. `specforge-bridge`
+   - HTTP bridge for hybrid hosted + local CLI access
+   - CLI proxy endpoint
+   - Health check endpoint
 
 ### Why This Stack
 1. Maintains a mostly TypeScript codebase.
