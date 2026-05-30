@@ -1,0 +1,19 @@
+{
+  "version": "0.3.9",
+  "provider": "kimi-coding",
+  "model": "k2p6",
+  "thinking": "medium",
+  "timeout_seconds": 120,
+  "max_output_tokens": 1200,
+  "max_retries": 1,
+  "fallback_engine": "codex",
+  "fallback_provider": "openai",
+  "fallback_model": "gpt-5.3-codex",
+  "max_timeout_seconds": 600,
+  "large_repo_threshold_files": 10000,
+  "large_repo_threshold_mb": 500,
+  "large_repo_timeout_multiplier": 2.0,
+  "xlarge_repo_threshold_files": 50000,
+  "xlarge_repo_threshold_mb": 1000,
+  "xlarge_repo_timeout_multiplier": 3.0
+}
