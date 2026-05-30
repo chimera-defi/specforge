@@ -218,7 +218,7 @@ def main() -> int:
     summary = sub.add_parser("summary")
     summary.add_argument("--days", type=int, default=14)
     summary.add_argument("--alert", action="store_true", help="Exit non-zero if health thresholds exceeded")
-    summary.add_argument("--fallback-threshold", type=float, default=15.0, help="Max acceptable fallback rate %")
+    summary.add_argument("--fallback-threshold", type=float, default=15.0, help="Max acceptable fallback rate (percent)")
     summary.add_argument("--auth-threshold", type=int, default=2, help="Max acceptable auth errors")
 
     args = parser.parse_args()
