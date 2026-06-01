@@ -68,7 +68,24 @@ bun run dev:web
 - [📦 Production Guide](docs/production/README.md) - For users and deployment
 - [👨‍💻 Development Guide](docs/development/README.md) - For developers
 - [🔧 Operations Guide](docs/operations/README.md) - For DevOps engineers
+  - [Deployment Guide](docs/operations/DEPLOYMENT.md) - Docker, Kubernetes, Vercel deployment
+  - [CDN Configuration](docs/operations/CDN.md) - CDN setup and optimization
+  - [Load Testing](docs/operations/LOAD_TESTING.md) - Performance testing with k6
 - [🔒 Security Policy](docs/security/README.md) - Security documentation
+  - [Security Scanning](docs/security/SCANNING.md) - Automated security scanning
+
+**Production Features:**
+- ✅ Distributed tracing with OpenTelemetry
+- ✅ API key management with rate limiting
+- ✅ Email notification system (SendGrid, Mailgun, SES)
+- ✅ Automated backup system
+- ✅ Feature flags for gradual rollouts
+- ✅ Background job processing
+- ✅ Webhook infrastructure
+- ✅ Improved session management
+- ✅ Sentry error tracking
+- ✅ Security scanning (Trivy, CodeQL, Gitleaks)
+- ✅ Load testing with k6
 
 **Legacy Spec Documentation (v1 Planning):**
 - `spec/SPEC.md` — Product intent and binding feature behavior

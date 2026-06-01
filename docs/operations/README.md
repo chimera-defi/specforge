@@ -356,5 +356,7 @@ For production issues:
 - [Development Guide](../development/README.md)
 - [Production Guide](../production/README.md)
 - [PRODUCTION_OPS.md](../../PRODUCTION_OPS.md) - Detailed operations documentation
+- [Deployment Guide](./DEPLOYMENT.md) - Docker, Kubernetes, Vercel deployment
 - [CDN Configuration](./CDN.md) - CDN setup and optimization guide
 - [Load Testing](./LOAD_TESTING.md) - Performance testing with k6
+- [Monitoring Dashboard](./MONITORING.md) - Grafana, Datadog, Prometheus setup

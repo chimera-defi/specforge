@@ -324,3 +324,11 @@ Keep these principles in mind:
 - Cross-platform packaging requires valid assets
 - Desktop configuration should be user-accessible
 - Log capture should use piped stdout/stderr
+
+## Additional Resources
+
+- [API Documentation](../../web/src/app/api-docs) - Interactive API documentation
+- [OpenAPI Specification](../../web/src/lib/api/openapi-spec.ts) - API spec for SDK generation
+- [SDK Generation Guide](./SDK_GENERATION.md) - Generate client SDKs from OpenAPI spec
+- [Operations Guide](../operations/README.md) - Deployment and operations
+- [Security Policy](../security/README.md) - Security documentation
