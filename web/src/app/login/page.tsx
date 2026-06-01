@@ -23,6 +23,7 @@ function GitHubLoginButton() {
       onClick={handleGitHubLogin}
       variant="outline"
       size="lg"
+      aria-label="Sign in with GitHub"
       className="w-full border-border hover:bg-accent hover:text-accent-foreground"
     >
       Sign in with GitHub
@@ -56,7 +57,12 @@ function LoginForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-4">
+    <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-4" aria-live="polite" aria-atomic="false">
+      {error && (
+        <div role="alert" className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+          {error}
+        </div>
+      )}
       <div className="flex flex-col gap-1.5">
         <label htmlFor="username" className="text-sm font-medium text-foreground">
           Username
