@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { logger } from "@/lib/logger";
+
 import {
   answerClarification,
   createCommentThread,
@@ -623,7 +625,8 @@ export async function requestPilotAccessAction(formData: FormData) {
   let workspaceId: string;
   try {
     workspaceId = getPilotTriageWorkspaceId();
-  } catch {
+  } catch (err) {
+    logger.error("pilot_access.triage_workspace_unavailable", err instanceof Error ? err : undefined, { email, githubLogin });
     redirect(buildRedirectPath(returnTo, { status: "unavailable" }));
   }
 
@@ -645,7 +648,8 @@ export async function requestPilotAccessAction(formData: FormData) {
       pilot_type: pilotType || undefined,
       source: source || undefined,
     });
-  } catch {
+  } catch (err) {
+    logger.error("pilot_access.create_or_notify_failed", err instanceof Error ? err : undefined, { email, githubLogin });
     redirect(buildRedirectPath(returnTo, { status: "error" }));
   }
 
@@ -683,7 +687,8 @@ export async function reviewPilotAccessRequestAction(formData: FormData) {
       reviewed_by: actorRef,
       decision_reason: reviewNotes || undefined,
     });
-  } catch {
+  } catch (err) {
+    logger.error("pilot_access.review_failed", err instanceof Error ? err : undefined, { requestId, decision });
     redirect(buildRedirectPath(returnTo, { triage_status: "error" }));
   }
 

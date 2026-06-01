@@ -12,6 +12,7 @@ import {
   upsertUserFromGitHub,
 } from "@/lib/specforge/store";
 import { rateLimit, createRateLimitResponse } from "@/lib/rate-limit-middleware";
+import { logger } from "@/lib/logger";
 
 type GitHubTokenResponse = {
   access_token?: string;
@@ -44,7 +45,8 @@ export async function GET(request: Request) {
 
   try {
     await verifyGitHubOAuthState(state);
-  } catch {
+  } catch (err) {
+    logger.warn("auth.oauth_state_invalid", { reason: err instanceof Error ? err.message : String(err) });
     return NextResponse.redirect(new URL("/?auth=error", request.url));
   }
 
