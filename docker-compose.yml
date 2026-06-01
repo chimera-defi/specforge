@@ -1,64 +1,98 @@
+version: '3.8'
+
 services:
-  specforge-web:
+  # SpecForge Web App
+  web:
     build:
       context: .
-      dockerfile: web/Dockerfile
+      dockerfile: Dockerfile
+      target: runner
     ports:
       - "3000:3000"
     environment:
-      NEXT_PUBLIC_SKIP_AUTH_OVERRIDE: "true"
-      SPECFORGE_PERSISTENCE_BACKEND: postgres
-      DATABASE_URL: postgres://specforge:specforge@specforge-postgres:5432/specforge
-      SPECFORGE_FIXTURES_DIR: /fixtures
-      SPECFORGE_COLLAB_SECRET: specforge-local-secret
-      NEXT_PUBLIC_COLLAB_URL: ws://specforge-collab:4321
-      SPECFORGE_REQUIRE_SECURE_SECRETS: "true"
-      SPECFORGE_SECURE_COOKIES: "false"
+      - NODE_ENV=production
+      - PORT=3000
+      - SPECFORGE_SESSION_SECRET=${SPECFORGE_SESSION_SECRET:-change-me-in-production}
+      - SPECFORGE_CSRF_SECRET=${SPECFORGE_CSRF_SECRET:-change-me-in-production}
+      - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
+      - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
+      - SPECFORGE_GITHUB_REDIRECT_URI=${SPECFORGE_GITHUB_REDIRECT_URI:-http://localhost:3000/api/auth/callback}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
     depends_on:
-      specforge-postgres:
-        condition: service_healthy
+      - collab-server
+    restart: unless-stopped
+    networks:
+      - specforge-network
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
-  specforge-collab:
+  # Collab Server
+  collab-server:
     build:
-      context: .
-      dockerfile: collab-server/Dockerfile
+      context: ./collab-server
+      dockerfile: Dockerfile
     ports:
-      - "4321:4321"
-      - "4322:4322"
+      - "1234:1234"
     environment:
-      PORT: "4321"
-      HEALTH_PORT: "4322"
-      SPECFORGE_COLLAB_SECRET: specforge-local-secret
-      SPECFORGE_COLLAB_STORE_DIR: /var/lib/specforge/collab-rooms
-    volumes:
-      - specforge_runtime:/var/lib/specforge
+      - NODE_ENV=production
+      - PORT=1234
+    restart: unless-stopped
+    networks:
+      - specforge-network
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4322/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
+      test: ["CMD", "curl", "-f", "http://localhost:1234/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
-  specforge-postgres:
-    image: postgres:16-alpine
+  # Redis (for rate limiting and caching)
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    networks:
+      - specforge-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PostgreSQL (optional - for production instead of pglite)
+  postgres:
+    image: postgres:15-alpine
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: specforge
-      POSTGRES_USER: specforge
-      POSTGRES_PASSWORD: specforge
+      - POSTGRES_DB=specforge
+      - POSTGRES_USER=specforge
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-specforge}
     volumes:
-      - specforge_postgres:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - specforge-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U specforge -d specforge"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      test: ["CMD-SHELL", "pg_isready -U specforge"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    profiles:
+      - postgres
 
 volumes:
-  specforge_runtime:
-  specforge_postgres:
+  redis-data:
+  postgres-data:
+
+networks:
+  specforge-network:
+    driver: bridge

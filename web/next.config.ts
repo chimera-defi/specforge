@@ -2,10 +2,12 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { NextConfig } from "next";
 import { assertHostedSecurityConfig } from "./src/lib/specforge/security-config";
+import { validateConfigurationOnStartup } from "./src/lib/validation/config-validation";
 
 const rootDir = fileURLToPath(new URL(".", import.meta.url));
 
 assertHostedSecurityConfig(process.env);
+validateConfigurationOnStartup();
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ["@electric-sql/pglite"],
