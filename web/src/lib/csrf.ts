@@ -32,10 +32,10 @@ if (typeof setInterval !== 'undefined') {
 
 /**
  * Generate a CSRF token
- * @param sessionId Optional session identifier for token binding
+ * @param _sessionId Optional session identifier for token binding
  * @returns CSRF token
  */
-export function generateCSRFToken(sessionId?: string): string {
+export function generateCSRFToken(_sessionId?: string): string {
   const token = crypto.randomBytes(CSRF_TOKEN_LENGTH).toString('hex');
   const expiresAt = Date.now() + CSRF_TOKEN_EXPIRY;
   
