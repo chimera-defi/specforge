@@ -238,15 +238,10 @@ async function notifyPilotAccessRequest(input: {
   };
 
   if (!webhookUrl) {
-    console.log(
-      JSON.stringify({
-        at: payload.at,
-        event: payload.event,
-        request_id: input.request_id,
-        source: input.source,
-        notification: "webhook_not_configured",
-      }),
-    );
+    logger.debug("pilot_access.webhook_not_configured", {
+      request_id: input.request_id,
+      source: input.source,
+    });
     return;
   }
 
