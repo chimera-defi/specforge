@@ -63,6 +63,14 @@ bun run dev:web
 
 ## Documentation
 
+**New Documentation Structure:**
+- [📚 Documentation Index](docs/README.md) - Complete documentation overview
+- [📦 Production Guide](docs/production/README.md) - For users and deployment
+- [👨‍💻 Development Guide](docs/development/README.md) - For developers
+- [🔧 Operations Guide](docs/operations/README.md) - For DevOps engineers
+- [🔒 Security Policy](docs/security/README.md) - Security documentation
+
+**Legacy Spec Documentation (v1 Planning):**
 - `spec/SPEC.md` — Product intent and binding feature behavior
 - `spec/PRD.md` — Requirements and acceptance expectations
 - `spec/ARCHITECTURE_DECISIONS.md` — Architecture choices
@@ -82,3 +90,10 @@ bun run build:web
 ```
 
 Run `bun run test:cli` when touching `cli/`, `bun run build:desktop` when touching `desktop/`.
+
+## Support
+
+For issues or questions:
+- Check the [Documentation Index](docs/README.md)
+- Review [GitHub Issues](https://github.com/chimera-defi/specforge/issues)
+- Contact: chimera_defi@protonmail.com
