@@ -7,38 +7,44 @@ import {
   listDocuments,
   listWorkspaceRecords,
 } from "@/lib/specforge/store";
+import { withErrorHandling } from "@/lib/api-error-handler";
 
 export async function GET(request: Request) {
-  const requestId = getRequestId(request.headers);
-  const persistenceConfig = getPersistenceConfig();
-  const [workspaces, documents, backlogState] = await Promise.all([
-    listWorkspaceRecords(),
-    listDocuments(),
-    readBacklogState(),
-  ]);
+  return withErrorHandling(
+    async () => {
+      const requestId = getRequestId(request.headers);
+      const persistenceConfig = getPersistenceConfig();
+      const [workspaces, documents, backlogState] = await Promise.all([
+        listWorkspaceRecords(),
+        listDocuments(),
+        readBacklogState(),
+      ]);
 
-  logServerEvent("health_check", {
-    request_id: requestId,
-    persistence_backend: persistenceConfig.backend,
-    workspaces: workspaces.length,
-    documents: documents.length,
-    remaining_backlog: backlogState.remainingCount,
-  });
+      logServerEvent("health_check", {
+        request_id: requestId,
+        persistence_backend: persistenceConfig.backend,
+        workspaces: workspaces.length,
+        documents: documents.length,
+        remaining_backlog: backlogState.remainingCount,
+      });
 
-  return NextResponse.json({
-    status: "ok",
-    service: "specforge-web",
-    request_id: requestId,
-    checked_at: new Date().toISOString(),
-    persistence: {
-      ...persistenceConfig,
-      workspaces: workspaces.length,
-      documents: documents.length,
+      return NextResponse.json({
+        status: "ok",
+        service: "specforge-web",
+        request_id: requestId,
+        checked_at: new Date().toISOString(),
+        persistence: {
+          ...persistenceConfig,
+          workspaces: workspaces.length,
+          documents: documents.length,
+        },
+        parity: {
+          active_phase: backlogState.activeSection,
+          remaining_count: backlogState.remainingCount,
+          review_due: backlogState.reviewDue,
+        },
+      });
     },
-    parity: {
-      active_phase: backlogState.activeSection,
-      remaining_count: backlogState.remainingCount,
-      review_due: backlogState.reviewDue,
-    },
-  });
+    { action: "health_check" }
+  );
 }
