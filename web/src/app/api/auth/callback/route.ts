@@ -11,6 +11,7 @@ import {
   listUserWorkspaces,
   upsertUserFromGitHub,
 } from "@/lib/specforge/store";
+import { rateLimit, createRateLimitResponse } from "@/lib/rate-limit-middleware";
 
 type GitHubTokenResponse = {
   access_token?: string;
@@ -27,6 +28,12 @@ type GitHubUserResponse = {
 };
 
 export async function GET(request: Request) {
+  // Rate limit check (10 requests per minute for auth endpoint)
+  const rateLimitResult = rateLimit(request, { maxRequests: 10, windowMs: 60000 });
+  if (!rateLimitResult.success) {
+    return createRateLimitResponse(rateLimitResult);
+  }
+
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
   const state = url.searchParams.get("state");

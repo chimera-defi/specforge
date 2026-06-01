@@ -26,6 +26,10 @@ jobs:
       - name: Install dependencies
         run: bun install
 
+      - name: Security audit (dependencies)
+        run: bun audit
+        continue-on-error: true
+
       - name: Validate contracts
         run: bun run contracts:validate
 
@@ -75,6 +79,10 @@ jobs:
 
       - name: Install dependencies
         run: bun install
+
+      - name: Security audit (dependencies)
+        run: bun audit
+        continue-on-error: true
 
       - name: Build Tauri desktop app
         run: bun run build:desktop

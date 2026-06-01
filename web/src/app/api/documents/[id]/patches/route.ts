@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { createPatchProposal, listPatches } from "@/lib/specforge/store";
 import { getCurrentWorkspaceAccess } from "@/lib/specforge/workspace-access";
 import { withErrorHandling } from "@/lib/api-error-handler";
+import { validateSignedCSRFMiddleware } from "@/lib/csrf";
 
 type Params = {
   params: Promise<{ id: string }>;
@@ -21,6 +22,12 @@ export async function GET(_request: Request, { params }: Params) {
 }
 
 export async function POST(request: Request, { params }: Params) {
+  // CSRF validation for state-changing operation
+  const csrfError = validateSignedCSRFMiddleware(request);
+  if (csrfError) {
+    return csrfError;
+  }
+
   return withErrorHandling(
     async () => {
       const { id } = await params;
