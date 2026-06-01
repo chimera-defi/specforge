@@ -356,3 +356,5 @@ For production issues:
 - [Development Guide](../development/README.md)
 - [Production Guide](../production/README.md)
 - [PRODUCTION_OPS.md](../../PRODUCTION_OPS.md) - Detailed operations documentation
+- [CDN Configuration](./CDN.md) - CDN setup and optimization guide
+- [Load Testing](./LOAD_TESTING.md) - Performance testing with k6

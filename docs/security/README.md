@@ -265,6 +265,7 @@ We will respond within 48 hours and work with you to address the issue.
 - [Development Guide](../development/README.md) - Security in development
 - [PRODUCTION_OPS.md](../../PRODUCTION_OPS.md) - Detailed operations
 - [SECURITY.md](../../SECURITY.md) - Full security documentation
+- [Security Scanning](./SCANNING.md) - Automated security scanning guide
 
 ## Disclaimer
 
