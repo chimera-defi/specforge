@@ -56,10 +56,24 @@ Comprehensive security headers implemented in `next.config.ts`:
 - **.env.example** provides template with empty values
 - **No .env file** committed to repository
 
-### 8. Observability
+### 8. Observability & Monitoring
 - **Structured logging** for security events
 - **Audit trail** for all state changes
 - **Error logging** without sensitive data leakage
+- **Metrics collection** for API requests, errors, business metrics
+- **Health checks** with detailed system status
+- **Performance monitoring** with latency tracking
+- **Circuit breakers** for resilience
+- **Retry mechanisms** for transient failures
+
+### 9. Alerting
+- **Health check alerts** for service degradation
+- **Error rate alerts** for elevated error rates
+- **Performance alerts** for slow response times
+- **Circuit breaker alerts** for service failures
+- **Memory alerts** for resource exhaustion
+
+See `PRODUCTION_OPS.md` for monitoring and alerting configuration.
 
 ## Dependency Security
 

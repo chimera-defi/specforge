@@ -1,0 +1,109 @@
+# Alerting Configuration Example
+# Copy this file to .alerting.yml and configure for your environment
+
+alerts:
+  # Health check failure
+  - name: health_check_failure
+    severity: critical
+    condition: health.status == "unhealthy"
+    duration: 1m
+    channels:
+      - pagerduty
+      - slack
+    message: "SpecForge health check failed: {{health.status}}"
+
+  # High error rate
+  - name: high_error_rate
+    severity: warning
+    condition: error_rate > 0.05
+    duration: 5m
+    channels:
+      - slack
+    message: "Error rate elevated: {{error_rate}}% over 5 minutes"
+
+  # Slow response time
+  - name: slow_response_time
+    severity: warning
+    condition: api_p95_latency > 2000
+    duration: 5m
+    channels:
+      - slack
+    message: "API P95 latency high: {{api_p95_latency}}ms"
+
+  # Circuit breaker open
+  - name: circuit_breaker_open
+    severity: warning
+    condition: circuit_breaker.open == true
+    duration: 0s
+    channels:
+      - slack
+    message: "Circuit breaker opened for {{circuit_breaker.context}}"
+
+  # Memory usage high
+  - name: high_memory_usage
+    severity: warning
+    condition: memory_usage > 0.90
+    duration: 5m
+    channels:
+      - slack
+    message: "Memory usage high: {{memory_usage}}%"
+
+  # Database connection pool exhausted
+  - name: db_pool_exhausted
+    severity: critical
+    condition: db.pool.available < 5
+    duration: 1m
+    channels:
+      - pagerduty
+      - slack
+    message: "Database connection pool nearly exhausted: {{db.pool.available}} available"
+
+channels:
+  pagerduty:
+    enabled: false
+    integration_key: "YOUR_PAGERDUTY_INTEGRATION_KEY"
+    service_key: "YOUR_PAGERDUTY_SERVICE_KEY"
+
+  slack:
+    enabled: false
+    webhook_url: "YOUR_SLACK_WEBHOOK_URL"
+    channel: "#alerts"
+
+  email:
+    enabled: false
+    recipients:
+      - oncall@example.com
+      - devops@example.com
+
+# Monitoring backends configuration
+monitoring:
+  prometheus:
+    enabled: false
+    port: 9090
+    path: "/metrics"
+
+  datadog:
+    enabled: false
+    api_key: "YOUR_DATADOG_API_KEY"
+    site: "datadoghq.com"
+
+  sentry:
+    enabled: false
+    dsn: "YOUR_SENTRY_DSN"
+    environment: "production"
+    sample_rate: 1.0
+
+# Log aggregation
+logging:
+  # Log level: debug, info, warn, error, fatal
+  level: "info"
+  
+  # Structured logging
+  structured: true
+  
+  # Log aggregation service
+  service:
+    type: "cloudwatch"  # Options: cloudwatch, loggly, papertrail, splunk
+    region: "us-east-1"
+    log_group: "/aws/lambda/specforge"
+    log_stream: "production"
