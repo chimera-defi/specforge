@@ -12,7 +12,7 @@ interface RateLimitStore {
   };
 }
 
-class InMemoryRateLimitStore implements RateLimitStore {
+class InMemoryRateLimitStore {
   private store: RateLimitStore = {};
 
   get(key: string): { count: number; resetTime: number } | null {
