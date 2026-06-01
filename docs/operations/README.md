@@ -95,6 +95,16 @@ Handles SIGTERM/SIGINT signals:
 
 ## Deployment
 
+See [Deployment Guide](./DEPLOYMENT.md) for detailed deployment procedures covering:
+- Docker deployment
+- Kubernetes deployment
+- Vercel deployment
+- Environment configuration
+- Post-deployment verification
+- Rollback procedures
+- Scaling strategies
+- Backup strategies
+
 ### Build Optimization
 
 Production build includes:
