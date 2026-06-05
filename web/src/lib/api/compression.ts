@@ -23,9 +23,10 @@ const DEFAULT_OPTIONS: CompressionOptions = {
 function _shouldCompress(response: NextResponse, _options: CompressionOptions): boolean {
   const contentLength = response.headers.get("content-length");
   const contentType = response.headers.get("content-type");
+  const threshold = _options.threshold ?? DEFAULT_OPTIONS.threshold ?? 1024;
   
   // Check threshold
-  if (contentLength && parseInt(contentLength) < (options.threshold || DEFAULT_OPTIONS.threshold)) {
+  if (contentLength && parseInt(contentLength, 10) < threshold) {
     return false;
   }
   

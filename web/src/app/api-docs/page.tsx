@@ -1,6 +1,10 @@
 import { openAPISpec } from "@/lib/api/openapi-spec";
 
+const httpMethods = new Set(["get", "post", "put", "patch", "delete", "options", "head"]);
+
 export default function APIDocsPage() {
+  const paths = openAPISpec.paths ?? {};
+
   return (
     <div className="min-h-screen bg-background p-8">
       <div className="max-w-4xl mx-auto">
@@ -27,21 +31,37 @@ export default function APIDocsPage() {
           <div className="bg-card border rounded-lg p-6">
             <h2 className="text-xl font-semibold mb-2">API Endpoints</h2>
             <div className="space-y-4">
-              {Object.entries(openAPISpec.paths).map(([path, methods]) => (
-                <div key={path} className="border-b pb-4 last:border-0">
-                  <h3 className="font-mono text-sm mb-2">{path}</h3>
-                  <div className="space-y-2">
-                    {Object.entries(methods).map(([method, spec]: [string, { summary: string }]) => (
-                      <div key={method} className="flex items-center gap-2">
-                        <span className="px-2 py-1 rounded text-xs font-bold bg-primary text-primary-foreground">
-                          {method.toUpperCase()}
-                        </span>
-                        <span className="text-sm">{spec.summary}</span>
-                      </div>
-                    ))}
+              {Object.entries(paths).map(([path, methods]) => {
+                const operations = Object.entries(methods ?? {}).filter(([method]) =>
+                  httpMethods.has(method),
+                );
+
+                return (
+                  <div key={path} className="border-b pb-4 last:border-0">
+                    <h3 className="font-mono text-sm mb-2">{path}</h3>
+                    <div className="space-y-2">
+                      {operations.map(([method, spec]) => {
+                        const summary =
+                          spec &&
+                          typeof spec === "object" &&
+                          "summary" in spec &&
+                          typeof spec.summary === "string"
+                            ? spec.summary
+                            : "No summary available";
+
+                        return (
+                          <div key={method} className="flex items-center gap-2">
+                            <span className="px-2 py-1 rounded text-xs font-bold bg-primary text-primary-foreground">
+                              {method.toUpperCase()}
+                            </span>
+                            <span className="text-sm">{summary}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 

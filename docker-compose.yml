@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # SpecForge Web App
   web:
@@ -8,23 +6,30 @@ services:
       dockerfile: Dockerfile
       target: runner
     ports:
-      - "3000:3000"
+      - "${SPECFORGE_BIND_HOST:-127.0.0.1}:${SPECFORGE_WEB_PORT:-3000}:3000"
     environment:
       - NODE_ENV=production
       - PORT=3000
-      - SPECFORGE_SESSION_SECRET=${SPECFORGE_SESSION_SECRET:-change-me-in-production}
-      - SPECFORGE_CSRF_SECRET=${SPECFORGE_CSRF_SECRET:-change-me-in-production}
-      - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
-      - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
+      - HOST=0.0.0.0
+      - SPECFORGE_SESSION_SECRET=${SPECFORGE_SESSION_SECRET:?Set SPECFORGE_SESSION_SECRET}
+      - SPECFORGE_CSRF_SECRET=${SPECFORGE_CSRF_SECRET:?Set SPECFORGE_CSRF_SECRET}
+      - SPECFORGE_COLLAB_SECRET=${SPECFORGE_COLLAB_SECRET:?Set SPECFORGE_COLLAB_SECRET}
+      - SPECFORGE_REQUIRE_SECURE_SECRETS=${SPECFORGE_REQUIRE_SECURE_SECRETS:-true}
+      - SPECFORGE_ENFORCE_HOSTED_SECURITY=${SPECFORGE_ENFORCE_HOSTED_SECURITY:-false}
+      - NEXT_PUBLIC_SKIP_AUTH_OVERRIDE=${NEXT_PUBLIC_SKIP_AUTH_OVERRIDE:-false}
+      - NEXT_PUBLIC_COLLAB_URL=${NEXT_PUBLIC_COLLAB_URL:-ws://127.0.0.1:1234}
+      - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID:-local-oauth-disabled}
+      - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET:-local-oauth-disabled}
       - SPECFORGE_GITHUB_REDIRECT_URI=${SPECFORGE_GITHUB_REDIRECT_URI:-http://localhost:3000/api/auth/callback}
       - LOG_LEVEL=${LOG_LEVEL:-info}
     depends_on:
       - collab-server
+      - redis
     restart: unless-stopped
     networks:
       - specforge-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      test: ["CMD", "bun", "-e", "fetch('http://127.0.0.1:3000/api/health').then((r) => { if (!r.ok) process.exit(1) }).catch(() => process.exit(1))"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -33,18 +38,21 @@ services:
   # Collab Server
   collab-server:
     build:
-      context: ./collab-server
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: collab-server/Dockerfile
     ports:
-      - "1234:1234"
+      - "${SPECFORGE_BIND_HOST:-127.0.0.1}:${SPECFORGE_COLLAB_PORT:-1234}:1234"
+      - "${SPECFORGE_BIND_HOST:-127.0.0.1}:${SPECFORGE_COLLAB_HEALTH_PORT:-1235}:1235"
     environment:
       - NODE_ENV=production
       - PORT=1234
+      - HEALTH_PORT=1235
+      - SPECFORGE_COLLAB_SECRET=${SPECFORGE_COLLAB_SECRET:?Set SPECFORGE_COLLAB_SECRET}
     restart: unless-stopped
     networks:
       - specforge-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:1234/health"]
+      test: ["CMD", "bun", "-e", "fetch('http://127.0.0.1:1235/health').then((r) => { if (!r.ok) process.exit(1) }).catch(() => process.exit(1))"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -53,9 +61,19 @@ services:
   # Redis (for rate limiting and caching)
   redis:
     image: redis:7-alpine
-    ports:
-      - "6379:6379"
-    command: redis-server --appendonly yes
+    expose:
+      - "6379"
+    command:
+      - redis-server
+      - --appendonly
+      - "yes"
+      - --protected-mode
+      - "yes"
+      - --requirepass
+      - ${REDIS_PASSWORD:?Set REDIS_PASSWORD}
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD:?Set REDIS_PASSWORD}
+      - REDISCLI_AUTH=${REDIS_PASSWORD:?Set REDIS_PASSWORD}
     volumes:
       - redis-data:/data
     restart: unless-stopped
@@ -70,12 +88,12 @@ services:
   # PostgreSQL (optional - for production instead of pglite)
   postgres:
     image: postgres:15-alpine
-    ports:
-      - "5432:5432"
+    expose:
+      - "5432"
     environment:
       - POSTGRES_DB=specforge
       - POSTGRES_USER=specforge
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-specforge}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
     volumes:
       - postgres-data:/var/lib/postgresql/data
     restart: unless-stopped

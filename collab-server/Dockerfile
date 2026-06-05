@@ -1,65 +1,51 @@
 # Dockerfile for SpecForge Collab Server
-FROM oven/bun:1.1 AS deps
+FROM oven/bun:1.3.9 AS deps
 WORKDIR /app
 
-# Copy dependency files
-COPY package.json bun.lockb ./
-COPY collab-server/package.json collab-server/bun.lockb ./collab-server/
+# Copy dependency files. Keep workspace package manifests present so Bun can
+# resolve the root workspace without copying the full source tree yet.
+COPY package.json bun.lock ./
+COPY web/package.json ./web/package.json
+COPY cli/package.json ./cli/package.json
+COPY orchestrator/package.json ./orchestrator/package.json
+COPY collab-server/package.json ./collab-server/package.json
+COPY desktop/package.json ./desktop/package.json
+COPY bridge/package.json ./bridge/package.json
 
 # Install dependencies
 RUN bun install --frozen-lockfile
 
-# Stage 2: Builder
-FROM oven/bun:1.1 AS builder
-WORKDIR /app
-
-# Copy dependencies from deps stage
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/collab-server/node_modules ./collab-server/node_modules
-
-# Copy source code
-COPY . .
-
-# Set environment for build
-ARG NODE_ENV=production
-ENV NODE_ENV=${NODE_ENV}
-
-# Build the application
+# Stage 2: Runner
+FROM oven/bun:1.3.9 AS runner
 WORKDIR /app/collab-server
-RUN bun run build
-
-# Stage 3: Runner
-FROM oven/bun:1.1 AS runner
-WORKDIR /app
-
-# Create non-root user
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 bun
 
 # Set environment
 ENV NODE_ENV=production
 ENV PORT=1234
+ENV HEALTH_PORT=1235
 
-# Copy built application
-COPY --from=builder /app/collab-server/dist ./dist
-COPY --from=builder /app/collab-server/package.json ./package.json
+# Copy runtime dependencies and source. The server imports /app/lib/collab-auth.cjs
+# via ../../lib/collab-auth.cjs from collab-server/src/index.js.
+COPY --from=deps /app/node_modules /app/node_modules
+COPY --from=deps /app/collab-server/node_modules /app/collab-server/node_modules
+COPY collab-server/package.json ./package.json
+COPY collab-server/src ./src
+COPY lib /app/lib
 
-# Copy dependencies
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/collab-server/node_modules ./collab-server/node_modules
-
-# Set permissions
-RUN chown -R bun:nodejs /app
+# Set permissions for filesystem room snapshots without rewriting
+# node_modules ownership during image builds.
+RUN mkdir -p /app/collab-server/.data && chown bun:bun /app/collab-server/.data
 
 # Switch to non-root user
 USER bun
 
 # Expose port
 EXPOSE 1234
+EXPOSE 1235
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:1234/health || exit 1
+  CMD bun -e "fetch('http://127.0.0.1:' + (process.env.HEALTH_PORT || '1235') + '/health').then((r) => { if (!r.ok) process.exit(1) }).catch(() => process.exit(1))"
 
 # Start the application
-CMD ["bun", "run", "start"]
+CMD ["bun", "src/index.js"]

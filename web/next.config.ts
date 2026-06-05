@@ -1,13 +1,19 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { PHASE_PRODUCTION_BUILD } from "next/constants";
 import type { NextConfig } from "next";
 import { assertHostedSecurityConfig } from "./src/lib/specforge/security-config";
 import { validateConfigurationOnStartup } from "./src/lib/validation/config-validation";
 
 const rootDir = fileURLToPath(new URL(".", import.meta.url));
 
-assertHostedSecurityConfig(process.env);
-validateConfigurationOnStartup();
+function validateServerConfiguration(phase: string) {
+  assertHostedSecurityConfig(process.env);
+
+  if (phase !== PHASE_PRODUCTION_BUILD) {
+    validateConfigurationOnStartup();
+  }
+}
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ["@electric-sql/pglite"],
@@ -18,7 +24,6 @@ const nextConfig: NextConfig = {
   compress: true,
   poweredByHeader: false,
   reactStrictMode: true,
-  swcMinify: true,
   // Production performance
   productionBrowserSourceMaps: false,
   // Image optimization
@@ -90,4 +95,7 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default function createNextConfig(phase: string): NextConfig {
+  validateServerConfiguration(phase);
+  return nextConfig;
+}

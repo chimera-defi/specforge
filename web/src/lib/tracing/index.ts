@@ -5,11 +5,13 @@
 
 import { trace } from "@opentelemetry/api";
 import { NodeTracerProvider } from "@opentelemetry/sdk-trace-node";
-import { Resource } from "@opentelemetry/resources";
+import { resourceFromAttributes } from "@opentelemetry/resources";
 import { SemanticResourceAttributes } from "@opentelemetry/semantic-conventions";
 import { logger } from "../logger";
 
 let tracerProvider: NodeTracerProvider | null = null;
+
+type SpanAttributes = Record<string, string | number | boolean>;
 
 /**
  * Initialize OpenTelemetry tracing
@@ -22,7 +24,7 @@ export function initTracing(serviceName: string = "specforge-web"): void {
 
   try {
     tracerProvider = new NodeTracerProvider({
-      resource: new Resource({
+      resource: resourceFromAttributes({
         [SemanticResourceAttributes.SERVICE_NAME]: serviceName,
         [SemanticResourceAttributes.SERVICE_VERSION]: process.env.npm_package_version || "1.0.0",
         [SemanticResourceAttributes.DEPLOYMENT_ENVIRONMENT]: process.env.NODE_ENV,
@@ -50,7 +52,7 @@ export function getTracer(name: string, version: string = "1.0.0") {
 export async function withSpan<T>(
   name: string,
   fn: () => Promise<T>,
-  attributes?: Record<string, string | number>
+  attributes?: SpanAttributes
 ): Promise<T> {
   const tracer = getTracer("specforge");
 
@@ -78,7 +80,7 @@ export async function withSpan<T>(
 /**
  * Add attributes to current span
  */
-export function addSpanAttributes(attributes: Record<string, string | number>): void {
+export function addSpanAttributes(attributes: SpanAttributes): void {
   const span = trace.getActiveSpan();
   if (span) {
     Object.entries(attributes).forEach(([key, value]) => {
@@ -90,7 +92,7 @@ export function addSpanAttributes(attributes: Record<string, string | number>): 
 /**
  * Add event to current span
  */
-export function addSpanEvent(name: string, attributes?: Record<string, unknown>): void {
+export function addSpanEvent(name: string, attributes?: SpanAttributes): void {
   const span = trace.getActiveSpan();
   if (span) {
     span.addEvent(name, attributes);

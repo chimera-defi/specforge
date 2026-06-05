@@ -87,6 +87,7 @@ export class RetryHandler {
     }
 
     const duration = Date.now() - startTime;
+    const metrics = getMetricsCollector();
     metrics.increment('retry.exhausted', 1, { context });
 
     return {
@@ -151,6 +152,7 @@ export class RetryHandler {
         context,
         error: result.error.message,
       });
+      const metrics = getMetricsCollector();
       metrics.increment('retry.non_retryable', 1, { context });
     }
 

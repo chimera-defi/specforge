@@ -30,7 +30,7 @@ class PerUserRateLimiter {
   /**
    * Get user identifier from request
    */
-  private getUserId(request: Request): string {
+  getUserId(request: Request): string {
     // Try to get user from session (would need to be implemented)
     // For now, use IP address
     const forwardedFor = request.headers.get("x-forwarded-for");
@@ -160,7 +160,10 @@ export function getPerUserRateLimiter(): PerUserRateLimiter {
 export function withPerUserRateLimit<T>(
   handler: (request: Request, context?: unknown) => Promise<NextResponse<T>>,
   config: UserRateLimitConfig
-): (request: Request, context?: unknown) => Promise<NextResponse<T>> {
+): (
+  request: Request,
+  context?: unknown,
+) => Promise<NextResponse<T> | NextResponse<{ error: string; retryAfter: number }>> {
   return async (request: Request, context?: unknown) => {
     const limiter = getPerUserRateLimiter();
     const userId = limiter.getUserId(request);

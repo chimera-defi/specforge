@@ -56,34 +56,38 @@ export const envSchema = z.object({
 
   // Storage (optional - for backups)
   BACKUP_DESTINATION: z.string().default(".backups"),
-  BACKUP_RETENTION_DAYS: z.string().transform(Number).pipe(z.number().min(1)).default("30"),
+  BACKUP_RETENTION_DAYS: z.string().transform(Number).pipe(z.number().min(1)).default(30),
 
   // API (optional - for external access)
   API_VERSION: z.string().default("v1"),
-  API_RATE_LIMIT_ENABLED: z.string().transform((v) => v === "true").default("true"),
-  API_RATE_LIMIT_DEFAULT: z.string().transform(Number).pipe(z.number().min(1)).default("100"),
+  API_RATE_LIMIT_ENABLED: z.string().transform((v) => v === "true").default(true),
+  API_RATE_LIMIT_DEFAULT: z.string().transform(Number).pipe(z.number().min(1)).default(100),
 
   // Logging
   LOG_LEVEL: z.enum(["debug", "info", "warn", "error", "fatal"]).default("info"),
   LOG_FORMAT: z.enum(["json", "text"]).default("json"),
 
   // Feature flags
-  FEATURE_FLAGS_ENABLED: z.string().transform((v) => v === "true").default("true"),
+  FEATURE_FLAGS_ENABLED: z.string().transform((v) => v === "true").default(true),
 
   // Collab server
   COLLAB_SERVER_URL: z.string().url().optional(),
   COLLAB_SERVER_PORT: z.string().default("4322"),
 
   // Monitoring
-  METRICS_ENABLED: z.string().transform((v) => v === "true").default("true"),
-  HEALTH_CHECK_ENABLED: z.string().transform((v) => v === "true").default("true"),
+  METRICS_ENABLED: z.string().transform((v) => v === "true").default(true),
+  HEALTH_CHECK_ENABLED: z.string().transform((v) => v === "true").default(true),
 
   // OpenTelemetry (optional - for distributed tracing)
-  OTEL_ENABLED: z.string().transform((v) => v === "true").default("false"),
+  OTEL_ENABLED: z.string().transform((v) => v === "true").default(false),
   OTEL_SERVICE_NAME: z.string().default("specforge-web"),
 });
 
 export type Env = z.infer<typeof envSchema>;
+
+declare global {
+  var _validatedEnv: Env | undefined;
+}
 
 /**
  * Validate environment variables
@@ -94,7 +98,7 @@ export function validateEnv(): Env {
   } catch (error) {
     if (error instanceof z.ZodError) {
       console.error("❌ Invalid environment configuration:");
-      error.errors.forEach((err) => {
+      error.issues.forEach((err) => {
         console.error(`  - ${err.path.join(".")}: ${err.message}`);
       });
       throw new Error("Environment validation failed");

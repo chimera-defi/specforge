@@ -44,8 +44,8 @@ class JobQueue {
   /**
    * Register a job handler
    */
-  registerHandler(name: string, handler: JobHandler): void {
-    this.handlers.set(name, handler);
+  registerHandler<T = unknown, R = unknown>(name: string, handler: JobHandler<T, R>): void {
+    this.handlers.set(name, handler as JobHandler);
     logger.info("Job handler registered", { name });
   }
 

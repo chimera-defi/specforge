@@ -32,6 +32,17 @@ bun run dev:collab  # Real-time collaboration server
 
 Open http://localhost:3000
 
+For the Docker-backed local stack, use the secure lifecycle helper. It binds
+the app and collab server to loopback by default, keeps Redis/Postgres off the
+host network, requires Redis auth, and checks for exposed data-service ports.
+
+```bash
+bun run security:local       # audit compose and live DB/broker listeners
+bun run server:secure:cycle  # start, verify, then stop the secure local stack
+bun run server:secure:up     # leave it running at http://127.0.0.1:3000
+bun run server:secure:down   # stop SpecForge-owned local runtime services
+```
+
 ## Demo Access
 
 The demo workspace is open without login by default. To gate with credentials:

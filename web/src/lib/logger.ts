@@ -61,6 +61,16 @@ export const logger = {
   debug: (message: string, context?: Record<string, unknown>) => log("debug", message, context),
   info: (message: string, context?: Record<string, unknown>) => log("info", message, context),
   warn: (message: string, context?: Record<string, unknown>) => log("warn", message, context),
-  error: (message: string, error?: Error, context?: Record<string, unknown>) =>
-    log("error", message, context, error),
+  error: (
+    message: string,
+    errorOrContext?: Error | Record<string, unknown>,
+    context?: Record<string, unknown>,
+  ) => {
+    if (errorOrContext instanceof Error) {
+      log("error", message, context, errorOrContext);
+      return;
+    }
+
+    log("error", message, errorOrContext ?? context);
+  },
 };
