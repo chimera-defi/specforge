@@ -11,6 +11,13 @@ interface PerformanceTimer {
   tags: Record<string, string>;
 }
 
+type PerformanceWithMemory = Performance & {
+  memory?: {
+    usedJSHeapSize: number;
+    totalJSHeapSize: number;
+  };
+};
+
 class PerformanceMonitor {
   private activeTimers: Map<string, PerformanceTimer> = new Map();
 
@@ -68,11 +75,15 @@ class PerformanceMonitor {
     total: number;
     percentage: number;
   } | null {
-    if (typeof performance === 'undefined' || !performance.memory) {
+    if (typeof performance === 'undefined') {
       return null;
     }
 
-    const memory = performance.memory;
+    const memory = (performance as PerformanceWithMemory).memory;
+    if (!memory) {
+      return null;
+    }
+
     return {
       used: memory.usedJSHeapSize,
       total: memory.totalJSHeapSize,

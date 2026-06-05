@@ -32,9 +32,12 @@ export function initSentry(config?: Partial<SentryConfig>): void {
   }
 
   const sentryConfig: SentryConfig = {
-    ...DEFAULT_CONFIG,
-    ...config,
     dsn,
+    environment:
+      config?.environment ?? DEFAULT_CONFIG.environment ?? process.env.NODE_ENV ?? "development",
+    release: config?.release,
+    tracesSampleRate: config?.tracesSampleRate ?? DEFAULT_CONFIG.tracesSampleRate,
+    profilesSampleRate: config?.profilesSampleRate ?? DEFAULT_CONFIG.profilesSampleRate,
   };
 
   Sentry.init({
@@ -46,11 +49,7 @@ export function initSentry(config?: Partial<SentryConfig>): void {
     
     // Integrations
     integrations: [
-      new Sentry.BrowserTracing(),
-      new Sentry.Replay({
-        maskAllText: true,
-        blockAllMedia: true,
-      }),
+      Sentry.browserTracingIntegration(),
     ],
 
     // Session replay
@@ -179,7 +178,7 @@ export function addBreadcrumb(
  * Start performance transaction
  */
 export function startTransaction(name: string, op: string) {
-  return Sentry.startSpan({
+  return Sentry.startInactiveSpan({
     name,
     op,
   });

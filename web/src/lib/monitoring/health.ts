@@ -24,6 +24,13 @@ interface HealthCheckConfig {
   critical: boolean;
 }
 
+type PerformanceWithMemory = Performance & {
+  memory?: {
+    usedJSHeapSize: number;
+    totalJSHeapSize: number;
+  };
+};
+
 class HealthChecker {
   private checks: Map<string, HealthCheckConfig> = new Map();
   private startTime: number = Date.now();
@@ -40,7 +47,7 @@ class HealthChecker {
    */
   async runChecks(): Promise<HealthCheckResult> {
     const results: Record<string, HealthCheck> = {};
-    let overallStatus = 'healthy' as const;
+    let overallStatus: HealthCheckResult['status'] = 'healthy';
 
     for (const [name, config] of this.checks) {
       try {
@@ -115,8 +122,16 @@ function registerDefaultChecks(): void {
     name: 'memory',
     critical: false,
     check: async () => {
-      if (typeof performance !== 'undefined' && performance.memory) {
-        const usage = (performance.memory.usedJSHeapSize / performance.memory.totalJSHeapSize) * 100;
+      if (typeof performance !== 'undefined') {
+        const memory = (performance as PerformanceWithMemory).memory;
+        if (!memory) {
+          return {
+            status: 'pass',
+            output: 'Memory monitoring not available',
+          };
+        }
+
+        const usage = (memory.usedJSHeapSize / memory.totalJSHeapSize) * 100;
         if (usage > 90) {
           return {
             status: 'warn',
@@ -133,6 +148,7 @@ function registerDefaultChecks(): void {
           observedUnit: '%',
         };
       }
+
       return {
         status: 'pass',
         output: 'Memory monitoring not available',

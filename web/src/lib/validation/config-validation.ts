@@ -11,7 +11,7 @@ import { logger } from "../logger";
  */
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
-  PORT: z.string().regex(/^\d+$/).transform(Number).default("3000"),
+  PORT: z.string().regex(/^\d+$/).transform(Number).default(3000),
   
   // Session security
   SPECFORGE_SESSION_SECRET: z.string().min(32).max(256),
@@ -47,12 +47,12 @@ export function validateEnv(): Env {
     return envSchema.parse(process.env);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const missingVars = error.errors
+      const missingVars = error.issues
         .filter((err) => err.code === "invalid_type")
         .map((err) => err.path.join("."));
 
       logger.error("Environment validation failed", {
-        errors: error.errors,
+        errors: error.issues,
         missing: missingVars,
       });
 

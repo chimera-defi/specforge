@@ -25,16 +25,16 @@ export interface ValidationResult<T = unknown> {
 /**
  * Validate request using Zod schemas
  */
-export function validateRequest<T = unknown>(
+export async function validateRequest<T = unknown>(
   request: Request,
   options: ValidationOptions
-): ValidationResult<T> {
+): Promise<ValidationResult<T>> {
   try {
     const data: Record<string, unknown> = {};
 
     // Validate body
     if (options.body) {
-      const body = request.json ? JSON.parse(request.body as string) : {};
+      const body = await request.clone().json().catch(() => ({}));
       const validatedBody = options.body.parse(body);
       Object.assign(data, validatedBody);
     }
@@ -61,7 +61,7 @@ export function validateRequest<T = unknown>(
     };
   } catch (error) {
     if (error instanceof ZodError) {
-      const errors = error.errors.map((err) => ({
+      const errors = error.issues.map((err) => ({
         path: err.path.map(String),
         message: err.message,
       }));
@@ -92,7 +92,7 @@ export function withValidation<T = unknown>(
   options: ValidationOptions
 ) {
   return async (request: Request, context?: unknown): Promise<NextResponse> => {
-    const validation = validateRequest<T>(request, options);
+    const validation = await validateRequest<T>(request, options);
 
     if (!validation.success) {
       logger.warn("Request validation failed", {

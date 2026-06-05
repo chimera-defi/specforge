@@ -60,6 +60,7 @@ coverage
 *.md
 !web/README.md
 !collab-server/README.md
+!spec/*.md
 .dockerignore
 Dockerfile
 docker-compose*.yml

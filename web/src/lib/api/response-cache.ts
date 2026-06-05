@@ -232,7 +232,7 @@ export const cacheConfigs = {
   api: {
     ttl: 60000, // 1 minute
     varyHeaders: ["accept", "authorization"],
-    skipCache: (request) => {
+    skipCache: (request: Request) => {
       // Skip cache for POST/PUT/DELETE
       return request.method !== "GET";
     },

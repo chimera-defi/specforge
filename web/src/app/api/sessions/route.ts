@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getSessionManager, createSession } from "@/lib/session";
+import { getSessionManager, createSession } from "@/lib/session/manager";
 
 /**
  * GET /api/sessions - Get session statistics
