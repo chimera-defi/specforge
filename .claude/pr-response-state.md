@@ -1,5 +1,5 @@
 # PR Response State
-last_run: 2026-06-08T17:30
+last_run: 2026-06-08T18:15
 
 prs:
   - number: 23
@@ -20,3 +20,14 @@ prs:
       docs(dream): 2026-06-07 consolidation pass. All CI passing
       (web-and-cli: success, tauri: success). No CHANGES_REQUESTED.
       Awaiting human review/merge.
+
+  - number: 25
+    repo: chimera-defi/specforge
+    last_activity: "2026-06-08T18:03:31Z"
+    attempt_count: 0
+    status: skipped
+    notes: >
+      chore(maintenance): 2026-06-08 deps pass. All 8 CI checks green
+      (web-and-cli, tauri, CodeQL, Trivy, Secret Scan, Container Image Scan,
+      Dependency Vulnerability Scan, CodeQL Analysis all success).
+      mergeable_state: clean. No CHANGES_REQUESTED. Awaiting human review/merge.
