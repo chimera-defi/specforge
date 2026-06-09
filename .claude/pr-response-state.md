@@ -1,5 +1,5 @@
 # PR Response State
-last_run: 2026-06-09T11:15
+last_run: 2026-06-09T12:15
 
 prs:
   - number: 23
@@ -30,4 +30,5 @@ prs:
       chore(maintenance): 2026-06-08 deps pass. All 8 CI checks green
       (web-and-cli, tauri, CodeQL, Trivy, Secret Scan, Container Image Scan,
       Dependency Vulnerability Scan, CodeQL Analysis all success).
-      mergeable_state: clean. No CHANGES_REQUESTED. Awaiting human review/merge.
+      Confirmed green on 2026-06-09T12:15 re-check. No CHANGES_REQUESTED.
+      Awaiting human review/merge.
