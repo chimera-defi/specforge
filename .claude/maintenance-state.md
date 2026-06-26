@@ -1,11 +1,11 @@
 # Maintenance State
-last_run: 2026-06-08
-focus: deps
+last_run: 2026-06-23
+focus: ts-cleanup
 status: completed
-completed: [next ^16.2.6→^16.2.7, react/react-dom 19.2.3→19.2.7, zod 4.3.6→4.4.3, pg 8.20.0→8.21.0, vitest 4.1.0→4.1.8, @types/react 19.2.14→19.2.17]
+completed: [tsc --noEmit passes with 0 errors in app source; --noUnusedLocals errors are all underscore-prefixed (intentional convention) or private class fields; test-file type errors are pre-existing schema-evolution mismatches requiring architectural fixes]
 in_progress:
-pending: []
+pending: [fix test type errors — route.test.ts systemPrompt/contextPrompt, ReadinessReport.open_clarification_count in execution/handoff tests, ClarificationRecord.priority in readiness.test.ts]
 known_failures:
-  - walletradar all deps are major version bumps — skip entire walletradar deps pass each Monday until ecosystem settles
+  - eslint fails when node_modules not installed (ERR_MODULE_NOT_FOUND) — run bun install first
+  - test schema mismatches pre-exist and require schema migration to fix safely
 skip_next_run: []
-attempt_counts:
