@@ -1,11 +1,12 @@
 # Maintenance State
-last_run: 2026-06-08
-focus: deps
+last_run: 2026-07-11
+focus: observability
 status: completed
-completed: [next ^16.2.6→^16.2.7, react/react-dom 19.2.3→19.2.7, zod 4.3.6→4.4.3, pg 8.20.0→8.21.0, vitest 4.1.0→4.1.8, @types/react 19.2.14→19.2.17]
+completed:
+  - fix(copy-button.tsx): add .catch() to navigator.clipboard.writeText().then() chain; clipboard permission denials now log to console.error instead of producing unhandled rejection
 in_progress:
 pending: []
 known_failures:
-  - walletradar all deps are major version bumps — skip entire walletradar deps pass each Monday until ecosystem settles
-skip_next_run: []
+  - tsc --noUnusedLocals: _-prefixed intentional vars and test schema mismatches (pre-existing)
+  - complex e2e tests have timing issues — only critical-flows.spec.ts (11/11) used for CI gate
 attempt_counts:
