@@ -62,7 +62,7 @@ test.describe("Idea-to-Spec Flow - Browser Testing", () => {
     console.log("Page content length:", pageContent.length);
 
     // Look for text indicating we're in the workspace
-    const bodyText = await page.bodyText();
+    const bodyText = await page.innerText("body");
     console.log("Body text preview:", bodyText.substring(0, 500));
 
     // Screenshot for debugging

@@ -30,9 +30,9 @@ function applyEnv(overrides: Record<string, string | undefined>) {
   for (const key of ENV_KEYS) {
     const value = overrides[key];
     if (typeof value === "string") {
-      process.env[key] = value;
+      (process.env as Record<string, string | undefined>)[key] = value;
     } else {
-      delete process.env[key];
+      delete (process.env as Record<string, string | undefined>)[key];
     }
   }
 }

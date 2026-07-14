@@ -24,6 +24,10 @@ describe("buildStarterTemplate", () => {
       {
         score: 82,
         status: "ready",
+        missing_sections: [],
+        open_patch_count: 0,
+        open_comment_count: 0,
+        open_clarification_count: 0,
         recap: ["Looks good"],
       },
       [],
@@ -52,6 +56,10 @@ describe("buildStarterTemplate", () => {
       {
         score: 75,
         status: "ready",
+        missing_sections: [],
+        open_patch_count: 0,
+        open_comment_count: 0,
+        open_clarification_count: 0,
         recap: ["Looks good"],
       },
       [],
@@ -60,7 +68,7 @@ describe("buildStarterTemplate", () => {
 
     expect(templates).toHaveLength(4);
     expect(handoff.template_id).toBe("docs_only_v1");
-    expect(handoff.files["docs/SPEC.md"]).toContain("SpecForge Docs Repo");
+    expect((handoff.files as Record<string, string>)["docs/SPEC.md"]).toContain("SpecForge Docs Repo");
     expect(handoff.files["README.md"]).toContain("SpecForge Docs Repo");
   });
 });
