@@ -5,7 +5,7 @@ import { deleteWorkspaceMemberAction } from "../../actions";
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
-    const _result = await deleteWorkspaceMemberAction(formData);
+    await deleteWorkspaceMemberAction(formData);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Delete member error:", error);

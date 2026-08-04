@@ -11,47 +11,6 @@ export interface CompressionOptions {
   memLevel?: number; // Memory level (1-9)
 }
 
-const DEFAULT_OPTIONS: CompressionOptions = {
-  threshold: 1024, // 1KB
-  level: 6, // Balanced compression
-  memLevel: 8, // Memory level
-};
-
-/**
- * Check if compression is supported for the response
- */
-function _shouldCompress(response: NextResponse, _options: CompressionOptions): boolean {
-  const contentLength = response.headers.get("content-length");
-  const contentType = response.headers.get("content-type");
-  const threshold = _options.threshold ?? DEFAULT_OPTIONS.threshold ?? 1024;
-  
-  // Check threshold
-  if (contentLength && parseInt(contentLength, 10) < threshold) {
-    return false;
-  }
-  
-  // Don't compress already compressed content
-  if (contentType) {
-    const compressedTypes = [
-      "application/gzip",
-      "application/zip",
-      "application/x-gzip",
-      "application/x-zip",
-      "image/",
-      "video/",
-      "audio/",
-    ];
-    if (compressedTypes.some((type) => contentType.includes(type))) {
-      return false;
-    }
-  }
-  
-  // Don't compress if client doesn't accept encoding
-  // This is handled by Next.js automatically, but we can add additional checks
-  
-  return true;
-}
-
 /**
  * Middleware to compress responses
  */
