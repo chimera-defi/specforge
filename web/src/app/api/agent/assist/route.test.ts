@@ -1,12 +1,19 @@
 import { describe, expect, it } from "vitest";
 
+type AssistPayload = {
+  brief: string;
+  tool: string;
+  systemPrompt?: string;
+  contextPrompt?: string;
+};
+
 describe("/api/agent/assist parameter validation", () => {
   it("would accept request without systemPrompt/contextPrompt (backward compatibility)", () => {
     // This is a placeholder test to document the expected behavior
     // Actual HTTP testing would require a test server setup
     // For now, we verify the schema allows optional parameters
 
-    const minimalPayload = {
+    const minimalPayload: AssistPayload = {
       brief: "A simple task manager",
       tool: "heuristic",
     };
@@ -19,7 +26,7 @@ describe("/api/agent/assist parameter validation", () => {
   });
 
   it("would accept request with custom prompts", () => {
-    const payloadWithPrompts = {
+    const payloadWithPrompts: AssistPayload = {
       brief: "A simple task manager",
       tool: "heuristic",
       systemPrompt: "Custom system prompt",
@@ -31,7 +38,7 @@ describe("/api/agent/assist parameter validation", () => {
   });
 
   it("would accept request with only systemPrompt", () => {
-    const payloadWithSystemPrompt = {
+    const payloadWithSystemPrompt: AssistPayload = {
       brief: "A simple task manager",
       tool: "heuristic",
       systemPrompt: "Custom system prompt",
@@ -42,7 +49,7 @@ describe("/api/agent/assist parameter validation", () => {
   });
 
   it("would accept request with only contextPrompt", () => {
-    const payloadWithContextPrompt = {
+    const payloadWithContextPrompt: AssistPayload = {
       brief: "A simple task manager",
       tool: "heuristic",
       contextPrompt: "Custom context prompt",

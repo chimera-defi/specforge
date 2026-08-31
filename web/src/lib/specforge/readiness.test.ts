@@ -59,6 +59,7 @@ describe("specforge readiness", () => {
           document_id: document.document_id,
           section_heading: "Requirements",
           question: "What blocks launch?",
+          priority: "normal" as const,
           status: "open",
           priority: "normal",
           created_by: { actor_type: "human", actor_id: "reviewer" },
