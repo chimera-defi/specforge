@@ -8,6 +8,7 @@
  */
 
 import { describe, it, expect } from "vitest";
+import type { PatchSeedLine } from "../../src/engine/index.js";
 import {
   createFreshEngine,
   loadWorkspaceSeed,
@@ -132,7 +133,7 @@ describe("Accept patch", () => {
     // Then decide on patches in order
     let acceptedCount = 0;
     for (const ps of patchSeeds) {
-      const decision = ps.status === "rejected" ? "reject" : "accept";
+      const decision = (ps as PatchSeedLine & { status?: string }).status === "rejected" ? "reject" : "accept";
       engine.decidePatch({
         patch_id: ps.patch_id,
         decision,

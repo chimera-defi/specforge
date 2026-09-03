@@ -210,7 +210,7 @@ describe("stripe webhook verification helpers", () => {
       NODE_ENV: "test" as const,
       STRIPE_WEBHOOK_SECRET: webhookSecret,
       STRIPE_WEBHOOK_TOLERANCE_SECONDS: "300",
-    } as NodeJS.ProcessEnv);
+    } as unknown as NodeJS.ProcessEnv);
 
     expect(event.type).toBe("checkout.session.completed");
   });

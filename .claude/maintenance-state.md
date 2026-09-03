@@ -1,21 +1,30 @@
 # Maintenance State
-last_run: 2026-07-14
-focus: ts-cleanup
+last_run: 2026-08-31
+focus: deps
 status: completed
 completed:
-  - fix 12 TypeScript 6 compile errors across 9 test files (PR #35)
-  - types.ts: add optional status field to PatchSeedLine
-  - execution.test.ts: add open_clarification_count to ReadinessReport fixtures
-  - handoff.test.ts: add missing ReadinessReport fields + cast files index
-  - readiness.test.ts: add priority field to ClarificationRecord fixture
-  - security-config.test.ts: cast env as NodeJS.ProcessEnv at call sites
-  - billing/index.test.ts: add NODE_ENV and cast to NodeJS.ProcessEnv
-  - proxy.test.ts: cast process.env to mutable Record for key assignment
-  - route.test.ts: cast payload objects to Record<string,unknown>
-  - idea-to-spec-flow.spec.ts: replace page.bodyText() with page.innerText("body")
+  - bump next ^16.2.7 → ^16.3.3
+  - bump @tiptap/* 3.20.4 → 3.30.5
+  - bump lucide-react ^1.17.0 → ^1.37.0
+  - bump @sentry/nextjs ^10.55.0 → ^10.72.0
+  - bump @opentelemetry/sdk-node ^0.218.0 → ^0.221.0
+  - bump @opentelemetry/auto-instrumentations-node ^0.76.0 → ^0.79.0
+  - bump @opentelemetry/resources + sdk-trace-node ^2.7.1 → ^2.10.0
+  - bump @opentelemetry/semantic-conventions ^1.41.1 → ^1.43.0
+  - bump @radix-ui/react-slot ^1.2.4 → ^1.3.3
+  - bump @tailwindcss/postcss + tailwindcss ^4.3.0 → ^4.3.3
+  - bump @types/pg 8.18.0 → 8.23.1
+  - bump yjs 13.6.30 → 13.6.32
+  - bump @playwright/test 1.58.2 → 1.62.1
+  - bump @types/react 19.2.17 → 19.2.18
+  - bump @types/react-dom 19.2.3 → 19.2.5
+  - bump eslint-config-next 16.2.0 → 16.3.3
+  - bump vitest 4.1.8 → 4.1.11
 in_progress:
 pending: []
 known_failures:
-  - tauri desktop build may be slow in CI
+  - @hocuspocus/provider 3→4 major — deferred
+  - @electric-sql/pglite large 0.x jump — deferred
+  - eslint 9→10 major — deferred
 skip_next_run: []
 attempt_counts:
