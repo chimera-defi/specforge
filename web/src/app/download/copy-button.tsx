@@ -11,6 +11,8 @@ export function CopyButton({ text }: { text: string }) {
     navigator.clipboard.writeText(text).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), APP_CONFIG.COPY_FEEDBACK_DURATION_LONG);
+    }).catch((err: unknown) => {
+      console.error("[copy-button] clipboard write failed:", err);
     });
   }
 
