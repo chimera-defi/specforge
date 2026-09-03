@@ -226,6 +226,11 @@ specforge/
 - **Complex tests:** Investigate separately; don't let them block deployment
 - **Timeout configuration:** Increasing timeouts (60s → 120s) helped but didn't fully resolve issues
 
+### Deps & CI (2026-06-08)
+- PR CI fires 8 checks: Secret Scan, tauri, web-and-cli, CodeQL Analysis (javascript), Container Image Scan, Dependency Vulnerability Scan, CodeQL, Trivy — all passed after next/react/zod/vitest/pg non-major bumps.
+- `bun install` (not `--frozen-lockfile`) required when bumping pinned deps; commit `web/package.json` + root `bun.lock` together.
+- Monday deps skip list: typescript 5.9.3→6.x (major), eslint 9→10 (major), @types/node 20→25 (major) — defer until explicit migration.
+
 <!-- kimi-delegate-claude:begin -->
 ## Kimi Delegation (enforced)
 
