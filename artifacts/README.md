@@ -9,12 +9,8 @@ This directory contains historical session documents, plans, and analysis files 
 - `E2E_TEST_STATUS.md` - End-to-end test status
 - `REFACTORING_ANALYSIS_2026-05-29.md` - Refactoring analysis
 - `SECURITY_AUDIT_2026-05-29.md` - Security audit report
-- `SESSION_LEARNINGS_2026-05-29.md` - Session learnings
-- `SESSION_SUMMARY_2026-05-29.md` - Session summary
-
-### Session-Specific Artifacts
-- `session-2026-05-29/` - Artifacts from the current session
-  - See `session-2026-05-29/README.md` for details
+- `landing-redesign-plan.md` - Landing page redesign plan
+- `screenshots/` - UI screenshots from development sessions
 
 ## Purpose
 
