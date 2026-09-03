@@ -73,8 +73,8 @@ describe("hosted security config", () => {
       SPECFORGE_COLLAB_SECRET: "collab",
     };
 
-    expect(getHostedSecurityConfigError(env)).toBeNull();
-    expect(() => assertHostedSecurityConfig(env)).not.toThrow();
+    expect(getHostedSecurityConfigError(env as NodeJS.ProcessEnv)).toBeNull();
+    expect(() => assertHostedSecurityConfig(env as NodeJS.ProcessEnv)).not.toThrow();
   });
 
   it("requires upstash config when upstash backend is selected", () => {

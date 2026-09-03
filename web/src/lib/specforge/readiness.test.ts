@@ -60,6 +60,7 @@ describe("specforge readiness", () => {
           section_heading: "Requirements",
           question: "What blocks launch?",
           status: "open",
+          priority: "normal",
           created_by: { actor_type: "human", actor_id: "reviewer" },
           created_at: new Date().toISOString(),
         },

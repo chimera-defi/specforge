@@ -141,6 +141,7 @@ export interface PatchSeedLine {
   target_fingerprint: string;
   content: string;
   base_version: number;
+  status?: string;
 }
 
 /** Block inventory for AgentSpec export */

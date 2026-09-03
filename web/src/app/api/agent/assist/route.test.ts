@@ -14,8 +14,8 @@ describe("/api/agent/assist parameter validation", () => {
     expect(minimalPayload.brief).toBeDefined();
     expect(minimalPayload.tool).toBeDefined();
     // systemPrompt and contextPrompt are optional
-    expect(minimalPayload.systemPrompt).toBeUndefined();
-    expect(minimalPayload.contextPrompt).toBeUndefined();
+    expect((minimalPayload as Record<string, unknown>).systemPrompt).toBeUndefined();
+    expect((minimalPayload as Record<string, unknown>).contextPrompt).toBeUndefined();
   });
 
   it("would accept request with custom prompts", () => {
@@ -38,7 +38,7 @@ describe("/api/agent/assist parameter validation", () => {
     };
 
     expect(payloadWithSystemPrompt.systemPrompt).toBeDefined();
-    expect(payloadWithSystemPrompt.contextPrompt).toBeUndefined();
+    expect((payloadWithSystemPrompt as Record<string, unknown>).contextPrompt).toBeUndefined();
   });
 
   it("would accept request with only contextPrompt", () => {
@@ -49,6 +49,6 @@ describe("/api/agent/assist parameter validation", () => {
     };
 
     expect(payloadWithContextPrompt.contextPrompt).toBeDefined();
-    expect(payloadWithContextPrompt.systemPrompt).toBeUndefined();
+    expect((payloadWithContextPrompt as Record<string, unknown>).systemPrompt).toBeUndefined();
   });
 });

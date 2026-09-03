@@ -1,19 +1,21 @@
 # Maintenance State
-last_run: 2026-08-04
+last_run: 2026-07-14
 focus: ts-cleanup
 status: completed
 completed:
-  - fix(ts-cleanup): remove 7 unused vars and dead highlight.js code in production files
-  - delete-member/route.ts: drop _result capture
-  - CollaborativeFileBrowser.tsx: remove _cursorPosition, _highlighted, and entire dead hljs infrastructure (6 imports + 5 registerLanguage calls + getLanguage + highlight + escapeHtml)
-  - compression.ts: remove _shouldCompress function and DEFAULT_OPTIONS
-  - production-logger.ts: remove _LogEntry interface and unused private service field
-  - store.ts: remove _database and _dbPath in restoreFileVersion
+  - fix 12 TypeScript 6 compile errors across 9 test files (PR #35)
+  - types.ts: add optional status field to PatchSeedLine
+  - execution.test.ts: add open_clarification_count to ReadinessReport fixtures
+  - handoff.test.ts: add missing ReadinessReport fields + cast files index
+  - readiness.test.ts: add priority field to ClarificationRecord fixture
+  - security-config.test.ts: cast env as NodeJS.ProcessEnv at call sites
+  - billing/index.test.ts: add NODE_ENV and cast to NodeJS.ProcessEnv
+  - proxy.test.ts: cast process.env to mutable Record for key assignment
+  - route.test.ts: cast payload objects to Record<string,unknown>
+  - idea-to-spec-flow.spec.ts: replace page.bodyText() with page.innerText("body")
 in_progress:
-pending:
-  - test-file TS6 errors (12 errors in 6 test files) covered by open PR #35 (07-14)
+pending: []
 known_failures:
-  - E2E/acceptance test TS errors: covered by open PR #35
-  - broker acceptance tests require PostgreSQL — skip in sandbox
+  - tauri desktop build may be slow in CI
 skip_next_run: []
 attempt_counts:
