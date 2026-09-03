@@ -2959,9 +2959,6 @@ export async function restoreFileVersion(
   versionId: string,
   options?: StoreOptions,
 ): Promise<void> {
-  const _database = await getDatabase(options);
-  const _dbPath = resolveOptions(options).dbPath;
-
   const version = await getFileVersion(versionId, options);
   if (!version) {
     throw new Error(`Version ${versionId} not found`);

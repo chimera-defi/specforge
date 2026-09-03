@@ -13,24 +13,12 @@ export enum LogLevel {
   FATAL = 'fatal',
 }
 
-interface _LogEntry {
-  level: LogLevel;
-  message: string;
-  context?: Record<string, unknown>;
-  timestamp: string;
-  environment: string;
-  service: string;
-  request_id?: string;
-}
-
 class ProductionLogger {
   private environment: string;
-  private service: string;
   private minimumLevel: LogLevel;
 
   constructor() {
     this.environment = process.env.NODE_ENV || 'development';
-    this.service = 'specforge-web';
     this.minimumLevel = this.getMinimumLevel();
   }
 

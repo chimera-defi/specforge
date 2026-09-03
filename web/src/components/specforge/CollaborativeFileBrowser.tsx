@@ -1,11 +1,5 @@
 "use client";
 
-import hljs from "highlight.js/lib/core";
-import hljsBash from "highlight.js/lib/languages/bash";
-import hljsJson from "highlight.js/lib/languages/json";
-import hljsMarkdown from "highlight.js/lib/languages/markdown";
-import hljsTypescript from "highlight.js/lib/languages/typescript";
-import hljsYaml from "highlight.js/lib/languages/yaml";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { EditorContent, useEditor } from "@tiptap/react";
 import Collaboration from "@tiptap/extension-collaboration";
@@ -52,41 +46,8 @@ import { SortableFileItem } from "./SortableFileItem";
 import { FileHistoryModal } from "./FileHistoryModal";
 import { RemoteCursors } from "./RemoteCursors";
 
-// Register languages
-hljs.registerLanguage("json", hljsJson);
-hljs.registerLanguage("markdown", hljsMarkdown);
-hljs.registerLanguage("typescript", hljsTypescript);
-hljs.registerLanguage("bash", hljsBash);
-hljs.registerLanguage("yaml", hljsYaml);
-
-function getLanguage(filename: string): string {
-  if (filename.endsWith(".json")) return "json";
-  if (filename.endsWith(".md")) return "markdown";
-  if (filename.endsWith(".ts") || filename.endsWith(".tsx")) return "typescript";
-  if (filename.endsWith(".sh")) return "bash";
-  if (filename.endsWith(".yaml") || filename.endsWith(".yml")) return "yaml";
-  return "plaintext";
-}
-
 function isMarkdown(filename: string): boolean {
   return filename.endsWith(".md");
-}
-
-function highlight(code: string, filename: string): string {
-  const lang = getLanguage(filename);
-  if (lang === "plaintext") return escapeHtml(code);
-  try {
-    return hljs.highlight(code, { language: lang }).value;
-  } catch {
-    return escapeHtml(code);
-  }
-}
-
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
 }
 
 interface CodeEditorProps {
@@ -110,7 +71,6 @@ function CodeEditor({ ytext, filename: _filename, providerRef, activeActor, remo
 
     // Sync textarea -> Yjs (user typing)
     const handleChange = () => {
-      const _cursorPosition = textarea.selectionStart;
       const currentContent = ytext.toString();
       const newContent = textarea.value;
 
@@ -791,7 +751,6 @@ export function CollaborativeFileBrowser({
     }
   }
 
-  const _highlighted = selected ? highlight(selected.content, selected.filename) : "";
   const isMarkdownFile = selected && isMarkdown(selected.filename);
 
   // Filter files based on search query
