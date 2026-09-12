@@ -12,8 +12,10 @@ import {
   listWorkspaceMemberships,
   listWorkspaceRecords,
 } from "@/lib/specforge/store";
+import { withErrorHandling } from "@/lib/api-error-handler";
 
 export async function GET(request: Request) {
+  return withErrorHandling(async () => {
   const requestId = getRequestId(request.headers);
   const persistenceConfig = getPersistenceConfig();
   const [workspaces, documents, backlogState] = await Promise.all([
@@ -209,4 +211,5 @@ export async function GET(request: Request) {
   });
 
   return NextResponse.json(payload);
+  }, { action: "metrics_get" });
 }
