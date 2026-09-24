@@ -5,7 +5,7 @@
 
 import { NextResponse } from "next/server";
 import { logger } from "./logger";
-import { getErrorStatusCode, getErrorMessage } from "@/engine/errors";
+import { getErrorStatusCode, getErrorMessage, SpecForgeError } from "@/engine/errors";
 
 /**
  * Safely wrap an async API handler with error handling
@@ -22,7 +22,7 @@ export async function withErrorHandling<T>(
     const statusCode = getErrorStatusCode(error);
     const message = getErrorMessage(error);
 
-    // Log the error for debugging
+    // Log the full error detail server-side for debugging
     logger.error(
       `API error: ${context?.action || "unknown action"}`,
       error instanceof Error ? error : new Error(String(error)),
@@ -33,6 +33,12 @@ export async function withErrorHandling<T>(
       }
     );
 
-    return NextResponse.json({ error: message }, { status: statusCode });
+    // For unexpected (non-SpecForge) errors return a generic message to avoid
+    // leaking internal details (filesystem paths, DB schema, connection strings)
+    // to callers. SpecForgeError messages are intentional and safe to surface.
+    const clientMessage =
+      error instanceof SpecForgeError ? message : "Internal server error";
+
+    return NextResponse.json({ error: clientMessage }, { status: statusCode });
   }
 }

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { withErrorHandling } from "@/lib/api-error-handler";
 import { error } from "@/lib/specforge/api-response";
 import {
   exportDocument,
@@ -69,17 +70,21 @@ async function buildResponse(
 }
 
 export async function GET(request: Request, { params }: Params) {
-  const { id } = await params;
-  const { workspaceId } = await getCurrentWorkspaceAccess();
-  const url = new URL(request.url);
-  const force = url.searchParams.get("force") === "true";
-  return buildResponse(id, workspaceId, force);
+  return withErrorHandling(async () => {
+    const { id } = await params;
+    const { workspaceId } = await getCurrentWorkspaceAccess();
+    const url = new URL(request.url);
+    const force = url.searchParams.get("force") === "true";
+    return buildResponse(id, workspaceId, force);
+  }, { action: "document_export_get" });
 }
 
 export async function POST(request: Request, { params }: Params) {
-  const { id } = await params;
-  const { workspaceId } = await getCurrentWorkspaceAccess();
-  const url = new URL(request.url);
-  const force = url.searchParams.get("force") === "true";
-  return buildResponse(id, workspaceId, force);
+  return withErrorHandling(async () => {
+    const { id } = await params;
+    const { workspaceId } = await getCurrentWorkspaceAccess();
+    const url = new URL(request.url);
+    const force = url.searchParams.get("force") === "true";
+    return buildResponse(id, workspaceId, force);
+  }, { action: "document_export_post" });
 }

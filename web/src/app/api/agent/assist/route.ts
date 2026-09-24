@@ -12,6 +12,7 @@ import {
   listWorkspaceRecords,
   recordWorkspaceEvent,
 } from "@/lib/specforge/store";
+import { withErrorHandling } from "@/lib/api-error-handler";
 
 const requestSchema = z.object({
   brief: z.string().min(1),
@@ -21,6 +22,7 @@ const requestSchema = z.object({
 });
 
 export async function POST(request: Request) {
+  return withErrorHandling(async () => {
   const payload = requestSchema.parse(await request.json());
   const session = await getCurrentWorkspaceSession();
   const preferredTool = await getPreferredAssistTool();
@@ -70,4 +72,5 @@ export async function POST(request: Request) {
   });
 
   return NextResponse.json(suggestion);
+  }, { action: "agent_assist_post" });
 }
