@@ -7,8 +7,6 @@ This directory contains historical session documents, plans, and analysis files 
 ### Previous Sessions
 - `COMPREHENSIVE_PLAN.md` - Comprehensive development plan
 - `E2E_TEST_STATUS.md` - End-to-end test status
-- `REFACTORING_ANALYSIS_2026-05-29.md` - Refactoring analysis
-- `SECURITY_AUDIT_2026-05-29.md` - Security audit report
 - `landing-redesign-plan.md` - Landing page redesign plan
 - `screenshots/` - UI screenshots from development sessions
 
