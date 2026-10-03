@@ -30,6 +30,10 @@ function runCommand(command, cwd) {
       process.stderr.write(value);
     });
 
+    child.on("error", (err) => {
+      resolve({ command, status: 1, stdout, stderr: err.message });
+    });
+
     child.on("close", (status) => {
       resolve({
         command,
