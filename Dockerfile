@@ -1,6 +1,6 @@
 # Multi-stage Dockerfile for SpecForge Web App
 # Stage 1: Dependencies
-FROM oven/bun:1.3.9 AS deps
+FROM oven/bun:1 AS deps
 WORKDIR /app
 
 # Copy dependency files. Keep workspace package manifests present so Bun can
@@ -17,7 +17,7 @@ COPY bridge/package.json ./bridge/package.json
 RUN bun install --frozen-lockfile
 
 # Stage 2: Builder
-FROM oven/bun:1.3.9 AS builder
+FROM oven/bun:1 AS builder
 WORKDIR /app
 
 # Copy dependencies from deps stage
@@ -41,7 +41,7 @@ RUN SPECFORGE_SESSION_SECRET=build-session-secret-000000000000000000000000000000
   bun run build
 
 # Stage 3: Runner
-FROM oven/bun:1.3.9 AS runner
+FROM oven/bun:1 AS runner
 WORKDIR /app/web
 
 # Set environment
