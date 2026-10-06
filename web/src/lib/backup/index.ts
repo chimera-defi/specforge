@@ -158,9 +158,8 @@ class BackupManager {
       backup.size = stats.size;
       backup.path = backupPath;
     } catch (error) {
-      logger.warn("tar command failed, trying alternative", { error });
-      // Fallback: just backup critical files
-      // This would be implemented with a different approach
+      logger.warn("tar command failed", { error });
+      throw error;
     }
   }
 
