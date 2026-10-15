@@ -74,14 +74,6 @@ Automatic retry with exponential backoff for transient failures.
 - Backoff multiplier: 2
 - Jitter: enabled (±25%)
 
-**Usage:**
-```typescript
-import { getRetryHandler } from '@/lib/monitoring/retry';
-
-const retry = getRetryHandler();
-const result = await retry.execute(async () => fetch(...), 'external-api');
-```
-
 ### Graceful Shutdown
 
 The application handles graceful shutdown on SIGTERM/SIGINT signals.
